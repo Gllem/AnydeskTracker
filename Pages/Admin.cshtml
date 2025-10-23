@@ -1,0 +1,73 @@
+﻿@page
+@using AnydeskTracker.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@attribute [Authorize(Roles = "Admin")]
+@{
+    ViewData["Title"] = "Админка — ПК";
+}
+
+<h2>Управление ПК</h2>
+
+<div>
+    <form id="addForm" class="mb-3">
+        <input id="pcId" type="text" placeholder="ID ПК" class="form-control mb-2" required />
+        <input id="password" type="text" placeholder="Пароль" class="form-control mb-2" required />
+        <button class="btn btn-success">Добавить ПК</button>
+    </form>
+</div>
+
+<table class="table table-bordered" id="pcTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Пароль</th>
+        <th>Статус</th>
+        <th>Последнее изменение</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+@section Scripts {
+    <script>
+        async function loadPcs() {
+            const res = await fetch('/api/admin/pcs');
+            const data = await res.json();
+            const tbody = document.querySelector('#pcTable tbody');
+            console.log(data)
+            tbody.innerHTML = data.map(p => `
+        <tr>
+            <td>${p.anyDeskId}</td>
+            <td>${p.password}</td>
+            <td>${p.statusText}</td>
+            <td>${new Date(p.lastStatusChange).toLocaleString()}</td>
+            <td>
+                <button class="btn btn-sm btn-danger" onclick="deletePc(${p.id})">Удалить</button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const PcId = document.getElementById('pcId').value;
+            const Password = document.getElementById('password').value;
+            await fetch('/api/admin/pcs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ PcId, Password, status: @((int)PcStatus.Free) })
+            });
+            e.target.reset();
+            loadPcs();
+        });
+
+        async function deletePc(id) {
+            await fetch(`/api/admin/pcs/${id}`, { method: 'DELETE' });
+            loadPcs();
+        }
+
+        loadPcs();
+    </script>
+}
