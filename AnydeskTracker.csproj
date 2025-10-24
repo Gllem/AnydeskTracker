@@ -19,4 +19,14 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.21" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Views\Work\ActiveComputer.cshtml" />
+    <AdditionalFiles Include="Views\Work\ComputerList.cshtml" />
+    <AdditionalFiles Include="Views\Work\StartWork.cshtml" />
+  </ItemGroup>
+
 </Project>

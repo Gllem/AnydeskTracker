@@ -4,23 +4,24 @@ using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Models;
+using AnydeskTracker.Services;
 
 namespace AnydeskTracker.Controllers
 {
 	[Authorize(Roles = "Admin")]
 	[Route("api/admin")]
 	[ApiController]
-	public class AdminController(ApplicationDbContext context) : ControllerBase
+	public class AdminController(ApplicationDbContext context, PcService pcService) : ControllerBase
 	{
 		[HttpGet("pcs")]
 		public async Task<IActionResult> GetAllPcs()
 		{
-			var pcs = await context.Pcs.Select( x=> new PcDto(x)).ToListAsync();
+			var pcs = await pcService.GetAllPcs();
 			return Ok(pcs);
 		}
 
 		[HttpPost("pcs")]
-		public async Task<IActionResult> AddPc([FromBody] PcModel pc)
+		public async Task<IActionResult> AddPc([FromBody] PcModel? pc)
 		{
 			pc.LastStatusChange = DateTime.UtcNow;
 			context.Pcs.Add(pc);

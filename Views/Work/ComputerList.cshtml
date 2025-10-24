@@ -1,0 +1,40 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Выбор компьютера";
+}
+
+<div class="p-3">
+    <h2>Свободные компьютеры</h2>
+    <div id="computers" class="d-flex flex-wrap gap-3 mt-3"></div>
+</div>
+
+<script>
+    async function loadComputers() {
+        const res = await fetch("/Work/FreeComputers");
+        if (!res.ok) return alert("Ошибка загрузки списка компьютеров");
+        const data = await res.json();
+
+        const container = document.getElementById("computers");
+        container.innerHTML = "";
+
+        data.forEach(pc => {
+            const div = document.createElement("div");
+            div.className = "border p-3 rounded bg-light cursor-pointer";
+            div.style.width = "180px";
+            div.innerHTML = `<strong>${pc.anyDeskId}</strong><br>ID: ${pc.id}`;
+            div.onclick = async () => {
+                const confirmSelect = confirm(`Подключиться к ${pc.anyDeskId}?`);
+                if (!confirmSelect) return;
+                const res = await fetch(`/Work/Assign/${pc.id}`, { method: "POST" });
+                if (res.ok) {
+                    window.location.href = "/Work";
+                } else {
+                    alert("Не удалось выбрать компьютер");
+                }
+            };
+            container.appendChild(div);
+        });
+    }
+
+    loadComputers();
+</script>

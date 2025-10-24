@@ -6,24 +6,4 @@
 
 <h2>Добро пожаловать, @UserManager.GetUserName(User)</h2>
 
-<button id="startBtn" class="btn btn-success">Начать работу</button>
-
-<div id="pcList" class="mt-4"></div>
-
-@section Scripts {
-    <script>
-document.getElementById("startBtn").addEventListener("click", async () => {
-    const res = await fetch("/api/work/start", { method: "POST" });
-    if (res.ok) {
-        loadPcList();
-    }
-        });
-
-async function loadPcList() {
-    const res = await fetch("/api/work/free-pcs");
-    const pcs = await res.json();
-    const list = pcs.map(p => `<li>${p.id} — ${p.status}</li>`).join("");
-    document.getElementById("pcList").innerHTML = `<ul>${list}</ul>`;
-}
-</script>
-}
+<a id="startBtn" class="btn btn-success" asp-controller="Work" asp-action="Index">Перейти к работе</a>

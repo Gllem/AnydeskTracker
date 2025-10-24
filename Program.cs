@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
+using AnydeskTracker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders().AddDefaultUI();
+
+builder.Services.AddScoped<UserWorkService>();
+builder.Services.AddScoped<PcService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

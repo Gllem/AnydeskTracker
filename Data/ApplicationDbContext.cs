@@ -11,5 +11,7 @@ public class ApplicationDbContext : IdentityDbContext
     {
     }
     
-    public DbSet<PcModel> Pcs { get; set; }
+    public DbSet<PcModel?> Pcs { get; set; }
+    public DbSet<WorkSessionModel> WorkSessionModels { get; set; }
+    public DbSet<PcUsage> PcUsages { get; set; }
 }

@@ -1,0 +1,101 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Рабочее место";
+}
+@model AnydeskTracker.DTOs.WorkSessionDto
+
+<div class="text-center mt-4">
+    <h2>Текущий компьютер</h2>
+    <div id="pc-info" class="border rounded p-3 mt-3 d-inline-block text-left"></div>
+
+    <div class="mt-4" id="shiftTimer"></div>
+    <div class="mt-4">
+        <button id="endShiftBtn" class="btn btn-danger">Завершить смену</button>
+    </div>
+</div>
+
+<script>
+    let shouldChangePc = false;
+    let canEndShift = false;
+    const startTime = new Date("@Model.StartTime.ToString("o")");
+    const durationMs = @Model.SessionTime.TotalMilliseconds;
+    const endTime = new Date(startTime.getTime() + durationMs);
+    let timerInterval = null;
+    
+    async function loadActiveComputer() {
+        const res = await fetch("/Work/Active");
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const div = document.getElementById("pc-info");
+        div.innerHTML = `
+        <p><strong>Имя:</strong> ${data.anyDeskId}</p>
+        <p><strong>ID:</strong> ${data.id}</p>
+        <p><strong>Пароль:</strong> ${data.password}</p>
+        <p><strong>Статус:</strong> ${data.statusText}</p>
+        <p><strong>Сессия начата:</strong> ${data.lastStatusChange}</p>
+        <button id="freeUpPc" class="btn btn-danger">Освободить пк</button>
+    `;
+        document.getElementById("freeUpPc").addEventListener("click", async () => {
+            const res = await fetch("/Work/FreeUpPc", {method: "POST"});
+            if (res.ok)
+                window.location.href = "/Work";
+            else
+                alert("Ошибка при освобождение компьютера")
+        })
+        
+        await checkSessionStatus();
+        startTimer();
+    }
+    
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            const now = Date.now();
+            const diff = endTime - now;
+            
+            let timer = document.getElementById("shiftTimer");
+            
+            if (diff < 0) {
+                timer.innerText = "Можно закончить смену";
+                clearInterval(timerInterval);
+                return;
+            }
+            
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            console.log(diff)
+            timer.innerText = `Осталось: ${hours}ч ${minutes}м ${seconds}с`;
+        }, 1000)
+    }
+
+    async function checkSessionStatus(){
+        const res = await fetch("/Work/CheckSessionStatus");
+        const data = await res.json();
+
+        shouldChangePc = data.shouldChangePc;
+        canEndShift = data.canEndShift;
+
+        if (shouldChangePc)
+            console.log("Пора сменить компьютер!");
+
+        updateEndShiftVisuals();
+    }
+    
+    function updateEndShiftVisuals(){
+        $("#endShiftBtn").style = canEndShift ? "" : "display: none";
+    }
+    
+    setInterval(checkSessionStatus, 15000);
+
+    document.getElementById("endShiftBtn").addEventListener("click", async () => {
+        const res = await fetch("/Work/End", { method: "POST" });
+        if (res.ok) window.location.href = "/Work";
+        else alert("Ошибка при завершении смены");
+    });
+    
+    loadActiveComputer();
+
+
+
+</script>
