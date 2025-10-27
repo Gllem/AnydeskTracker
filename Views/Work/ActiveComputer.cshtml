@@ -17,7 +17,7 @@
 <script>
     let shouldChangePc = false;
     let canEndShift = false;
-    const startTime = new Date("@Model.StartTime.ToString("MM/dd/yyyy HH:mm:ss tt") UTC");
+    const startTime = new Date("@Model.StartTime.ToString("MM/dd/yyyy HH:mm:ss") UTC");
     const durationMs = @Model.SessionTime.TotalMilliseconds;
     const endTime = new Date(startTime.getTime() + durationMs);
     let timerInterval = null;
