@@ -22,6 +22,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.AddScoped<UserWorkService>();
 builder.Services.AddScoped<PcService>();
 
+builder.Services.AddHostedService<PcStatusUpdater>();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
