@@ -10,14 +10,14 @@
 
     <div class="mt-4" id="shiftTimer"></div>
     <div class="mt-4">
-        <button id="endShiftBtn" class="btn btn-danger">Завершить смену</button>
+        <button id="endShiftBtn" class="btn btn-danger" style="display: none">Завершить смену</button>
     </div>
 </div>
 
 <script>
     let shouldChangePc = false;
     let canEndShift = false;
-    const startTime = new Date("@Model.StartTime.ToString("o")");
+    const startTime = new Date("@Model.StartTime.ToString("MM/dd/yyyy HH:mm:ss tt") UTC");
     const durationMs = @Model.SessionTime.TotalMilliseconds;
     const endTime = new Date(startTime.getTime() + durationMs);
     let timerInterval = null;
@@ -29,12 +29,12 @@
 
         const div = document.getElementById("pc-info");
         div.innerHTML = `
-        <p><strong>Имя:</strong> ${data.anyDeskId}</p>
-        <p><strong>ID:</strong> ${data.id}</p>
-        <p><strong>Пароль:</strong> ${data.password}</p>
-        <p><strong>Статус:</strong> ${data.statusText}</p>
+        <p><strong>AnyDesk ID:</strong> ${data.anyDeskId}</p>
+        <p><strong>AnyDesk Пароль:</strong> ${data.password}</p>
+        <p><strong>Статус:</strong> ${data.statusText}</p>   
         <p><strong>Сессия начата:</strong> ${data.lastStatusChange}</p>
-        <button id="freeUpPc" class="btn btn-danger">Освободить пк</button>
+        <a class="btn btn-success w-100" href="anydesk:${data.anyDeskId}">Зайти через AnyDesk</a>
+        <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
     `;
         document.getElementById("freeUpPc").addEventListener("click", async () => {
             const res = await fetch("/Work/FreeUpPc", {method: "POST"});
@@ -45,27 +45,26 @@
         })
         
         await checkSessionStatus();
-        startTimer();
+        startTimer("shiftTimer", endTime, checkSessionStatus);
     }
-    
+
     function startTimer() {
         timerInterval = setInterval(() => {
             const now = Date.now();
             const diff = endTime - now;
-            
+
             let timer = document.getElementById("shiftTimer");
-            
+
             if (diff < 0) {
                 timer.innerText = "Можно закончить смену";
                 clearInterval(timerInterval);
                 return;
             }
-            
+
             const hours = Math.floor(diff / 3600000);
             const minutes = Math.floor((diff % 3600000) / 60000);
             const seconds = Math.floor((diff % 60000) / 1000);
-            console.log(diff)
-            timer.innerText = `Осталось: ${hours}ч ${minutes}м ${seconds}с`;
+            timer.innerText = `До конца смены: ${hours}ч ${minutes}м ${seconds}с`;
         }, 1000)
     }
 
@@ -76,14 +75,20 @@
         shouldChangePc = data.shouldChangePc;
         canEndShift = data.canEndShift;
 
-        if (shouldChangePc)
-            console.log("Пора сменить компьютер!");
+        if (shouldChangePc){
+            updateFreeUpPcVisuals();
+            alert("Пора сменить пк!!!")
+        }
 
         updateEndShiftVisuals();
     }
     
     function updateEndShiftVisuals(){
-        $("#endShiftBtn").style = canEndShift ? "" : "display: none";
+        $("#endShiftBtn")[0].style = canEndShift ? "" : "display: none";
+    }
+    
+    function updateFreeUpPcVisuals(){
+        $("#freeUpPc")[0].style = shouldChangePc ? "" : "display: none";
     }
     
     setInterval(checkSessionStatus, 15000);

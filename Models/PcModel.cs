@@ -9,7 +9,7 @@ namespace AnydeskTracker.Models
 		Free = 0,
 		[Display(Name = "Занят")]
 		Busy = 1,
-		[Display(Name = "Охлождается")]
+		[Display(Name = "Охлаждается")]
 		CoolingDown = 2
 	}
 	
