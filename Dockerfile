@@ -11,7 +11,6 @@ WORKDIR /app
 COPY --from=build /app/publish .
 RUN mkdir -p app_data
 
-ENV ASPNETCORE_URLS=http://localhost:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 8080
