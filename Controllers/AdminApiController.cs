@@ -108,12 +108,20 @@ namespace AnydeskTracker.Controllers
 		public async Task<IActionResult> GetAllUsers()
 		{
 			var users = await context.Users.ToListAsync();
-			return Ok(users.Select(x => 
-				new
+			return Ok(users.Select(user =>
+			{
+				var session = context.WorkSessionModels.FirstOrDefault(workSession => workSession.IsActive && workSession.UserId == user.Id);
+				
+				var currentPcUsage = session == null ? null : context.PcUsages.FirstOrDefault(pc => pc.IsActive && pc.WorkSessionId == session.Id);
+				
+				return new
 				{
-					UserId = x.Id,
-					UserName = x.UserName ?? String.Empty
-				}));
+					UserId = user.Id,
+					UserName = user.UserName ?? String.Empty,
+					SessionStartTime = session?.StartTime,
+					CurrentPcId = currentPcUsage?.PcId
+				};
+			}));
 		}
 
 		private WorkSessionModel? GetSession(string userId, int sessionId)

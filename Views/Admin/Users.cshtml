@@ -19,8 +19,26 @@
 
         data.forEach(user => {
             const div = document.createElement("div");
-            div.className = "btn p-3 btn-primary";
-            div.innerHTML = `<strong>${user.userName}</strong>`;
+            div.className = "btn p-1 btn-primary d-flex flex-column";
+            div.style = "height: 12em; width: 15em"
+            
+            const sessionStatus = user.sessionStartTime == null 
+                ? "<strong>Не работает</strong>" 
+                : `Начал работать в:<br>
+                    <b>${new Date(user.sessionStartTime).toLocaleString()}</b>`
+            
+            const pcStatus = user.currentPcId == null 
+                ? "" 
+                : `Работает за компьютером:<br>
+                    <b>${user.currentPcId}</b>`
+            
+            div.innerHTML = `
+                <strong>${user.userName}</strong>
+                <div class="border border-light border-1 rounded-3 text-center align-content-center" style="flex: 1">
+                    ${sessionStatus}<br>
+                    ${pcStatus}
+                </div>
+            `;
             div.onclick = async () => {
                 window.location.href = `/Admin/User/${user.userId}`;
             };
