@@ -2,14 +2,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Controllers
 {
 	[Authorize]
 	[Route("Work")]
-	public class WorkController(UserWorkService workService, PcService pcService) : Controller
+	public class WorkController(ApplicationDbContext context, UserWorkService workService, PcService pcService) : Controller
 	{
 		private readonly TimeSpan pcUsageTime = TimeSpan.FromMinutes(1);
 		private readonly TimeSpan sessionTime = TimeSpan.FromMinutes(5);
@@ -57,6 +59,13 @@ namespace AnydeskTracker.Controllers
 		{
 			var pcs = await pcService.GetAllPcs();
 			return Ok(pcs.Where(x => x.Status == PcStatus.Free));
+		}
+		
+		[HttpGet("Games")]
+		public async Task<IActionResult> FetchGames()
+		{
+			var games = await context.Games.ToListAsync();
+			return Ok(games);
 		}
 
 		[HttpGet("Active")]

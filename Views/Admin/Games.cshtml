@@ -32,7 +32,7 @@
             tbody.innerHTML = data.map(p => `
         <tr>
             <td>${p.id}</td>
-            <td><a href="${p.gameUrl}">${p.gameUrl}</a></td>
+            <td><a href="${p.gameUrl}" target="_blank" rel="noopener noreferrer">${p.gameUrl}</a></td>
             <td>
                 <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
             </td>
