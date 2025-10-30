@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
+using AnydeskTracker.DTOs;
 using AnydeskTracker.Models;
 using AnydeskTracker.Services;
 using HtmlAgilityPack;
@@ -11,7 +12,7 @@ namespace AnydeskTracker.Controllers
 	[Authorize(Roles = "Admin")]
 	[Route("api/admin")]
 	[ApiController]
-	public class AdminApiController(HttpClient httpClient, ApplicationDbContext context, PcService pcService) : ControllerBase
+	public class AdminApiController(ApplicationDbContext context, PcService pcService) : ControllerBase
 	{
 #region Pcs
 		[HttpGet("pcs")]
@@ -99,6 +100,61 @@ namespace AnydeskTracker.Controllers
 			context.Games.Remove(existing);
 			await context.SaveChangesAsync();
 			return NoContent();
+		}
+#endregion
+
+#region Users
+		[HttpGet("users")]
+		public async Task<IActionResult> GetAllUsers()
+		{
+			var users = await context.Users.ToListAsync();
+			return Ok(users.Select(x => 
+				new
+				{
+					UserId = x.Id,
+					UserName = x.UserName ?? String.Empty
+				}));
+		}
+
+		private WorkSessionModel? GetSession(string userId, int sessionId)
+		{
+			var user = context.Users.FirstOrDefault(x => x.Id == userId);
+
+			if (user == null)
+				return null;
+
+			var session = context.WorkSessionModels.FirstOrDefault(x => x.UserId == userId && x.Id == sessionId);
+
+			return session;
+		}
+
+		[HttpGet("user/{userId}/{sessionId:int}")]
+		public async Task<IActionResult> GetUserSession(string userId, int sessionId)
+		{
+			var session = GetSession(userId, sessionId);
+
+			if (session == null)
+				return NotFound();
+			
+			return Ok(session);
+		}
+
+		[HttpGet("user/{userId}/{sessionId:int}/actions")]
+		public async Task<IActionResult> GetUserSessionActions(string userId, int sessionId)
+		{
+			var session = GetSession(userId, sessionId);
+
+			if (session == null)
+				return NotFound();
+
+			var actions = await context.UserActions.Where(x => x.UserId == userId && x.WorkSessionId == sessionId).ToListAsync();
+
+			return Ok(actions.Select(x => new
+			{
+				actionType = x.ActionType,
+				description = x.Description ?? String.Empty,
+				timestamp = x.Timestamp
+			}));
 		}
 #endregion
 	}

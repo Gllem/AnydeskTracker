@@ -11,7 +11,11 @@ namespace AnydeskTracker.Controllers
 {
 	[Authorize]
 	[Route("Work")]
-	public class WorkController(ApplicationDbContext context, UserWorkService workService, PcService pcService) : Controller
+	public class WorkController(
+		UserActionService actionService, 
+		ApplicationDbContext context, 
+		UserWorkService workService, 
+		PcService pcService) : Controller
 	{
 		private readonly TimeSpan pcUsageTime = TimeSpan.FromMinutes(1);
 		private readonly TimeSpan sessionTime = TimeSpan.FromMinutes(5);

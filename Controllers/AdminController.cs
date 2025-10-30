@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AnydeskTracker.Data;
+using AnydeskTracker.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AnydeskTracker.Controllers;
@@ -6,7 +8,7 @@ namespace AnydeskTracker.Controllers;
 
 [Authorize(Roles = "Admin")]
 [Route("Admin")]
-public class AdminController : Controller
+public class AdminController(ApplicationDbContext context) : Controller
 {
 	[HttpGet]
 	public async Task<IActionResult> Index()
@@ -24,5 +26,17 @@ public class AdminController : Controller
 	public async Task<IActionResult> Games()
 	{
 		return View("Games");
+	}
+
+	[HttpGet("Users")]
+	public async Task<IActionResult> Users()
+	{
+		return View("Users");
+	}
+
+	[HttpGet("User/{userId}")]
+	public async Task<IActionResult> User(string userId)
+	{
+		return View("User", new UserDto(context, userId));
 	}
 }

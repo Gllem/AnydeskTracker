@@ -4,18 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services
 {
-    public class UserWorkService
+    public class UserWorkService(UserActionService actionService, ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
-
-        public UserWorkService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<WorkSessionModel?> GetActiveSessionAsync(string userId)
         {
-            return await _context.WorkSessionModels
+            return await context.WorkSessionModels
                 .Include(s => s.ComputerUsages)
                 .ThenInclude(u => u.Pc)
                 .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive);
@@ -41,9 +34,11 @@ namespace AnydeskTracker.Services
                 IsActive = true
             };
 
-            _context.WorkSessionModels.Add(session);
-            await _context.SaveChangesAsync();
-
+            context.WorkSessionModels.Add(session);
+            
+            await context.SaveChangesAsync();
+            await actionService.LogAsync(session, "SessionStart");
+            
             return session;
         }
 
@@ -52,7 +47,7 @@ namespace AnydeskTracker.Services
             var session = await GetActiveSessionAsync(userId);
             if (session == null) return null;
 
-            var computer = await _context.Pcs.FindAsync(computerId);
+            var computer = await context.Pcs.FindAsync(computerId);
             if (computer == null || computer.Status != PcStatus.Free)
                 return null;
 
@@ -67,8 +62,10 @@ namespace AnydeskTracker.Services
                 IsActive = true
             };
 
-            _context.PcUsages.Add(usage);
-            await _context.SaveChangesAsync();
+            context.PcUsages.Add(usage);
+            
+            await context.SaveChangesAsync();
+            await actionService.LogAsync(session, "AssignedPc", $"{computerId}");
 
             return usage;
         }
@@ -83,7 +80,8 @@ namespace AnydeskTracker.Services
                 return false;
 
             FreeUpPc(activeUsage);
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
+            await actionService.LogAsync(session, "ReleasedPc", $"{activeUsage.PcId}");
             return true;
         }
         
@@ -97,10 +95,14 @@ namespace AnydeskTracker.Services
 
             var activeUsage = session.ComputerUsages.FirstOrDefault(u => u.IsActive);
             
-            if (activeUsage != null) 
+            if (activeUsage != null)
+            {
                 FreeUpPc(activeUsage);
-
-            await _context.SaveChangesAsync();
+                await actionService.LogAsync(session, "ReleasedPc", $"{activeUsage.PcId}");
+            }
+            
+            await context.SaveChangesAsync();
+            await actionService.LogAsync(session, "SessionEnd");
         }
 
         private void FreeUpPc(PcUsage pcUsage)

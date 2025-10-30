@@ -17,7 +17,8 @@
 <table class="table table-bordered" id="pcTable">
     <thead>
     <tr>
-        <th>ID</th>
+        <th>Внутренний ID</th>
+        <th>AnyDesk ID</th>
         <th>Пароль</th>
         <th>Статус</th>
         <th>Последнее изменение</th>
@@ -35,6 +36,7 @@
             const tbody = document.querySelector('#pcTable tbody');
             tbody.innerHTML = data.map(p => `
         <tr>
+            <td>${p.id}</td>
             <td>${p.anyDeskId}</td>
             <td>${p.password}</td>
             <td>${p.statusText}</td>

@@ -26,7 +26,8 @@ builder.Services.AddHostedService<PcStatusUpdater>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-builder.Services.AddHttpClient();
+builder.Services.AddScoped<UserActionService>();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

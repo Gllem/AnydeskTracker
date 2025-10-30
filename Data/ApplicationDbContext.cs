@@ -15,4 +15,5 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<WorkSessionModel> WorkSessionModels { get; set; }
     public DbSet<PcUsage> PcUsages { get; set; }
     public DbSet<GameModel> Games { get; set; }
+    public DbSet<UserAction> UserActions { get; set; }
 }

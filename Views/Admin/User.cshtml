@@ -1,0 +1,67 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Пользователь";
+}
+@model AnydeskTracker.DTOs.UserDto
+
+<div class="w-100 h-100 d-flex flex-row">
+    <div class="col-3 px-1">
+        <h4 class="text-truncate">@Model.UserName</h4>
+        <div class="d-flex flex-column gap-3">
+            @foreach (var workSession in Model.WorkSessions.Reverse())
+            {
+                <button class="btn btn-outline-secondary" onclick="loadActionsButtonClick(@workSession.Id)">
+                    Смена от
+                    <br>
+                    <strong>@workSession.StartTime</strong>
+                </button>
+            }
+        </div>
+    </div>
+    <div class="col-9 px-1">
+        <table class="table table-bordered rounded-3" id="userActions">
+            <thead>
+            <tr>
+                <th>Действие</th>
+                <th>Описание</th>
+                <th>Время</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        function loadActionsButtonClick(sessionId){
+            location.hash = sessionId;
+            loadActions(sessionId)
+        }
+        
+        async function loadActions(sessionId)
+        {
+            const res = await fetch(`/api/admin/user/@Model.UserId/${sessionId}/actions`);
+            const data = await res.json();
+            const tbody = document.querySelector('#userActions tbody');
+            tbody.innerHTML = data.map(userAction => `
+                <tr>
+                    <td>${userAction.actionType}</td>
+                    <td>${userAction.description}</td>
+                    <td>${new Date(userAction.timestamp).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function loadActionsFromHash(){
+            const id = location.hash.replace('#', '');
+            if (id)
+                loadActions(id);
+        }
+        
+        window.addEventListener('load', loadActionsFromHash);
+        window.addEventListener('hashchange', loadActionsFromHash);
+    
+    </script>
+}
