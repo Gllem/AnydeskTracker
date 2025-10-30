@@ -1,10 +1,7 @@
-﻿@page
-@using AnydeskTracker.Models
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Mvc.TagHelpers
-@attribute [Authorize(Roles = "Admin")]
+﻿@using AnydeskTracker.Models
 @{
-    ViewData["Title"] = "Админка — ПК";
+    Layout = "_Layout";
+    ViewData["Title"] = "Компьютеры";
 }
 
 <h2>Управление ПК</h2>
@@ -36,7 +33,6 @@
             const res = await fetch('/api/admin/pcs');
             const data = await res.json();
             const tbody = document.querySelector('#pcTable tbody');
-            console.log(data)
             tbody.innerHTML = data.map(p => `
         <tr>
             <td>${p.anyDeskId}</td>

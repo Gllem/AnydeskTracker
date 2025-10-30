@@ -1,0 +1,63 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Игры";
+}
+
+<h2>Управление Играми</h2>
+
+<div>
+    <form id="addForm" class="mb-3">
+        <input id="gameUrl" type="text" placeholder="URL Игры" class="form-control mb-2" required />
+        <button class="btn btn-success">Добавить Игру</button>
+    </form>
+</div>
+
+<table class="table table-bordered" id="gamesTable">
+    <thead>
+    <tr>
+        <th class="col-1">ID</th>
+        <th class="col-10">URL</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+@section Scripts {
+    <script>
+        async function loadGames() {
+            const res = await fetch('/api/admin/games');
+            const data = await res.json();
+            const tbody = document.querySelector('#gamesTable tbody');
+            tbody.innerHTML = data.map(p => `
+        <tr>
+            <td>${p.id}</td>
+            <td><a href="${p.gameUrl}">${p.gameUrl}</a></td>
+            <td>
+                <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const gameUrl = document.getElementById('gameUrl').value;
+            await fetch('/api/admin/games', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameUrl })
+            });
+            e.target.reset();
+            loadGames();
+        });
+
+        async function deleteGame(id) {
+            await fetch(`/api/admin/games/${id}`, { method: 'DELETE' });
+            loadGames();
+        }
+
+        loadGames();
+    </script>
+}
+

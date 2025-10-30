@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace AnydeskTracker.Pages;
+namespace AnydeskTracker.Views.Admin;
 
-public class Admin : PageModel
+public class AdminIndex : PageModel
 {
 	public void OnGet()
 	{
