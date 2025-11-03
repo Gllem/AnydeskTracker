@@ -35,8 +35,15 @@ public class AdminController(ApplicationDbContext context) : Controller
 	}
 
 	[HttpGet("User/{userId}")]
-	public async Task<IActionResult> User(string userId)
+	public async Task<IActionResult> GetUser(string userId)
 	{
-		return View("User", new UserDto(context, userId));
+		var user = await context.Users.FindAsync(userId);
+		
+		if (user == null)
+			return NotFound();
+		
+		var sessions = context.WorkSessionModels.Where(x => x.User.Id == userId).ToArray();
+
+		return View("User", new UserDto(user, sessions));
 	}
 }

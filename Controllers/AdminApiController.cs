@@ -46,6 +46,35 @@ namespace AnydeskTracker.Controllers
 			return Ok(existing);
 		}
 
+		[HttpPut("pcs/{id}/forceFreeUp")]
+		public async Task<IActionResult> ForceFreeUpPc(int id)
+		{
+			var pc = await context.Pcs.FindAsync(id);
+			
+			if (pc == null)
+				return NotFound();
+			
+			if (pc.Status == PcStatus.Free)
+				return BadRequest();
+			
+			pc.Status = PcStatus.Free;
+			pc.LastStatusChange = DateTime.UtcNow;
+
+			var usage = await context.PcUsages.FirstOrDefaultAsync(x => x.IsActive && x.PcId == id);
+
+			if (usage == null)
+			{
+				await context.SaveChangesAsync();
+				return Ok("No Usage");
+			}
+			
+			usage.IsActive = false;
+			usage.EndTime = DateTime.UtcNow;
+			
+			await context.SaveChangesAsync();
+			return Ok();
+		}
+
 		[HttpDelete("pcs/{id}")]
 		public async Task<IActionResult> DeletePc(int id)
 		{
@@ -124,14 +153,14 @@ namespace AnydeskTracker.Controllers
 			}));
 		}
 
-		private WorkSessionModel? GetSession(string userId, int sessionId)
+		private async Task<WorkSessionModel?> GetSession(string userId, int sessionId)
 		{
-			var user = context.Users.FirstOrDefault(x => x.Id == userId);
+			var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
 			if (user == null)
 				return null;
 
-			var session = context.WorkSessionModels.FirstOrDefault(x => x.UserId == userId && x.Id == sessionId);
+			var session = await context.WorkSessionModels.FirstOrDefaultAsync(x => x.UserId == userId && x.Id == sessionId);
 
 			return session;
 		}
@@ -139,7 +168,7 @@ namespace AnydeskTracker.Controllers
 		[HttpGet("user/{userId}/{sessionId:int}")]
 		public async Task<IActionResult> GetUserSession(string userId, int sessionId)
 		{
-			var session = GetSession(userId, sessionId);
+			var session = await GetSession(userId, sessionId);
 
 			if (session == null)
 				return NotFound();
@@ -150,7 +179,7 @@ namespace AnydeskTracker.Controllers
 		[HttpGet("user/{userId}/{sessionId:int}/actions")]
 		public async Task<IActionResult> GetUserSessionActions(string userId, int sessionId)
 		{
-			var session = GetSession(userId, sessionId);
+			var session = await GetSession(userId, sessionId);
 
 			if (session == null)
 				return NotFound();

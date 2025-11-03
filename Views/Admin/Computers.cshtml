@@ -23,6 +23,7 @@
         <th>Статус</th>
         <th>Последнее изменение</th>
         <th></th>
+        <th></th>
     </tr>
     </thead>
     <tbody></tbody>
@@ -44,6 +45,9 @@
             <td>
                 <button class="btn btn-sm btn-danger" onclick="deletePc(${p.id})">Удалить</button>
             </td>
+            <td>
+                <button class="btn btn-sm btn-secondary" onclick="forceFreePc(${p.id})">Освободить</button>
+            </td>
         </tr>
     `).join('');
         }
@@ -63,6 +67,11 @@
 
         async function deletePc(id) {
             await fetch(`/api/admin/pcs/${id}`, { method: 'DELETE' });
+            loadPcs();
+        }
+        
+        async function forceFreePc(id) {
+            await fetch(`/api/admin/pcs/${id}/forceFreeUp`, { method: 'PUT' })
             loadPcs();
         }
 

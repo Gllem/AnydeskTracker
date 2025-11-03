@@ -1,5 +1,6 @@
 ﻿using AnydeskTracker.Data;
 using AnydeskTracker.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace AnydeskTracker.DTOs;
 
@@ -10,11 +11,10 @@ public class UserDto
 
 	public WorkSessionModel[] WorkSessions;
 
-	public UserDto(ApplicationDbContext context, string userId)
+	public UserDto(IdentityUser user, WorkSessionModel[] workSessions)
 	{
-		var user = context.Users.First(x => x.Id == userId);
-		UserId = userId;
+		UserId = user.Id;
 		UserName = user.UserName ?? String.Empty;
-		WorkSessions = context.WorkSessionModels.Where(x => x.User == user).ToArray();
+		WorkSessions = workSessions;
 	}
 }
