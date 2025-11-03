@@ -16,11 +16,15 @@ public class WorkSessionDto
 	
 	public TimeSpan SessionTime { get; set; }
 
+	public DateTime PcStartTime { get; set; }
+
+	public TimeSpan PcUsageTime { get; set; }
+
 	public bool IsActive { get; set; }
 		
 	public ICollection<PcUsage> ComputerUsages { get; set; } = new List<PcUsage>();
 
-	public WorkSessionDto(WorkSessionModel model, TimeSpan sessionTime)
+	public WorkSessionDto(WorkSessionModel model, PcUsage usage, TimeSpan sessionTime, TimeSpan pcUsageTime)
 	{
 		Id = model.Id;
 		UserId = model.UserId;
@@ -28,6 +32,10 @@ public class WorkSessionDto
 		StartTime = model.StartTime;
 		EndTime = model.EndTime;
 		SessionTime = sessionTime;
+
+		PcStartTime = usage.StartTime; 
+		PcUsageTime = pcUsageTime;
+		
 		IsActive = model.IsActive;
 		ComputerUsages = model.ComputerUsages;
 	}

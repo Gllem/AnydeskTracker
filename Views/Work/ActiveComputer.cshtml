@@ -17,10 +17,18 @@
 <script>
     let shouldChangePc = false;
     let canEndShift = false;
-    const startTime = new Date("@Model.StartTime.ToString("MM/dd/yyyy HH:mm:ss") UTC");
-    const durationMs = @Model.SessionTime.TotalMilliseconds;
-    const endTime = new Date(startTime.getTime() + durationMs);
-    let timerInterval = null;
+    let forceExit = false;
+    
+    const shiftStartTime = new Date("@Model.StartTime.ToString("MM/dd/yyyy HH:mm:ss") UTC");
+    const shiftDurationMs = @Model.SessionTime.TotalMilliseconds;
+    const shiftEndTime = new Date(shiftStartTime.getTime() + shiftDurationMs);
+    
+    const pcStartTime = new Date("@Model.PcStartTime.ToString("MM/dd/yyyy HH:mm:ss") UTC");
+    const pcDurationMs = @Model.PcUsageTime.TotalMilliseconds;
+    const pcEndTime = new Date(pcStartTime.getTime() + pcDurationMs);
+    
+    let shiftTimerInterval = null;
+    let pcTimerInterval = null;
     
     async function loadActiveComputer() {
         const res = await fetch("/Work/Active");
@@ -35,6 +43,11 @@
         <p><strong>Сессия начата:</strong> ${data.lastStatusChange}</p>
         <a class="btn btn-success w-100" href="anydesk:${data.anyDeskId}">Зайти через AnyDesk</a>
         <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
+        <p></p>
+        <div id="pcFreeUpTimerDiv" style="display: none">
+            Компьютером можно пользоваться еще: 
+            <p id="pcFreeUpTimer"></p>
+        </div>
     `;
         document.getElementById("freeUpPc").addEventListener("click", async () => {
             const res = await fetch("/Work/FreeUpPc", {method: "POST"});
@@ -45,27 +58,30 @@
         })
         
         await checkSessionStatus();
-        startTimer("shiftTimer", endTime, checkSessionStatus);
-    }
 
-    function startTimer() {
-        timerInterval = setInterval(() => {
-            const now = Date.now();
-            const diff = endTime - now;
+        const shiftTimer = document.getElementById("shiftTimer");
+        shiftTimerInterval = setInterval(() => intervalTimer(
+            shiftEndTime,
+            shiftTimer,
+            "До конца смены: {h}ч {m}м {s}с",
+            () => {
+                shiftTimer.innerText = "Можно закончить смену";
+                clearInterval(shiftTimerInterval);
+                checkSessionStatus();
+        }), 1000)
 
-            let timer = document.getElementById("shiftTimer");
+        const pcFreeUpTimer = document.getElementById("pcFreeUpTimer");
 
-            if (diff < 0) {
-                timer.innerText = "Можно закончить смену";
-                clearInterval(timerInterval);
-                return;
-            }
-
-            const hours = Math.floor(diff / 3600000);
-            const minutes = Math.floor((diff % 3600000) / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            timer.innerText = `До конца смены: ${hours}ч ${minutes}м ${seconds}с`;
-        }, 1000)
+        updateFreeUpPcVisuals();
+        
+        pcTimerInterval = setInterval(() => intervalTimer(
+            pcEndTime,
+            pcFreeUpTimer,
+            "{h}:{m}:{s}",
+            () => {
+                clearInterval(pcTimerInterval);
+                checkSessionStatus();
+        }), 1000);
     }
 
     async function checkSessionStatus(){
@@ -74,12 +90,19 @@
 
         shouldChangePc = data.shouldChangePc;
         canEndShift = data.canEndShift;
+        forceExit = data.forceExit;
+        
+        if (forceExit){
+            window.location.href = "/Work";
+        }
 
         if (shouldChangePc){
             updateFreeUpPcVisuals();
+            var snd = new Audio(notificationSound);
+            snd.play();
             alert("Пора сменить пк!!!")
         }
-
+        
         updateEndShiftVisuals();
     }
     
@@ -89,6 +112,7 @@
     
     function updateFreeUpPcVisuals(){
         $("#freeUpPc")[0].style = shouldChangePc ? "" : "display: none";
+        $("#pcFreeUpTimerDiv")[0].style = shouldChangePc ? "display: none" : "";
     }
     
     setInterval(checkSessionStatus, 15000);

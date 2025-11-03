@@ -11,17 +11,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services
 {
-    public class PcStatusUpdater : BackgroundService
+    public class PcStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundService
     {
-        private int pcCooldownMinutes = 1;
-        
-        private readonly IServiceScopeFactory _scopeFactory;
-        private readonly TimeSpan _interval = TimeSpan.FromMinutes(1); // проверка каждые 1 мин
+        public static TimeSpan PcCooldown = TimeSpan.FromMinutes(1);
+        public static TimeSpan PcForceFreeUpTime = TimeSpan.FromMinutes(2);
 
-        public PcStatusUpdater(IServiceScopeFactory scopeFactory)
-        {
-            _scopeFactory = scopeFactory;
-        }
+        private readonly TimeSpan _interval = TimeSpan.FromMinutes(1); // проверка каждые 1 мин
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -29,7 +24,7 @@ namespace AnydeskTracker.Services
             {
                 try
                 {
-                    using var scope = _scopeFactory.CreateScope();
+                    using var scope = scopeFactory.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
                     var now = DateTime.UtcNow;
@@ -40,9 +35,18 @@ namespace AnydeskTracker.Services
                         if(pc == null)
                             continue;
                         
-                        if (pc.Status == PcStatus.CoolingDown && pc.LastStatusChange.AddMinutes(pcCooldownMinutes) <= now)
+                        if (pc.Status == PcStatus.CoolingDown && pc.LastStatusChange.Add(PcCooldown) <= now)
                         {
-                            pc.Status = PcStatus.Free;
+                            ChangePcStatus(pc, PcStatus.Free);
+                        }
+
+                        if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(PcForceFreeUpTime) <= now)
+                        {
+                            ChangePcStatus(pc, PcStatus.CoolingDown);
+
+                            var usage = await db.PcUsages.FirstOrDefaultAsync(x => x.PcId == pc.Id && x.IsActive, cancellationToken: stoppingToken);
+                            
+                            FreeUpPcUsage(usage);
                         }
                     }
 
@@ -55,6 +59,21 @@ namespace AnydeskTracker.Services
 
                 await Task.Delay(_interval, stoppingToken);
             }
+        }
+
+        private static void FreeUpPcUsage(PcUsage? usage)
+        {
+            if(usage == null)
+                return;
+                            
+            usage.IsActive = false;
+            usage.EndTime = DateTime.UtcNow;
+        }
+
+        private static void ChangePcStatus(PcModel pc, PcStatus status)
+        {
+            pc.Status = status;
+            pc.LastStatusChange = DateTime.UtcNow;
         }
     }
 }

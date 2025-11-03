@@ -17,9 +17,8 @@ namespace AnydeskTracker.Controllers
 		UserWorkService workService, 
 		PcService pcService) : Controller
 	{
-		private readonly TimeSpan pcUsageTime = TimeSpan.FromMinutes(1);
-		private readonly TimeSpan sessionTime = TimeSpan.FromMinutes(5);
-		private readonly TimeSpan pcCooldownTime = TimeSpan.FromSeconds(30);
+		public static readonly TimeSpan pcUsageTime = TimeSpan.FromMinutes(1);
+		public static readonly TimeSpan sessionTime = TimeSpan.FromMinutes(5);
 		
 		private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -32,7 +31,7 @@ namespace AnydeskTracker.Controllers
 
 			var activeUsage = session.ComputerUsages.FirstOrDefault(u => u.IsActive);
 			if (activeUsage != null)
-				return View("ActiveComputer", new WorkSessionDto(session, sessionTime));
+				return View("ActiveComputer", new WorkSessionDto(session, activeUsage, sessionTime, PcStatusUpdater.PcCooldown));
 
 			return View("ComputerList");
 		}
@@ -89,17 +88,25 @@ namespace AnydeskTracker.Controllers
 			var session = await workService.GetActiveSessionAsync(UserId);
 
 			if (session == null)
-				return StatusCode(StatusCodes.Status500InternalServerError);
-			
-			var pcUsage = session.ComputerUsages.FirstOrDefault(x => x.IsActive);
+				return BadRequest();
 
-			if (pcUsage == null)
-				return StatusCode(StatusCodes.Status500InternalServerError);
+			bool canEndShift = DateTime.UtcNow - session.StartTime > sessionTime;
+
+			var pcUsage = session.ComputerUsages.FirstOrDefault(x => x.IsActive);
 			
-			return Ok(new SessionStatusDto
+			if (pcUsage == null)
+				return Ok(new
+				{
+					CanEndShift = canEndShift,
+					ShouldChangePc = false,
+					ForceExit = true
+				});
+			
+			return Ok(new
 			{
-				CanEndShift = DateTime.UtcNow - session.StartTime > sessionTime,
+				CanEndShift = canEndShift,
 				ShouldChangePc = pcUsage.Pc.Status != PcStatus.Busy || DateTime.UtcNow - pcUsage.Pc.LastStatusChange > pcUsageTime,
+				ForceExit = false
 			});
 		}
 
