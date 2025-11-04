@@ -14,7 +14,7 @@ namespace AnydeskTracker.Services
     public class PcStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundService
     {
         public static TimeSpan PcCooldown = TimeSpan.FromMinutes(1);
-        public static TimeSpan PcForceFreeUpTime = TimeSpan.FromMinutes(2);
+        public static TimeSpan PcForceFreeUpTime = TimeSpan.FromMinutes(15);
 
         private readonly TimeSpan _interval = TimeSpan.FromMinutes(1); // проверка каждые 1 мин
 

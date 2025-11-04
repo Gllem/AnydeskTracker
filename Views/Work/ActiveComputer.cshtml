@@ -30,6 +30,8 @@
     let shiftTimerInterval = null;
     let pcTimerInterval = null;
     
+    let lastNotificationTime = null;
+    
     async function loadActiveComputer() {
         const res = await fetch("/Work/Active");
         if (!res.ok) return;
@@ -98,12 +100,18 @@
 
         if (shouldChangePc){
             updateFreeUpPcVisuals();
-            var snd = new Audio(notificationSound);
-            snd.play();
-            alert("Пора сменить пк!!!")
+            if (lastNotificationTime == null || Date.now() - lastNotificationTime > (3 * 60 * 1000))
+                notifyUser();
         }
         
         updateEndShiftVisuals();
+    }
+    
+    function notifyUser(){
+        const snd = new Audio(notificationSound);
+        snd.play();
+        alert("Пора сменить пк!!!")
+        lastNotificationTime = Date.now();
     }
     
     function updateEndShiftVisuals(){
