@@ -14,3 +14,7 @@ function intervalTimer(endTime, timerElement, formatString, endCallback){
     const seconds = Math.floor((diff % 60000) / 1000);
     timerElement.innerText = formatString.replace("{h}", hours).replace("{m}", minutes).replace("{s}", seconds);
 }
+
+function localTime(utcTime){
+    return new Date(utcTime + "").toLocaleString();
+}

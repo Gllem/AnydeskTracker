@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
+using AnydeskTracker.Extensions;
 using AnydeskTracker.Models;
 using AnydeskTracker.Services;
 using HtmlAgilityPack;
@@ -147,7 +148,7 @@ namespace AnydeskTracker.Controllers
 				{
 					UserId = user.Id,
 					UserName = user.UserName ?? String.Empty,
-					SessionStartTime = session?.StartTime,
+					SessionStartTime = session?.StartTime.ToUtc(),
 					CurrentPcId = currentPcUsage?.PcId
 				};
 			}));
@@ -190,7 +191,7 @@ namespace AnydeskTracker.Controllers
 			{
 				actionType = x.ActionTypeText,
 				description = x.Description ?? String.Empty,
-				timestamp = x.Timestamp
+				timestamp = x.Timestamp.ToUtc()
 			}));
 		}
 #endregion

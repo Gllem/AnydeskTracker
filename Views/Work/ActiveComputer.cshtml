@@ -42,7 +42,7 @@
         <p><strong>AnyDesk ID:</strong> ${data.anyDeskId}</p>
         <p><strong>AnyDesk Пароль:</strong> ${data.password}</p>
         <p><strong>Статус:</strong> ${data.statusText}</p>   
-        <p><strong>Сессия начата:</strong> ${data.lastStatusChange}</p>
+        <p><strong>Сессия начата:</strong> ${localTime(data.lastStatusChange)}</p>
         <a class="btn btn-success w-100" href="anydesk:${data.anyDeskId}">Зайти через AnyDesk</a>
         <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
         <p></p>

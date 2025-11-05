@@ -2,6 +2,7 @@
     Layout = "_Layout";
     ViewData["Title"] = "Пользователь";
 }
+@using AnydeskTracker.Extensions
 @model AnydeskTracker.DTOs.UserDto
 
 <div class="w-100 h-100 d-flex flex-row">
@@ -13,7 +14,7 @@
                 <button class="btn btn-outline-secondary" onclick="loadActionsButtonClick(@workSession.Id)">
                     Смена от
                     <br>
-                    <strong>@workSession.StartTime</strong>
+                    <strong class="utc-time" data-time="@workSession.StartTime.ToUtc().ToString("o")"></strong>
                 </button>
             }
         </div>
@@ -35,6 +36,8 @@
 @section Scripts
 {
     <script>
+        document.querySelectorAll('.utc-time').forEach(el => el.textContent = localTime(el.dataset.time));
+
         function loadActionsButtonClick(sessionId){
             location.hash = sessionId;
             loadActions(sessionId)
@@ -49,7 +52,7 @@
                 <tr>
                     <td>${userAction.actionType}</td>
                     <td>${userAction.description}</td>
-                    <td>${new Date(userAction.timestamp).toLocaleString()}</td>
+                    <td>${localTime(userAction.timestamp)}</td>
                 </tr>
             `).join('');
         }
@@ -63,5 +66,7 @@
         window.addEventListener('load', loadActionsFromHash);
         window.addEventListener('hashchange', loadActionsFromHash);
     
+    
+
     </script>
 }

@@ -12,7 +12,6 @@ namespace AnydeskTracker.Controllers
 	[Authorize]
 	[Route("Work")]
 	public class WorkController(
-		UserActionService actionService, 
 		ApplicationDbContext context, 
 		UserWorkService workService, 
 		PcService pcService) : Controller

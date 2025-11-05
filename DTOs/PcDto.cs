@@ -28,6 +28,6 @@ public class PcDto
 		AnyDeskId = model.PcId;
 		Password = model.Password;
 		Status = model.Status;
-		LastStatusChange = model.LastStatusChange;
+		LastStatusChange = model.LastStatusChange.ToUtc();
 	}
 }
