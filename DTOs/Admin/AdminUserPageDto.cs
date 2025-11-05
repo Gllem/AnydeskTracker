@@ -4,16 +4,18 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AnydeskTracker.DTOs;
 
-public class UserDto
+public class AdminUserPageDto
 {
 	public string UserId { get; set; }
+	public string? UserEmail { get; set; }
 	public string UserName { get; set; }
 
 	public WorkSessionModel[] WorkSessions;
 
-	public UserDto(IdentityUser user, WorkSessionModel[] workSessions)
+	public AdminUserPageDto(IdentityUser user, WorkSessionModel[] workSessions)
 	{
 		UserId = user.Id;
+		UserEmail = user.Email;
 		UserName = user.UserName ?? String.Empty;
 		WorkSessions = workSessions;
 	}

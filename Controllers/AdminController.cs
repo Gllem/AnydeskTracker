@@ -44,6 +44,6 @@ public class AdminController(ApplicationDbContext context) : Controller
 		
 		var sessions = context.WorkSessionModels.Where(x => x.User.Id == userId).ToArray();
 
-		return View("User", new UserDto(user, sessions));
+		return View("User", new AdminUserPageDto(user, sessions));
 	}
 }

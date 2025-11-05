@@ -3,11 +3,15 @@
     ViewData["Title"] = "Пользователь";
 }
 @using AnydeskTracker.Extensions
-@model AnydeskTracker.DTOs.UserDto
+@model AnydeskTracker.DTOs.AdminUserPageDto
 
 <div class="w-100 h-100 d-flex flex-row">
     <div class="col-3 px-1">
-        <h4 class="text-truncate">@Model.UserName</h4>
+        <h4 class="text-truncate">@Model.UserEmail</h4>
+        <form id="changeUserInfo" class="mb-3 d-flex gap-3" style="height: 3em">
+            <input id="user_name" type="text" placeholder="Имя юзера" class="form-control" required />
+            <button class="btn btn-success">Поменять</button>
+        </form>
         <div class="d-flex flex-column gap-3">
             @foreach (var workSession in Model.WorkSessions.Reverse())
             {
@@ -37,7 +41,8 @@
 {
     <script>
         document.querySelectorAll('.utc-time').forEach(el => el.textContent = localTime(el.dataset.time));
-
+        document.getElementById('user_name').value = "@Model.UserName";
+        
         function loadActionsButtonClick(sessionId){
             location.hash = sessionId;
             loadActions(sessionId)
@@ -62,6 +67,24 @@
             if (id)
                 loadActions(id);
         }
+
+        document.getElementById('changeUserInfo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userName = document.getElementById('user_name').value;
+            const userId = "@Model.UserId";
+            const workSessions = null;
+            const res = await fetch('/api/admin/user/@Model.UserId', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userName, userId, workSessions })
+            });
+            if (!res.ok)
+            {
+                alert("Ошибка при обновлении пользователя");
+                return;
+            }
+            window.location.href = "";
+        });
         
         window.addEventListener('load', loadActionsFromHash);
         window.addEventListener('hashchange', loadActionsFromHash);

@@ -166,6 +166,21 @@ namespace AnydeskTracker.Controllers
 			return session;
 		}
 
+		[HttpPut("user/{userId}")]
+		public async Task<IActionResult> UpdateUserInfo(string userId, [FromBody]AdminUserUpdateDto updateDto)
+		{
+			var user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+			
+			if (user == null)
+				return NotFound("User ID Not found");
+
+			user.UserName = updateDto.UserName;
+
+			await context.SaveChangesAsync();
+
+			return Ok();
+		}
+
 		[HttpGet("user/{userId}/{sessionId:int}")]
 		public async Task<IActionResult> GetUserSession(string userId, int sessionId)
 		{

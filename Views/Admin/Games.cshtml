@@ -32,15 +32,15 @@
             const data = await res.json();
             const tbody = document.querySelector('#gamesTable tbody');
             tbody.innerHTML = data.map(p => `
-        <tr>
-            <td>${p.id}</td>
-            <td>${p.gameName}</td>
-            <td><a href="${p.gameUrl}" target="_blank" rel="noopener noreferrer">${p.gameUrl}</a></td>
-            <td>
-                <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
-            </td>
-        </tr>
-    `).join('');
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.gameName}</td>
+                <td><a href="${p.gameUrl}" target="_blank" rel="noopener noreferrer">${p.gameUrl}</a></td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
+                </td>
+            </tr>
+            `).join('');
         }
 
         document.getElementById('addForm').addEventListener('submit', async (e) => {
