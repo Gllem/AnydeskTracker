@@ -9,4 +9,7 @@ public class GameModel
 
 	[Required]
 	public string GameUrl { get; set; } = string.Empty;
+
+	[Required]
+	public string GameName { get; set; } = string.Empty;
 }

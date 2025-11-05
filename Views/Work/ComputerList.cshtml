@@ -56,7 +56,10 @@
             const div = document.createElement("div");
             div.className = "border p-3 rounded bg-light cursor-pointer";
             div.style.width = "180px";
-            div.innerHTML = `<strong><a href="${game.gameUrl}" target="_blank" rel="noopener noreferrer">${game.gameUrl}</a></strong>`;
+            
+            const gameName = game.gameName ? game.gameName : game.gameUrl;
+            
+            div.innerHTML = `<strong><a href="${game.gameUrl}" target="_blank" rel="noopener noreferrer">${gameName}</a></strong>`;
             container.appendChild(div);
         });
     }
