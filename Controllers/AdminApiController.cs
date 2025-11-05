@@ -188,7 +188,7 @@ namespace AnydeskTracker.Controllers
 
 			return Ok(actions.Select(x => new
 			{
-				actionType = x.ActionType,
+				actionType = x.ActionTypeText,
 				description = x.Description ?? String.Empty,
 				timestamp = x.Timestamp
 			}));

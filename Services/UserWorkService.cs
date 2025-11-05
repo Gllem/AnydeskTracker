@@ -37,7 +37,7 @@ namespace AnydeskTracker.Services
             context.WorkSessionModels.Add(session);
             
             await context.SaveChangesAsync();
-            await actionService.LogAsync(session, "SessionStart");
+            await actionService.LogAsync(session, ActionType.SessionStart);
             
             return session;
         }
@@ -65,7 +65,7 @@ namespace AnydeskTracker.Services
             context.PcUsages.Add(usage);
             
             await context.SaveChangesAsync();
-            await actionService.LogAsync(session, "AssignedPc", $"{computerId}");
+            await actionService.LogAsync(session, ActionType.PcAssign, $"{computerId}");
 
             return usage;
         }
@@ -81,7 +81,7 @@ namespace AnydeskTracker.Services
 
             FreeUpPc(activeUsage);
             await context.SaveChangesAsync();
-            await actionService.LogAsync(session, "ReleasedPc", $"{activeUsage.PcId}");
+            await actionService.LogAsync(session, ActionType.PcRelease, $"{activeUsage.PcId}");
             return true;
         }
         
@@ -98,11 +98,11 @@ namespace AnydeskTracker.Services
             if (activeUsage != null)
             {
                 FreeUpPc(activeUsage);
-                await actionService.LogAsync(session, "ReleasedPc", $"{activeUsage.PcId}");
+                await actionService.LogAsync(session, ActionType.PcRelease, $"{activeUsage.PcId}");
             }
             
             await context.SaveChangesAsync();
-            await actionService.LogAsync(session, "SessionEnd");
+            await actionService.LogAsync(session, ActionType.SessionEnd);
         }
 
         private void FreeUpPc(PcUsage pcUsage)

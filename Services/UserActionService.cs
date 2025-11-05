@@ -11,7 +11,7 @@ namespace AnydeskTracker.Services
 	public class UserActionService(
 		ApplicationDbContext context)
 	{
-		public async Task LogAsync(WorkSessionModel workSession, string actionType, string? description = null)
+		public async Task LogAsync(WorkSessionModel workSession, ActionType actionType, string? description = null)
 		{
 			var action = new UserAction
 			{
