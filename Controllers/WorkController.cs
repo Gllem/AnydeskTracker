@@ -48,6 +48,17 @@ namespace AnydeskTracker.Controllers
 			await workService.AssignComputerAsync(UserId, computerId);
 			return RedirectToAction(nameof(Index));
 		}
+		
+		[HttpPost("ReportPc")]
+		public async Task<IActionResult> ReportPc()
+		{
+			bool res = await workService.ReportPcAsync(UserId);
+			
+			if (!res)
+				return BadRequest();
+			
+			return Ok();
+		}
 
 		[HttpPost("End")]
 		public async Task<IActionResult> EndWork()

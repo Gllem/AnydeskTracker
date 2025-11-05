@@ -16,6 +16,8 @@ public enum ActionType
 	PcAssign,
 	[Display(Name = "Отпустил пк")]
 	PcRelease,
+	[Display(Name = "Зарепортил пк")]
+	PcReport
 }
 
 public class UserAction

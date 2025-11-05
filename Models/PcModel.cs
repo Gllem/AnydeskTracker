@@ -10,7 +10,9 @@ namespace AnydeskTracker.Models
 		[Display(Name = "Занят")]
 		Busy = 1,
 		[Display(Name = "Охлаждается")]
-		CoolingDown = 2
+		CoolingDown = 2,
+		[Display(Name = "Сломан")]
+		Broken = 3
 	}
 	
 	public class PcModel

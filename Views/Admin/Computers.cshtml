@@ -44,7 +44,7 @@
                     <td>${p.id}</td>
                     <td>${p.anyDeskId}</td>
                     <td>${p.password}</td>
-                    <td>${p.statusText}</td>
+                    <td class="${p.status === 3 ? "text-danger" : ""}">${p.statusText}</td>
                     <td>${new Date(p.lastStatusChange).toLocaleString()}</td>
                     <td>
                         <button class="btn btn-sm btn-danger" onclick="deletePc(${p.id})">Удалить</button>

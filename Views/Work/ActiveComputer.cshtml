@@ -6,7 +6,9 @@
 
 <div class="text-center mt-4">
     <h2>Текущий компьютер</h2>
-    <div id="pc-info" class="border rounded p-3 mt-3 d-inline-block text-left"></div>
+    <div id="pc-info" class="position-relative border rounded p-3 mt-3 d-inline-block text-left">
+    </div>
+    
 
     <div class="mt-4" id="shiftTimer"></div>
     <div class="mt-4">
@@ -38,19 +40,22 @@
         const data = await res.json();
 
         const div = document.getElementById("pc-info");
-        div.innerHTML = `
-        <p><strong>AnyDesk ID:</strong> ${data.anyDeskId}</p>
-        <p><strong>AnyDesk Пароль:</strong> ${data.password}</p>
-        <p><strong>Статус:</strong> ${data.statusText}</p>   
-        <p><strong>Сессия начата:</strong> ${localTime(data.lastStatusChange)}</p>
-        <a class="btn btn-success w-100" href="anydesk:${data.anyDeskId}">Зайти через AnyDesk</a>
-        <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
-        <p></p>
-        <div id="pcFreeUpTimerDiv" style="display: none">
-            Компьютером можно пользоваться еще: 
-            <p id="pcFreeUpTimer"></p>
-        </div>
-    `;
+            div.innerHTML = `
+            <a id="reportPc" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 p-1" style="height: 2em; width: 2em">
+                <img src="img/icons/warning.png" alt="Report" class="w-100 h-100 align-baseline">
+            </a>
+            <p><strong>AnyDesk ID:</strong> ${data.anyDeskId}</p>
+            <p><strong>AnyDesk Пароль:</strong> ${data.password}</p>
+            <p><strong>Статус:</strong> ${data.statusText}</p>   
+            <p><strong>Сессия начата:</strong> ${localTime(data.lastStatusChange)}</p>
+            <a class="btn btn-success w-100" href="anydesk:${data.anyDeskId}">Зайти через AnyDesk</a>
+            <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
+            <p></p>
+            <div id="pcFreeUpTimerDiv" style="display: none">
+                Компьютером можно пользоваться еще: 
+                <p id="pcFreeUpTimer"></p>
+            </div>
+        `;
         document.getElementById("freeUpPc").addEventListener("click", async () => {
             const res = await fetch("/Work/FreeUpPc", {method: "POST"});
             if (res.ok)
@@ -58,6 +63,19 @@
             else
                 alert("Ошибка при освобождение компьютера")
         })
+        
+        document.getElementById("reportPc").addEventListener("click", async () => {
+            const confirmAction = confirm("Вы уверены что хотите выйти с пк и зарепортить его?");
+            if (!confirmAction)
+                return;
+            
+            const res = await fetch(`/Work/ReportPc`, { method: "POST" });
+        
+            if (res.ok)
+                window.location.href = "/Work";
+            else
+                alert("Ошибка при репорте ПК")
+        });
         
         await checkSessionStatus();
 

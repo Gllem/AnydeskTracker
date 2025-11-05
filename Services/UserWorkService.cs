@@ -70,6 +70,31 @@ namespace AnydeskTracker.Services
             return usage;
         }
 
+        public async Task<bool> ReportPcAsync(string userId)
+        {
+            var session = await GetActiveSessionAsync(userId);
+            if (session == null)
+                return false;
+            
+            var usage = session.ComputerUsages.FirstOrDefault(u => u.IsActive);
+            if (usage == null)
+                return false;
+            
+            var pc = usage.Pc;
+            
+            pc.Status = PcStatus.Broken;
+            pc.LastStatusChange = DateTime.UtcNow;
+            
+            usage.IsActive = false;
+            usage.EndTime = DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
+            
+            await actionService.LogAsync(session, ActionType.PcReport, $"{pc.Id}");
+
+            return true;
+        }
+
         public async Task<bool> FreeUpPc(string userId)
         {
             var session = await GetActiveSessionAsync(userId);
