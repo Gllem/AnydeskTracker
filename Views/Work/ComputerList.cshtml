@@ -27,7 +27,7 @@
 
         data.forEach(pc => {
             const div = document.createElement("div");
-            div.className = "border p-3 rounded bg-light cursor-pointer";
+            div.className = "border p-3 btn btn-outline-dark text-start";
             div.style.width = "180px";
             div.innerHTML = `<strong>${pc.anyDeskId}</strong><br>ID: ${pc.id}`;
             div.onclick = async () => {
