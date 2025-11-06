@@ -6,6 +6,8 @@ using AnydeskTracker.DTOs;
 using AnydeskTracker.Extensions;
 using AnydeskTracker.Models;
 using AnydeskTracker.Services;
+using Google.Apis.Sheets.v4;
+using Google.Apis.Sheets.v4.Data;
 using HtmlAgilityPack;
 
 namespace AnydeskTracker.Controllers
@@ -13,7 +15,7 @@ namespace AnydeskTracker.Controllers
 	[Authorize(Roles = "Admin")]
 	[Route("api/admin")]
 	[ApiController]
-	public class AdminApiController(ApplicationDbContext context, PcService pcService) : ControllerBase
+	public class AdminApiController(ApplicationDbContext context, PcService pcService, SheetsService sheetService) : ControllerBase
 	{
 #region Pcs
 		[HttpGet("pcs")]
@@ -30,6 +32,50 @@ namespace AnydeskTracker.Controllers
 			context.Pcs.Add(pc);
 			await context.SaveChangesAsync();
 			return Ok(pc);
+		}
+
+		[HttpPost("pcs/updatePcs")]
+		public async Task<IActionResult> UpdatePcsFromSheet([FromBody] AdminGoogleSheetDto sheetDto)
+		{
+			var range = $"{sheetDto.SheetName}!A1:B";
+			var request = sheetService.Spreadsheets.Values.Get(sheetDto.SheetId, range);
+
+			try
+			{
+				ValueRange response = await request.ExecuteAsync();
+
+				if (response == null || response.Values == null)
+					return StatusCode(StatusCodes.Status500InternalServerError);
+
+				var table = response.Values;
+
+				for (int i = 1; i < table.Count; i++)
+				{
+					var row = table[i];
+					var rowLength = row.Count;
+					
+					if(rowLength <= 1 || row[0] == null || string.IsNullOrWhiteSpace(row[0].ToString()))
+						continue;
+
+					string anydeskPcId = row[0].ToString() ?? "";
+					string password = row[1].ToString() ?? "";
+
+					var pc = await context.Pcs.FirstOrDefaultAsync(x => x != null && x.PcId == anydeskPcId);
+
+					if(pc == null)
+						continue;
+					
+					pc.Password = password;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e);
+				throw;
+			}
+
+			await context.SaveChangesAsync();
+			return Ok();
 		}
 
 		[HttpPut("pcs/{id}")]

@@ -4,30 +4,38 @@
     ViewData["Title"] = "Компьютеры";
 }
 
-<h2>Управление ПК</h2>
+<div class="d-flex h-100 gap-3">
+    <div class="col-4 d-flex gap-3 flex-column">
+        <h2>Управление ПК</h2>
 
-<div>
-    <form id="addForm" class="mb-3">
-        <input id="pcId" type="text" placeholder="ID ПК" class="form-control mb-2" required />
-        <input id="password" type="text" placeholder="Пароль" class="form-control mb-2" required />
-        <button class="btn btn-success">Добавить ПК</button>
-    </form>
+        <form id="addForm" class="border rounded-3 p-3">
+            <input id="pcId" type="text" placeholder="ID ПК" class="form-control mb-2" required/>
+            <input id="password" type="text" placeholder="Пароль" class="form-control mb-2" required/>
+            <button class="btn btn-success">Добавить ПК</button>
+        </form>
+
+        <form id="updatePasswords" class="border rounded-3 p-3">
+            <input id="spreadSheetLink" type="text" placeholder="Ссылка на таблицу" class="form-control mb-2" required/>
+            <input id="spreadSheetName" type="text" placeholder="Название листа" class="form-control mb-2" required/>
+            <button class="btn btn-success">Обновить пароли</button>
+        </form>
+    </div>
+
+    <table class="table h-25 table-bordered" id="pcTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>AnyDesk ID</th>
+            <th>Пароль</th>
+            <th>Статус</th>
+            <th>Последнее изменение</th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </div>
-
-<table class="table table-bordered" id="pcTable">
-    <thead>
-    <tr>
-        <th>Внутренний ID</th>
-        <th>AnyDesk ID</th>
-        <th>Пароль</th>
-        <th>Статус</th>
-        <th>Последнее изменение</th>
-        <th></th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-</table>
 
 @section Scripts {
     <script>
@@ -58,14 +66,27 @@
 
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const PcId = document.getElementById('pcId').value;
-            const Password = document.getElementById('password').value;
+            const pcId = document.getElementById('pcId').value;
+            const password = document.getElementById('password').value;
             await fetch('/api/admin/pcs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ PcId, Password, status: @((int)PcStatus.Free) })
+                body: JSON.stringify({ pcId, password, status: @((int)PcStatus.Free) })
             });
             e.target.reset();
+            loadPcs();
+        });
+        
+        document.getElementById('updatePasswords').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const sheetUrl = document.getElementById('spreadSheetLink').value;
+            const sheetName = document.getElementById('spreadSheetName').value;
+            await fetch('/api/admin/pcs/updatePcs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sheetUrl, sheetName })
+            });
             loadPcs();
         });
 

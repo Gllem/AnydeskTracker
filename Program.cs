@@ -2,8 +2,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
 using AnydeskTracker.Services;
+using DotNetEnv;
+using Google.Apis.Services;
+using Google.Apis.Sheets.v4;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Env.Load();
 
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -21,6 +26,10 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 builder.Services.AddScoped<UserWorkService>();
 builder.Services.AddScoped<PcService>();
+builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClientService.Initializer()
+{
+    ApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")
+}));
 
 builder.Services.AddHostedService<PcStatusUpdater>();
 
