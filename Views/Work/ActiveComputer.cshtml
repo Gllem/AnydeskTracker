@@ -118,8 +118,10 @@
 
         if (shouldChangePc){
             updateFreeUpPcVisuals();
-            if (lastNotificationTime == null || Date.now() - lastNotificationTime > (3 * 60 * 1000))
+            if (lastNotificationTime != null && Date.now() - lastNotificationTime > (3 * 60 * 1000))
                 notifyUser();
+            else if (lastNotificationTime == null)
+                lastNotificationTime = Date.now();
         }
         
         updateEndShiftVisuals();

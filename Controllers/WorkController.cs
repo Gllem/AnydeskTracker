@@ -30,7 +30,7 @@ namespace AnydeskTracker.Controllers
 
 			var activeUsage = session.ComputerUsages.FirstOrDefault(u => u.IsActive);
 			if (activeUsage != null)
-				return View("ActiveComputer", new WorkSessionDto(session, activeUsage, sessionTime, PcStatusUpdater.PcCooldown));
+				return View("ActiveComputer", new WorkSessionDto(session, activeUsage, sessionTime, pcUsageTime));
 
 			return View("ComputerList");
 		}
