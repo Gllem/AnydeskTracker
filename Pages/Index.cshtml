@@ -1,8 +1,6 @@
 ﻿@page
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Mvc.TagHelpers
-@inject UserManager<IdentityUser> UserManager
-@inject SignInManager<IdentityUser> SignInManager
 @attribute [Authorize()]
 @{
     ViewData["Title"] = "Рабочая панель";

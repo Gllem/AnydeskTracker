@@ -28,7 +28,7 @@ public class UserAction
 	public string UserId { get; set; }
 
 	[ForeignKey(nameof(UserId))]
-	public IdentityUser User { get; set; }
+	public AppUser User { get; set; }
 
 	public int WorkSessionId { get; set; }
 

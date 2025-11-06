@@ -77,8 +77,16 @@ namespace AnydeskTracker.Controllers
 		[HttpGet("Games")]
 		public async Task<IActionResult> FetchGames()
 		{
-			var games = await context.Games.ToListAsync();
-			return Ok(games);
+			var user = await context.Users.Include(u => u.AssignedGames).FirstOrDefaultAsync(x => x.Id == UserId);
+			if (user == null)
+				return NotFound();
+			
+			return Ok(user.AssignedGames.Select(x => new
+			{
+				x.Id,
+				x.GameName,
+				x.GameUrl
+			}));
 		}
 
 		[HttpGet("Active")]

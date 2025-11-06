@@ -16,9 +16,10 @@
 <table class="table table-bordered" id="gamesTable">
     <thead>
     <tr>
-        <th class="col-1">ID</th>
-        <th class="col-2">Имя</th>
-        <th class="col-8">URL</th>
+        <th>ID</th>
+        <th>Имя</th>
+        <th>URL</th>
+        <th>Пользователи</th>
         <th></th>
     </tr>
     </thead>
@@ -27,20 +28,30 @@
 
 @section Scripts {
     <script>
+        let selectedUsers = {};
+        
         async function loadGames() {
             const res = await fetch('/api/admin/games');
             const data = await res.json();
             const tbody = document.querySelector('#gamesTable tbody');
-            tbody.innerHTML = data.map(p => `
-            <tr>
-                <td>${p.id}</td>
-                <td>${p.gameName}</td>
-                <td><a href="${p.gameUrl}" target="_blank" rel="noopener noreferrer">${p.gameUrl}</a></td>
-                <td>
-                    <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
-                </td>
-            </tr>
-            `).join('');
+
+            data.forEach(x => selectedUsers[x.id] = x.users.map(x => x.id));
+            
+            tbody.innerHTML = data.map(p => {
+                return `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.gameName}</td>
+                    <td><a href="${p.gameUrl}" target="_blank" rel="noopener noreferrer">${p.gameUrl}</a></td>
+                    <td>
+                        <select class="user-select" multiple data-game-id="${p.id}"></select>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
+                    </td>
+                </tr>
+                `}).join('');
+            await loadUsersForSelects();
         }
 
         document.getElementById('addForm').addEventListener('submit', async (e) => {
@@ -56,12 +67,60 @@
             loadGames();
         });
 
+        async function loadUsersForSelects() {
+            const res = await fetch('/api/admin/users');
+            const users = await res.json();
+
+            const userOptions = users.map(u => ({
+                id: u.userId,
+                text: u.userName
+            }));
+
+            const userSelects = $('.user-select');
+            
+            userSelects.each(function () {
+                $(this).select2({
+                    data: userOptions,
+                    placeholder: 'Выберите пользователей',
+                    width: '100%'
+                });
+
+                loadAssignedUsers($(this).data('game-id'), $(this));
+            });
+
+            userSelects.on('change', async function () {
+                const gameId = $(this).data('game-id');
+                const selectedUsers = $(this).val();
+                await assignUsers(gameId, selectedUsers);
+            });
+        }
+        
+        async function loadAssignedUsers(gameId, selectElement) {
+            selectElement.val(selectedUsers[gameId]).trigger('change');
+        }
+        
+        async function assignUsers(gameId, selectedOptions) {
+            const userIds = Array.from(selectedOptions);
+
+            const res = await fetch(`/api/admin/games/${gameId}/assign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userIds)
+            });
+
+            if (!res.ok) {
+                alert('Ошибка при назначении пользователей');
+            }
+        }
+
         async function deleteGame(id) {
             await fetch(`/api/admin/games/${id}`, { method: 'DELETE' });
             loadGames();
         }
 
-        loadGames();
+        (async () => {
+            await loadGames();
+        })()
     </script>
 }
 

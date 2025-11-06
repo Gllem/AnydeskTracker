@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace AnydeskTracker.Models;
 
@@ -12,4 +14,6 @@ public class GameModel
 
 	[Required]
 	public string GameName { get; set; } = string.Empty;
+	
+	public List<AppUser> Users { get; set; } = new();
 }

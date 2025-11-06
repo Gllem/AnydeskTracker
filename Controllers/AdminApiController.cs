@@ -138,7 +138,15 @@ namespace AnydeskTracker.Controllers
 		[HttpGet("games")]
 		public async Task<IActionResult> GetAllGames()
 		{
-			var games = await context.Games.ToListAsync();
+			var games = await context.Games
+				.Include(g => g.Users)
+				.Select(g => new
+				{
+					g.Id,
+					g.GameName,
+					g.GameUrl,
+					Users = g.Users.Select(u => new {u.Id, u.UserName})
+				}).ToListAsync();
 			return Ok(games);
 		}
 
@@ -176,6 +184,27 @@ namespace AnydeskTracker.Controllers
 			context.Games.Remove(existing);
 			await context.SaveChangesAsync();
 			return NoContent();
+		}
+
+		[HttpPost("games/{gameId}/assign")]
+		public async Task<IActionResult> AssignUsers(int gameId, [FromBody] string[] userIds)
+		{
+			var game = await context.Games
+				.Include(g => g.Users)
+				.FirstOrDefaultAsync(g => g.Id == gameId);
+
+			if (game == null)
+				return NotFound();
+
+			var users = await context.Users.Where(u => userIds.Contains(u.Id)).ToListAsync();
+			
+			game.Users.Clear();
+			foreach (var user in users)
+				game.Users.Add(user);
+
+			await context.SaveChangesAsync();
+
+			return Ok();
 		}
 #endregion
 

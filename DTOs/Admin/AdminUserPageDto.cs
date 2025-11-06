@@ -12,7 +12,7 @@ public class AdminUserPageDto
 
 	public WorkSessionModel[] WorkSessions;
 
-	public AdminUserPageDto(IdentityUser user, WorkSessionModel[] workSessions)
+	public AdminUserPageDto(AppUser user, WorkSessionModel[] workSessions)
 	{
 		UserId = user.Id;
 		UserEmail = user.Email;
