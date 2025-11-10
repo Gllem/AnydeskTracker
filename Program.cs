@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 
-// Add services to the container.
+#region ServiceRegistration
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -26,6 +26,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddDefaultTokenProviders().AddDefaultUI();
 
 builder.Services.AddScoped<UserWorkService>();
+builder.Services.AddScoped<TelegramService>();
 builder.Services.AddScoped<PcService>();
 builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClientService.Initializer()
 {
@@ -34,11 +35,13 @@ builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClien
 
 builder.Services.AddHostedService<PcStatusUpdater>();
 builder.Services.AddHostedService<UserActionCleanupService>();
+builder.Services.AddHostedService<TelegramNotifier>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<UserActionService>();
 builder.Services.AddHttpContextAccessor();
+#endregion
 
 var app = builder.Build();
 
@@ -53,7 +56,7 @@ using (var scope = app.Services.CreateScope())
         await roleManager.CreateAsync(new IdentityRole("Admin"));
 }
 
-// Configure the HTTP request pipeline.
+#region Configuration
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -61,7 +64,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -80,6 +82,8 @@ app.MapControllerRoute(
 SeedAdminUser(app);
 
 app.Run();
+
+#endregion
 
 async void SeedAdminUser(WebApplication app)
 {

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AnydeskTracker.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -40,12 +41,12 @@ namespace AnydeskTracker.Services
                             ChangePcStatus(pc, PcStatus.Free);
                         }
 
-                        if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(PcForceFreeUpTime) <= now)
+                        if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(WorkController.PcUsageTime + PcForceFreeUpTime) <= now)
                         {
                             ChangePcStatus(pc, PcStatus.CoolingDown);
 
                             var usage = await db.PcUsages.FirstOrDefaultAsync(x => x.PcId == pc.Id && x.IsActive, cancellationToken: stoppingToken);
-                            
+
                             FreeUpPcUsage(usage);
                         }
                     }
