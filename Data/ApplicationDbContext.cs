@@ -15,10 +15,17 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(builder);
         
-        builder.Entity<GameModel>()
-            .HasMany(g => g.Users)
-            .WithMany(u => u.AssignedGames)
-            .UsingEntity(j => j.ToTable("GameUsers"));
+
+        builder.Entity<GameUserSchedule>()
+            .HasOne(s => s.Game)
+            .WithMany(g => g.Schedules)
+            .HasForeignKey(s => s.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Entity<GameUserSchedule>()
+            .HasMany(s => s.Users)
+            .WithMany(u => u.AssignedSchedules)
+            .UsingEntity(j => j.ToTable("GameUserSchedulesUsers"));
     }
 
     public DbSet<PcModel?> Pcs { get; set; }

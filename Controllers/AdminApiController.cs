@@ -139,13 +139,16 @@ namespace AnydeskTracker.Controllers
 		public async Task<IActionResult> GetAllGames()
 		{
 			var games = await context.Games
-				.Include(g => g.Users)
+				.Include(g => g.Schedules)
 				.Select(g => new
 				{
 					g.Id,
 					g.GameName,
 					g.GameUrl,
-					Users = g.Users.Select(u => new {u.Id, u.UserName})
+					Schedules = g.Schedules.Select(s => new {
+						Users = s.Users.Select(u => new {u.Id, u.UserName}),
+						WeekDay = (int)s.DayOfWeek
+					})
 				}).ToListAsync();
 			return Ok(games);
 		}
@@ -186,21 +189,38 @@ namespace AnydeskTracker.Controllers
 			return NoContent();
 		}
 
-		[HttpPost("games/{gameId}/assign")]
-		public async Task<IActionResult> AssignUsers(int gameId, [FromBody] string[] userIds)
+		[HttpPost("games/{gameId}/{weekDay}/assign")]
+		public async Task<IActionResult> AssignUsers(int gameId, int weekDay, [FromBody] string[] userIds)
 		{
 			var game = await context.Games
-				.Include(g => g.Users)
+				.Include(g => g.Schedules)
+				.ThenInclude(s => s.Users)
 				.FirstOrDefaultAsync(g => g.Id == gameId);
 
 			if (game == null)
 				return NotFound();
 
+			if (weekDay is < 0 or > 6)
+				return BadRequest();
+
+			var schedule = game.Schedules.FirstOrDefault(x => (int)x.DayOfWeek == weekDay);
+			
+			if (schedule == null)
+			{
+				schedule = new GameUserSchedule
+				{
+					DayOfWeek = (DayOfWeek)weekDay,
+					GameId = gameId,
+				};
+				
+				game.Schedules.Add(schedule);
+			}
+			
 			var users = await context.Users.Where(u => userIds.Contains(u.Id)).ToListAsync();
 			
-			game.Users.Clear();
+			schedule.Users.Clear();
 			foreach (var user in users)
-				game.Users.Add(user);
+				schedule.Users.Add(user);
 
 			await context.SaveChangesAsync();
 

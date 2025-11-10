@@ -4,5 +4,6 @@ namespace AnydeskTracker.Models;
 
 public class AppUser : IdentityUser
 {
-	public List<GameModel> AssignedGames { get; set; } = new();
+	public ICollection<GameUserSchedule> AssignedSchedules { get; set; } = new List<GameUserSchedule>();
+	
 }

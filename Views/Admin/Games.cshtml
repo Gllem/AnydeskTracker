@@ -19,7 +19,13 @@
         <th>ID</th>
         <th>Имя</th>
         <th>URL</th>
-        <th>Пользователи</th>
+        <th>ПН</th>
+        <th>ВТ</th>
+        <th>СР</th>
+        <th>ЧТ</th>
+        <th>ПТ</th>
+        <th>СБ</th>
+        <th>ВС</th>
         <th></th>
     </tr>
     </thead>
@@ -28,14 +34,17 @@
 
 @section Scripts {
     <script>
-        let selectedUsers = {};
+        let gameSchedules = {};
         
         async function loadGames() {
             const res = await fetch('/api/admin/games');
             const data = await res.json();
             const tbody = document.querySelector('#gamesTable tbody');
 
-            data.forEach(x => selectedUsers[x.id] = x.users.map(x => x.id));
+            data.forEach(game => {
+                gameSchedules[game.id] = {}
+                game.schedules.map(schedule => gameSchedules[game.id][schedule.weekDay] = schedule.users.map(u => u.id))
+            });
             
             tbody.innerHTML = data.map(p => {
                 return `
@@ -44,7 +53,19 @@
                     <td>${p.gameName}</td>
                     <td><a href="${p.gameUrl}" target="_blank" rel="noopener noreferrer">${p.gameUrl}</a></td>
                     <td>
-                        <select class="user-select" multiple data-game-id="${p.id}"></select>
+                        <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="1"></select>
+                    </td><td>
+                        <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="2"></select>
+                    </td><td>
+                        <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="3"></select>
+                    </td><td>
+                        <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="4"></select>
+                    </td><td>
+                        <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="5"></select>
+                    </td><td>
+                        <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="6"></select>
+                    </td><td>
+                        <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="0"></select>
                     </td>
                     <td>
                         <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
@@ -85,24 +106,25 @@
                     width: '100%'
                 });
 
-                loadAssignedUsers($(this).data('game-id'), $(this));
+                loadAssignedUsers($(this).data('game-id'), $(this).data('game-weekday-index'), $(this));
             });
 
             userSelects.on('change', async function () {
                 const gameId = $(this).data('game-id');
-                const selectedUsers = $(this).val();
-                await assignUsers(gameId, selectedUsers);
+                const weekDay = $(this).data('game-weekday-index');
+                const users = $(this).val();
+                await assignUsers(gameId, weekDay, users);
             });
         }
         
-        async function loadAssignedUsers(gameId, selectElement) {
-            selectElement.val(selectedUsers[gameId]).trigger('change');
+        async function loadAssignedUsers(gameId, weekDay, selectElement) {
+            selectElement.val(gameSchedules[gameId][weekDay]).trigger('change');
         }
         
-        async function assignUsers(gameId, selectedOptions) {
+        async function assignUsers(gameId, weekDay, selectedOptions) {
             const userIds = Array.from(selectedOptions);
 
-            const res = await fetch(`/api/admin/games/${gameId}/assign`, {
+            const res = await fetch(`/api/admin/games/${gameId}/${weekDay}/assign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userIds)

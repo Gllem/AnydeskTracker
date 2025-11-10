@@ -15,5 +15,5 @@ public class GameModel
 	[Required]
 	public string GameName { get; set; } = string.Empty;
 	
-	public List<AppUser> Users { get; set; } = new();
+	public ICollection<GameUserSchedule> Schedules { get; set; } = new List<GameUserSchedule>();
 }

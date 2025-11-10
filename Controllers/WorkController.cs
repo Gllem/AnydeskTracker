@@ -77,11 +77,21 @@ namespace AnydeskTracker.Controllers
 		[HttpGet("Games")]
 		public async Task<IActionResult> FetchGames()
 		{
-			var user = await context.Users.Include(u => u.AssignedGames).FirstOrDefaultAsync(x => x.Id == UserId);
+			var user = await context.Users.Include(u => u.AssignedSchedules).FirstOrDefaultAsync(x => x.Id == UserId);
+			
 			if (user == null)
 				return NotFound();
+
+			var schedule =
+				user.AssignedSchedules
+					.Where(x => x.DayOfWeek == DateTime.UtcNow.ToLocalTime().DayOfWeek)
+					.ToList();
+
+			var gameIds = schedule.Select(x => x.GameId);
 			
-			return Ok(user.AssignedGames.Select(x => new
+			var games = context.Games.Where(x => gameIds.Contains(x.Id));
+			
+			return Ok(games.Select(x => new
 			{
 				x.Id,
 				x.GameName,
