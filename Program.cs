@@ -48,14 +48,9 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
     
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
     if (!await roleManager.RoleExistsAsync("Admin"))
         await roleManager.CreateAsync(new IdentityRole("Admin"));
-
-    var admin = await userManager.FindByEmailAsync("admin@example.com");
-    if (admin != null)
-        await userManager.AddToRoleAsync(admin, "Admin");
 }
 
 // Configure the HTTP request pipeline.

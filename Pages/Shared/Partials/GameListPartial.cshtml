@@ -1,0 +1,31 @@
+﻿<div class="p-3 text-start">
+    <h2>Игры на сегодня</h2>
+    <div id="games" class="d-flex flex-wrap gap-3 mt-3"></div>
+</div>
+
+<script>
+    async function loadGames() {
+        const res = await fetch("/Work/Games");
+        if (!res.ok) return alert("Ошибка загрузки списка игр");
+        const data = await res.json();
+
+        const container = document.getElementById("games");
+        container.innerHTML = "";
+
+        data.forEach(game => {
+            const card = document.createElement("a");
+            card.className = "border p-3 rounded bg-light cursor-pointer text-truncate";
+            card.style.width = "180px";
+            card.href = game.gameUrl;
+            card.target = "_blank";
+            card.rel = "noopener noreferrer";
+
+            const gameName = game.gameName ? game.gameName : game.gameUrl;
+
+            card.innerHTML = `<strong>${gameName}</strong>`;
+            container.appendChild(card);
+        });
+    }
+    
+    loadGames();
+</script>
