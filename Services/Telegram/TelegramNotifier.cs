@@ -58,5 +58,6 @@ public class TelegramNotifier(IServiceScopeFactory scopeFactory) : BackgroundSer
 			return;
 
 		await telegramService.SendMessageAsync(user.TelegramChatId, message);
+		user.LastNotificationTime = now;
 	}
 }
