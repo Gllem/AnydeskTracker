@@ -29,8 +29,9 @@ public class TelegramService(ApplicationDbContext context, ILogger<TelegramServi
 				if (user != null)
 				{
 					user.TelegramChatId = chatId;
+					user.TelegramUserName = update.Message.Chat.Username ?? "";
 					await context.SaveChangesAsync();
-					await SendMessageAsync(chatId, "✅ Telegram успешно привязан!");
+					await SendMessageAsync(chatId, $"✅ Telegram успешно привязан к пользователю {user.Email}!");
 					logger.Log(LogLevel.Information, "Added chat id {chatId} to user {userId}", update.Message.Text, userId);
 				}
 			}

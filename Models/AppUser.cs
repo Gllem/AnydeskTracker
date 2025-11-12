@@ -8,5 +8,6 @@ public class AppUser : IdentityUser
 
 	public long TelegramChatId { get; set; }
 
+	public string TelegramUserName { get; set; } = "";
 	public DateTime LastNotificationTime { get; set; }
 }

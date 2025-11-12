@@ -1,12 +1,17 @@
-﻿using AnydeskTracker.Services;
+﻿using System.Security.Claims;
+using AnydeskTracker.Data;
+using AnydeskTracker.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 [ApiController]
 [Route("api/telegram")]
-public class TelegramController(TelegramService telegramService) : ControllerBase
+public class TelegramController(ApplicationDbContext context, TelegramService telegramService) : ControllerBase
 {
+	private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+	
 	[HttpPost("webhook")]
 	public async Task<IActionResult> Webhook([FromBody] Update update)
 	{
@@ -30,5 +35,13 @@ public class TelegramController(TelegramService telegramService) : ControllerBas
 		}
 
 		return Ok(new { Count = updates.Length });
+	}
+
+	[HttpPost("test")]
+	[Authorize]
+	public async Task<IActionResult> TestBot()
+	{
+		await telegramService.SendMessageAsync(UserId, "Тест подключения бота");
+		return Ok();
 	}
 }

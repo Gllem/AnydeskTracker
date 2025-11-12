@@ -1,0 +1,43 @@
+﻿@using AnydeskTracker.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<AppUser> UserManager
+@{
+    Layout = "_Layout";
+
+    var user = await UserManager.GetUserAsync(User);
+    
+    ViewData["Title"] = user?.UserName;
+}
+
+<div class="d-flex flex-column align-items-center gap-3">
+    <h1>@User.Identity?.Name</h1>
+    <div class="rounded-3 border p-3">
+        <b>E-Mail:</b> @user?.Email
+    </div>
+    @if (user?.TelegramChatId != 0 && !string.IsNullOrEmpty(user?.TelegramUserName))
+    {
+        <div class="rounded-3 border p-3">
+            <b>Telegram UserName: </b>@@@user.TelegramUserName
+        </div>
+    }
+    <a class="btn btn-success p-3" target="_blank" rel="noopener noreferrer" href="https://t.me/CarrotHoodAnyDeskTrackerTestBot?start=@user?.Id">
+        Подключить ТГ бота
+    </a>
+    @if (user?.TelegramChatId != 0)
+    {
+        <button class="btn btn-secondary p-3" onclick="TestBot()">
+            Протестировать бота
+        </button>
+    }
+</div>
+
+@section Scripts
+{
+    <script>
+        async function TestBot(){
+            await fetch('/api/telegram/test', {
+                method: 'POST'
+            });   
+        }
+    </script>
+}
