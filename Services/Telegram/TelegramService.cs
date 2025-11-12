@@ -1,11 +1,13 @@
 ﻿using AnydeskTracker.Data;
+using AnydeskTracker.Models;
+using Microsoft.AspNetCore.Identity;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace AnydeskTracker.Services;
 
-public class TelegramService(ApplicationDbContext context, ILogger<TelegramService> logger)
+public class TelegramService(ApplicationDbContext context, UserManager<AppUser> userManager, ILogger<TelegramService> logger)
 {
 	public readonly TelegramBotClient Client = new(Environment.GetEnvironmentVariable("TG_BOT_KEY") ?? "");
 
@@ -37,18 +39,33 @@ public class TelegramService(ApplicationDbContext context, ILogger<TelegramServi
 			}
 		}
 	}
+
+	public async Task<bool> SendMessageToAdmin(string message)
+	{
+		var adminUsers = await userManager.GetUsersInRoleAsync("Admin");
+		var admin = adminUsers.FirstOrDefault();
+		
+		if(admin == null)
+			return false;
+
+		if (admin.TelegramChatId == 0)
+			return false;
+
+		return await SendMessageAsync(admin.TelegramChatId, message);
+	}
 	
-	public async Task SendMessageAsync(string userId, string message)
+	public async Task<bool> SendMessageAsync(string userId, string message)
 	{
 		var user = await context.Users.FindAsync(userId);
 	    
 		if(user == null)
-			return;
+			return false;
 
 		await SendMessageAsync(user.TelegramChatId, message);
+		return true;
 	}
 
-	public async Task SendMessageAsync(long chatId, string message)
+	public async Task<bool> SendMessageAsync(long chatId, string message)
 	{
 		try
 		{
@@ -57,6 +74,9 @@ public class TelegramService(ApplicationDbContext context, ILogger<TelegramServi
 		catch (Exception ex)
 		{
 			logger.LogError(ex, "Ошибка при отправке сообщения Telegram пользователю {chatId}", chatId);
+			return false;
 		}
+
+		return true;
 	}
 }

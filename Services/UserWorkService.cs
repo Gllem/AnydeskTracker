@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services
 {
-    public class UserWorkService(UserActionService actionService, ApplicationDbContext context)
+    public class UserWorkService(UserActionService actionService, TelegramService telegramService, ApplicationDbContext context)
     {
         public async Task<WorkSessionModel?> GetActiveSessionAsync(string userId)
         {
@@ -91,6 +91,10 @@ namespace AnydeskTracker.Services
             await context.SaveChangesAsync();
             
             await actionService.LogAsync(session, ActionType.PcReport, $"{pc.Id}");
+
+            var user = await context.Users.FindAsync(userId);
+            
+            await telegramService.SendMessageToAdmin($"\u26a0\ufe0f Пользователь {user?.UserName} зарепортил пк с ID:{pc.Id} (AnyDesk ID: {pc.PcId})");
 
             return true;
         }
