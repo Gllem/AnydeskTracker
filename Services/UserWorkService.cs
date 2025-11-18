@@ -70,8 +70,11 @@ namespace AnydeskTracker.Services
             return usage;
         }
 
-        public async Task<bool> ReportPcAsync(string userId)
+        public async Task<bool> ReportPcAsync(string userId, string reason)
         {
+            if (string.IsNullOrWhiteSpace(reason))
+                return false;
+            
             var session = await GetActiveSessionAsync(userId);
             if (session == null)
                 return false;
@@ -90,11 +93,17 @@ namespace AnydeskTracker.Services
 
             await context.SaveChangesAsync();
             
-            await actionService.LogAsync(session, ActionType.PcReport, $"{pc.Id}");
+            await actionService.LogAsync(session, ActionType.PcReport, $"ID: {pc.Id}, ПРИЧИНА: {reason}");
 
             var user = await context.Users.FindAsync(userId);
             
-            await telegramService.SendMessageToAdmin($"\u26a0\ufe0f Пользователь {user?.UserName} зарепортил пк с ID:{pc.Id} (AnyDesk ID: {pc.PcId})");
+            await telegramService.SendMessageToAdmin(
+                $"\u26a0\ufe0f Репорт\n" +
+                $"Пользователь: {user?.UserName}\n" +
+                $"ID: {pc.Id}\n" +
+                $"AnyDesk ID: {pc.PcId}\n" +
+                $"Причина: {reason}"
+                );
 
             return true;
         }

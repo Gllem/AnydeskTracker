@@ -50,9 +50,9 @@ namespace AnydeskTracker.Controllers
 		}
 		
 		[HttpPost("ReportPc")]
-		public async Task<IActionResult> ReportPc()
+		public async Task<IActionResult> ReportPc([FromBody] string reportReason)
 		{
-			bool res = await workService.ReportPcAsync(UserId);
+			bool res = await workService.ReportPcAsync(UserId, reportReason);
 			
 			if (!res)
 				return BadRequest();

@@ -67,11 +67,14 @@
         })
         
         document.getElementById("reportPc").addEventListener("click", async () => {
-            const confirmAction = confirm("Вы уверены что хотите выйти с пк и зарепортить его?");
-            if (!confirmAction)
+            const reportReason = prompt("Вы уверены что хотите выйти с пк и зарепортить его? Укажите причину репорта пк:")
+            if (!reportReason)
                 return;
             
-            const res = await fetch(`/Work/ReportPc`, { method: "POST" });
+            const res = await fetch(`/Work/ReportPc`, { 
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reportReason)});
         
             if (res.ok)
                 window.location.href = "/Work";
