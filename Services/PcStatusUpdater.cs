@@ -14,11 +14,6 @@ namespace AnydeskTracker.Services
 {
     public class PcStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundService
     {
-        public static TimeSpan PcCooldown = TimeSpan.FromMinutes(30);
-        public static TimeSpan PcForceFreeUpTime = TimeSpan.FromMinutes(1);
-
-        private static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(1);
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -43,7 +38,7 @@ namespace AnydeskTracker.Services
                     Console.WriteLine($"Ошибка: {ex}");
                 }
 
-                await Task.Delay(CheckInterval, stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }
 
@@ -52,17 +47,17 @@ namespace AnydeskTracker.Services
             if(pc == null)
                 return;
                         
-            if (pc.Status == PcStatus.CoolingDown && pc.LastStatusChange.Add(PcCooldown) <= now)
+            if (pc.Status == PcStatus.CoolingDown && pc.LastStatusChange.Add(TimeSettingsService.PcCooldown) <= now)
             {
                 ChangePcStatus(pc, PcStatus.Free);
             }
 
-            if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(WorkController.PcUsageTime + PcForceFreeUpTime) <= now)
+            if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(TimeSettingsService.PcUsageTime + TimeSettingsService.PcForceFreeUpTime) <= now)
             {
                 var pcUsage = 
                     await db.PcUsages.FirstOrDefaultAsync(x => x.PcId == pc.Id && x.IsActive, cancellationToken: stoppingToken);
 
-                if(pcUsage == null || pcUsage.TotalActiveTime > WorkController.PcUsageTime + PcForceFreeUpTime)
+                if(pcUsage == null || pcUsage.TotalActiveTime > TimeSettingsService.PcUsageTime + TimeSettingsService.PcForceFreeUpTime)
                 {
                     ChangePcStatus(pc, PcStatus.CoolingDown);
                     FreeUpPcUsage(pcUsage);

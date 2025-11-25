@@ -18,3 +18,7 @@ function intervalTimer(endTime, timerElement, formatString, endCallback){
 function localTime(utcTime){
     return new Date(utcTime + "").toLocaleString();
 }
+
+function ConvertAllToLocalTime(document){
+    document.querySelectorAll('.utc-time').forEach(el => el.textContent = localTime(el.dataset.time));
+}

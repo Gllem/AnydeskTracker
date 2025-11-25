@@ -12,8 +12,8 @@ public class PausableModel
 	
 	public bool IsActive { get; set; }
 	
-	public TimeSpan? TotalActiveTime => 
-		DateTime.UtcNow - StartTime // Active Time
-		                - TotalPauseTime // Calculated Pause Time
-		                - (IsPaused ? (DateTime.UtcNow - PauseStartTime) : TimeSpan.Zero); // Current Pause Time
+	public TimeSpan? TotalActiveTime => DateTime.UtcNow - StartTime - CurrentPauseTime;
+
+	public TimeSpan? CurrentPauseTime =>
+		TotalPauseTime + (IsPaused ? (DateTime.UtcNow - PauseStartTime) : TimeSpan.Zero);
 }

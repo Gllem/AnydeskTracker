@@ -2,11 +2,28 @@
     Layout = "_Layout";
     ViewData["Title"] = "Рабочее место";
 }
-@model AnydeskTracker.DTOs.WorkSessionDto
+@using AnydeskTracker.Extensions
+@model AnydeskTracker.DTOs.ActiveComputerDto
 
 <div class="text-center mt-4">
     <h2>Текущий компьютер</h2>
     <div id="pc-info" class="position-relative border rounded p-3 mt-3 d-inline-block text-left">
+        <a id="reportPc" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 p-1" style="height: 2em; width: 2em">
+            <img src="img/icons/warning.png" alt="Report" class="w-100 h-100 align-baseline">
+        </a>
+        <p><strong>AnyDesk ID: </strong>@Model.PcDto.AnyDeskId</p>
+        <p><strong>AnyDesk Пароль: </strong>@Model.PcDto.Password</p>
+        <p><strong>Статус: </strong>@Model.PcDto.StatusText</p>
+        <p><strong>Сессия начата: </strong> <utctime class="utc-time" data-time="@Model.PcDto.LastStatusChange.ToUtc().ToString("o")"></utctime>
+        <p></p>
+        <a class="btn btn-success w-100" href="anydesk:@Model.PcDto.AnyDeskId">Зайти через AnyDesk</a>
+        <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
+        <p></p>
+        <div id="pcFreeUpTimerDiv" style="display: none">
+            Компьютером можно пользоваться еще:
+            <p id="pcFreeUpTimer"></p>
+        </div>
+        <button id="pausePc" class="btn btn-warning w-100 mt-1">@(Model.IsPaused ? "Снять с паузы" : "Пауза")</button>
     </div>
     
 
@@ -18,46 +35,24 @@
     @await Html.PartialAsync("Partials/GameListPartial")
 </div>
 
-<script>
-    let shouldChangePc = false;
-    let canEndShift = false;
-    let forceExit = false;
-    
-    const shiftStartTime = new Date("@Model.StartTime.ToString("MM/dd/yyyy HH:mm:ss") UTC");
-    const shiftDurationMs = @Model.SessionTime.TotalMilliseconds;
-    const shiftEndTime = new Date(shiftStartTime.getTime() + shiftDurationMs);
-    
-    const pcStartTime = new Date("@Model.PcStartTime.ToString("MM/dd/yyyy HH:mm:ss") UTC");
-    const pcDurationMs = @Model.PcUsageTime.TotalMilliseconds;
-    const pcEndTime = new Date(pcStartTime.getTime() + pcDurationMs);
-    
-    let shiftTimerInterval = null;
-    let pcTimerInterval = null;
-    
-    let lastNotificationTime = null;
-    
-    async function loadActiveComputer() {
-        const res = await fetch("/Work/Active");
-        if (!res.ok) return;
-        const data = await res.json();
+@section Scripts
+{
+    <script>
+        ConvertAllToLocalTime(document);
 
-        const div = document.getElementById("pc-info");
-            div.innerHTML = `
-            <a id="reportPc" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 p-1" style="height: 2em; width: 2em">
-                <img src="img/icons/warning.png" alt="Report" class="w-100 h-100 align-baseline">
-            </a>
-            <p><strong>AnyDesk ID:</strong> ${data.anyDeskId}</p>
-            <p><strong>AnyDesk Пароль:</strong> ${data.password}</p>
-            <p><strong>Статус:</strong> ${data.statusText}</p>   
-            <p><strong>Сессия начата:</strong> ${localTime(data.lastStatusChange)}</p>
-            <a class="btn btn-success w-100" href="anydesk:${data.anyDeskId}">Зайти через AnyDesk</a>
-            <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
-            <p></p>
-            <div id="pcFreeUpTimerDiv" style="display: none">
-                Компьютером можно пользоваться еще: 
-                <p id="pcFreeUpTimer"></p>
-            </div>
-        `;
+        let shouldChangePc = false;
+        let canEndShift = false;
+        let forceExit = false;
+
+        const shiftEndTime = new Date("@Model.ApproximateSessionEndTime.ToString("MM/dd/yyyy HH:mm:ss") UTC");
+        const pcEndTime = new Date("@Model.ApproximatePcUsageEndTime.ToString("MM/dd/yyyy HH:mm:ss") UTC");
+        const paused = @(Model.IsPaused ? "true" : "false");
+
+        let shiftTimerInterval = null;
+        let pcTimerInterval = null;
+
+        let lastNotificationTime = null;
+
         document.getElementById("freeUpPc").addEventListener("click", async () => {
             const res = await fetch("/Work/FreeUpPc", {method: "POST"});
             if (res.ok)
@@ -66,98 +61,111 @@
                 alert("Ошибка при освобождение компьютера")
         })
         
+        document.getElementById("pausePc").addEventListener("click", async () => {
+            const res = await fetch("@(Model.IsPaused ? "/Work/Unpause" : "/Work/Pause")", {method: "POST"});
+            if(res.ok)
+                window.location.href = "/Work";
+            else
+                alert("Ошибка при смене статуса паузы пк")
+        })
+
         document.getElementById("reportPc").addEventListener("click", async () => {
             const reportReason = prompt("Вы уверены что хотите выйти с пк и зарепортить его? Укажите причину репорта пк:")
             if (!reportReason)
                 return;
-            
-            const res = await fetch(`/Work/ReportPc`, { 
+
+            const res = await fetch(`/Work/ReportPc`, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(reportReason)});
-        
+
             if (res.ok)
                 window.location.href = "/Work";
             else
                 alert("Ошибка при репорте ПК")
         });
-        
-        await checkSessionStatus();
 
-        const shiftTimer = document.getElementById("shiftTimer");
-        shiftTimerInterval = setInterval(() => intervalTimer(
-            shiftEndTime,
-            shiftTimer,
-            "До конца смены: {h}ч {m}м {s}с",
-            () => {
-                shiftTimer.innerText = "Можно закончить смену";
-                clearInterval(shiftTimerInterval);
-                checkSessionStatus();
-        }), 1000)
+        Init();
 
-        const pcFreeUpTimer = document.getElementById("pcFreeUpTimer");
+        async function Init(){
+            await checkSessionStatus();
+            
+            const shiftTimer = document.getElementById("shiftTimer");
+            const pcFreeUpTimer = document.getElementById("pcFreeUpTimer");
+            
+            if (!paused){
+                updateFreeUpPcVisuals();
 
-        updateFreeUpPcVisuals();
-        
-        pcTimerInterval = setInterval(() => intervalTimer(
-            pcEndTime,
-            pcFreeUpTimer,
-            "{h}:{m}:{s}",
-            () => {
-                clearInterval(pcTimerInterval);
-                checkSessionStatus();
-        }), 1000);
-    }
+                shiftTimerInterval = setInterval(() => intervalTimer(
+                    shiftEndTime,
+                    shiftTimer,
+                    "До конца смены: {h}ч {m}м {s}с",
+                    () => {
+                        shiftTimer.innerText = "Можно закончить смену";
+                        clearInterval(shiftTimerInterval);
+                        checkSessionStatus();
+                    }), 1000)
 
-    async function checkSessionStatus(){
-        const res = await fetch("/Work/CheckSessionStatus");
-        const data = await res.json();
-
-        shouldChangePc = data.shouldChangePc;
-        canEndShift = data.canEndShift;
-        forceExit = data.forceExit;
-        
-        if (forceExit){
-            window.location.href = "/Work";
+                pcTimerInterval = setInterval(() => intervalTimer(
+                    pcEndTime,
+                    pcFreeUpTimer,
+                    "{h}:{m}:{s}",
+                    () => {
+                        clearInterval(pcTimerInterval);
+                        checkSessionStatus();
+                    }), 1000);    
+            }
+            else{
+                shiftTimer.style = "display: none"
+                pcFreeUpTimer.style = "display: none"
+            }
         }
 
-        if (shouldChangePc){
-            updateFreeUpPcVisuals();
-            if (lastNotificationTime != null && Date.now() - lastNotificationTime > (3 * 60 * 1000))
-                notifyUser();
-            else if (lastNotificationTime == null)
-                lastNotificationTime = Date.now();
+        async function checkSessionStatus(){
+            const res = await fetch("/Work/CheckSessionStatus");
+            const data = await res.json();
+
+            shouldChangePc = data.shouldChangePc;
+            canEndShift = data.canEndShift;
+            forceExit = data.forceExit;
+
+            if (forceExit){
+                window.location.href = "/Work";
+            }
+
+            if (shouldChangePc){
+                updateFreeUpPcVisuals();
+                if (lastNotificationTime != null && Date.now() - lastNotificationTime > (3 * 60 * 1000))
+                    notifyUser();
+                else if (lastNotificationTime == null)
+                    lastNotificationTime = Date.now();
+            }
+
+            updateEndShiftVisuals();
         }
-        
-        updateEndShiftVisuals();
-    }
-    
-    function notifyUser(){
-        const snd = new Audio(notificationSound);
-        snd.play();
-        alert("Пора сменить пк!!!")
-        lastNotificationTime = Date.now();
-    }
-    
-    function updateEndShiftVisuals(){
-        $("#endShiftBtn")[0].style = canEndShift ? "" : "display: none";
-    }
-    
-    function updateFreeUpPcVisuals(){
-        $("#freeUpPc")[0].style = shouldChangePc ? "" : "display: none";
-        $("#pcFreeUpTimerDiv")[0].style = shouldChangePc ? "display: none" : "";
-    }
-    
-    setInterval(checkSessionStatus, 15000);
 
-    document.getElementById("endShiftBtn").addEventListener("click", async () => {
-        const res = await fetch("/Work/End", { method: "POST" });
-        if (res.ok) window.location.href = "/Work";
-        else alert("Ошибка при завершении смены");
-    });
-    
-    loadActiveComputer();
+        function notifyUser(){
+            const snd = new Audio(notificationSound);
+            snd.play();
+            alert("Пора сменить пк!!!")
+            lastNotificationTime = Date.now();
+        }
 
+        function updateEndShiftVisuals(){
+            $("#endShiftBtn")[0].style = canEndShift ? "" : "display: none";
+        }
 
+        function updateFreeUpPcVisuals(){
+            $("#freeUpPc")[0].style = shouldChangePc ? "" : "display: none";
+            $("#pcFreeUpTimerDiv")[0].style = shouldChangePc ? "display: none" : "";
+        }
 
-</script>
+        setInterval(checkSessionStatus, 15000);
+
+        document.getElementById("endShiftBtn").addEventListener("click", async () => {
+            const res = await fetch("/Work/End", { method: "POST" });
+            if (res.ok) window.location.href = "/Work";
+            else alert("Ошибка при завершении смены");
+        });
+    </script>
+}

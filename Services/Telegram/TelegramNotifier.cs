@@ -8,7 +8,6 @@ namespace AnydeskTracker.Services;
 public class TelegramNotifier(IServiceScopeFactory scopeFactory) : BackgroundService
 {
 	private readonly TimeSpan interval = TimeSpan.FromMinutes(1);
-	private readonly TimeSpan notifyInterval = TimeSpan.FromMinutes(3);
 
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
@@ -33,9 +32,8 @@ public class TelegramNotifier(IServiceScopeFactory scopeFactory) : BackgroundSer
 				{
 					var activeUsage = session.ComputerUsages.First(x => x.IsActive);
 					var user = session.User;
-
 					
-					if (activeUsage.Pc.Status == PcStatus.Busy && activeUsage.Pc.LastStatusChange.Add(WorkController.PcUsageTime) <= now)
+					if (activeUsage.Pc.Status == PcStatus.Busy && activeUsage.TotalActiveTime > TimeSettingsService.PcUsageTime)
 					{
 						await NotifyUser(user, now, tg, "Необходимо сменить пк!");
 					}
@@ -54,7 +52,7 @@ public class TelegramNotifier(IServiceScopeFactory scopeFactory) : BackgroundSer
 
 	private async Task NotifyUser(AppUser user, DateTime now, TelegramService telegramService, string message)
 	{
-		if(user.LastNotificationTime.Add(notifyInterval) > now)
+		if(user.LastNotificationTime.Add(TimeSettingsService.TelegramNotificationInterval) > now)
 			return;
 
 		await telegramService.SendMessageAsync(user.TelegramChatId, message);

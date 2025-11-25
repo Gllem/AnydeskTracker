@@ -186,11 +186,8 @@ namespace AnydeskTracker.Services
 
             var activeUsage = workSession.ComputerUsages.FirstOrDefault(u => u.IsActive);
 
-            if (activeUsage != null)
+            if (activeUsage is {IsPaused: true})
             {
-                if(!activeUsage.IsPaused)
-                    return;
-                
                 var usagePauseDuration = DateTime.UtcNow - activeUsage.PauseStartTime!.Value;
                 activeUsage.TotalPauseTime += usagePauseDuration;
                 activeUsage.IsPaused = false;

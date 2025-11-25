@@ -16,9 +16,6 @@ namespace AnydeskTracker.Controllers
 		UserWorkService workService, 
 		PcService pcService) : Controller
 	{
-		public static readonly TimeSpan PcUsageTime = TimeSpan.FromMinutes(60 + 40);
-		public static readonly TimeSpan SessionTime = TimeSpan.FromHours(6);
-		
 		private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
 		[HttpGet]
@@ -30,7 +27,7 @@ namespace AnydeskTracker.Controllers
 
 			var activeUsage = session.ComputerUsages.FirstOrDefault(u => u.IsActive);
 			if (activeUsage != null)
-				return View("ActiveComputer", new WorkSessionDto(session, activeUsage, SessionTime, PcUsageTime));
+				return View("ActiveComputer", new ActiveComputerDto(session, activeUsage));
 
 			return View("ComputerList");
 		}
@@ -132,7 +129,7 @@ namespace AnydeskTracker.Controllers
 			if (session == null)
 				return BadRequest();
 
-			bool canEndShift = session.TotalActiveTime > SessionTime;
+			bool canEndShift = session.TotalActiveTime > TimeSettingsService.SessionTime;
 
 			var pcUsage = session.ComputerUsages.FirstOrDefault(x => x.IsActive);
 			
@@ -147,7 +144,7 @@ namespace AnydeskTracker.Controllers
 			return Ok(new
 			{
 				CanEndShift = canEndShift,
-				ShouldChangePc = pcUsage.Pc.Status != PcStatus.Busy || DateTime.UtcNow - pcUsage.Pc.LastStatusChange > PcUsageTime,
+				ShouldChangePc = pcUsage.Pc.Status != PcStatus.Busy || pcUsage.TotalActiveTime > TimeSettingsService.PcUsageTime,
 				ForceExit = false
 			});
 		}

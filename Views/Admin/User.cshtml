@@ -40,7 +40,7 @@
 @section Scripts
 {
     <script>
-        document.querySelectorAll('.utc-time').forEach(el => el.textContent = localTime(el.dataset.time));
+        ConvertAllToLocalTime(document);
         document.getElementById('user_name').value = "@Model.UserName";
         
         function loadActionsButtonClick(sessionId){
@@ -88,8 +88,5 @@
         
         window.addEventListener('load', loadActionsFromHash);
         window.addEventListener('hashchange', loadActionsFromHash);
-    
-    
-
     </script>
 }
