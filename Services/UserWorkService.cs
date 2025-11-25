@@ -164,6 +164,13 @@ namespace AnydeskTracker.Services
                 activeUsage.IsPaused = true;
                 activeUsage.PauseStartTime = DateTime.UtcNow;
             }
+            
+            await actionService.LogAsync(workSession, ActionType.SessionPause);
+            var user = await context.Users.FindAsync(userId);
+            await telegramService.SendMessageToAdmin(
+                $"\u23f8\ufe0f Пауза\n" +
+                $"Пользователь: {user?.UserName}\n"
+            );
 
             await context.SaveChangesAsync();
         }
@@ -194,6 +201,13 @@ namespace AnydeskTracker.Services
                 activeUsage.PauseStartTime = null;
             }
 
+            await actionService.LogAsync(workSession, ActionType.SessionUnpause);
+            var user = await context.Users.FindAsync(userId);
+            await telegramService.SendMessageToAdmin(
+                $"\u25b6\ufe0f Снял с паузы\n" +
+                $"Пользователь: {user?.UserName}\n"
+            );
+            
             await context.SaveChangesAsync();
         }
 

@@ -17,7 +17,11 @@ public enum ActionType
 	[Display(Name = "Отпустил пк")]
 	PcRelease,
 	[Display(Name = "Зарепортил пк")]
-	PcReport
+	PcReport,
+	[Display(Name = "Поставил на паузу")]
+	SessionPause,
+	[Display(Name = "Снял с паузы")]
+	SessionUnpause
 }
 
 public class UserAction

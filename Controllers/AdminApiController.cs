@@ -244,7 +244,9 @@ namespace AnydeskTracker.Controllers
 					UserId = user.Id,
 					UserName = user.UserName ?? String.Empty,
 					SessionStartTime = session?.StartTime.ToUtc(),
-					CurrentPcId = currentPcUsage?.PcId
+					CurrentPcId = currentPcUsage?.PcId,
+					Paused = currentPcUsage?.IsPaused,
+					PauseTime = currentPcUsage?.PauseStartTime?.ToUtc()
 				};
 			}));
 		}

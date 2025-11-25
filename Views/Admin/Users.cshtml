@@ -32,11 +32,17 @@
                 : `Работает за компьютером:<br>
                     <b>${user.currentPcId}</b>`
             
+            const pauseStatus = user.paused 
+                ? `На паузе с<br>
+                    <b>${new Date(user.pauseTime).toLocaleString()}</b>`
+                : ""
+            
             div.innerHTML = `
                 <strong>${user.userName}</strong>
                 <div class="border border-light border-1 rounded-3 text-center align-content-center" style="flex: 1">
                     ${sessionStatus}<br>
-                    ${pcStatus}
+                    ${pcStatus}<br>
+                    ${pauseStatus}
                 </div>
             `;
             div.onclick = async () => {
