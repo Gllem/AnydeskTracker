@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AnydeskTracker.Models
 {
-	public class WorkSessionModel
+	public class WorkSessionModel : PausableModel
 	{
 		[Key]
 		public int Id { get; set; }
@@ -14,12 +14,6 @@ namespace AnydeskTracker.Models
 
 		[ForeignKey(nameof(UserId))]
 		public AppUser User { get; set; }
-
-		public DateTime StartTime { get; set; }
-
-		public DateTime? EndTime { get; set; }
-
-		public bool IsActive { get; set; }
 		
 		public ICollection<PcUsage> ComputerUsages { get; set; } = new List<PcUsage>();
 	}

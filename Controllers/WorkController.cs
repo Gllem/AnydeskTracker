@@ -67,6 +67,20 @@ namespace AnydeskTracker.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
+		[HttpPost("Pause")]
+		public async Task<IActionResult> Pause()
+		{
+			await workService.PauseWorkAsync(UserId);
+			return RedirectToAction(nameof(Index));
+		}
+
+		[HttpPost("Unpause")]
+		public async Task<IActionResult> Unpause()
+		{
+			await workService.UnpauseWorkAsync(UserId);
+			return RedirectToAction(nameof(Index));
+		}
+
 		[HttpGet("FreeComputers")]
 		public async Task<IActionResult> FetchFreeComputers()
 		{
@@ -118,7 +132,7 @@ namespace AnydeskTracker.Controllers
 			if (session == null)
 				return BadRequest();
 
-			bool canEndShift = DateTime.UtcNow - session.StartTime > SessionTime;
+			bool canEndShift = session.TotalActiveTime > SessionTime;
 
 			var pcUsage = session.ComputerUsages.FirstOrDefault(x => x.IsActive);
 			

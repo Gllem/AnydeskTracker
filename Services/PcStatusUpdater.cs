@@ -14,10 +14,10 @@ namespace AnydeskTracker.Services
 {
     public class PcStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundService
     {
-        public static TimeSpan PcCooldown = TimeSpan.FromMinutes(1);
-        public static TimeSpan PcForceFreeUpTime = TimeSpan.FromMinutes(15);
+        public static TimeSpan PcCooldown = TimeSpan.FromMinutes(30);
+        public static TimeSpan PcForceFreeUpTime = TimeSpan.FromMinutes(1);
 
-        private readonly TimeSpan _interval = TimeSpan.FromMinutes(1); // проверка каждые 1 мин
+        private static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(1);
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -33,22 +33,7 @@ namespace AnydeskTracker.Services
 
                     foreach (var pc in computers)
                     {
-                        if(pc == null)
-                            continue;
-                        
-                        if (pc.Status == PcStatus.CoolingDown && pc.LastStatusChange.Add(PcCooldown) <= now)
-                        {
-                            ChangePcStatus(pc, PcStatus.Free);
-                        }
-
-                        if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(WorkController.PcUsageTime + PcForceFreeUpTime) <= now)
-                        {
-                            ChangePcStatus(pc, PcStatus.CoolingDown);
-
-                            var usage = await db.PcUsages.FirstOrDefaultAsync(x => x.PcId == pc.Id && x.IsActive, cancellationToken: stoppingToken);
-
-                            FreeUpPcUsage(usage);
-                        }
+                        await HandlePcStatus(pc, db, now, stoppingToken);
                     }
 
                     await db.SaveChangesAsync(stoppingToken);
@@ -58,7 +43,30 @@ namespace AnydeskTracker.Services
                     Console.WriteLine($"Ошибка: {ex}");
                 }
 
-                await Task.Delay(_interval, stoppingToken);
+                await Task.Delay(CheckInterval, stoppingToken);
+            }
+        }
+
+        private static async Task HandlePcStatus(PcModel? pc, ApplicationDbContext db, DateTime now, CancellationToken stoppingToken)
+        {
+            if(pc == null)
+                return;
+                        
+            if (pc.Status == PcStatus.CoolingDown && pc.LastStatusChange.Add(PcCooldown) <= now)
+            {
+                ChangePcStatus(pc, PcStatus.Free);
+            }
+
+            if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(WorkController.PcUsageTime + PcForceFreeUpTime) <= now)
+            {
+                var pcUsage = 
+                    await db.PcUsages.FirstOrDefaultAsync(x => x.PcId == pc.Id && x.IsActive, cancellationToken: stoppingToken);
+
+                if(pcUsage == null || pcUsage.TotalActiveTime > WorkController.PcUsageTime + PcForceFreeUpTime)
+                {
+                    ChangePcStatus(pc, PcStatus.CoolingDown);
+                    FreeUpPcUsage(pcUsage);
+                }
             }
         }
 

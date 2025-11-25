@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AnydeskTracker.Models
 {
-	public class PcUsage
+	public class PcUsage : PausableModel
 	{
 		[Key]
 		public int Id { get; set; }
@@ -19,11 +19,6 @@ namespace AnydeskTracker.Models
 
 		[ForeignKey(nameof(WorkSessionId))]
 		public WorkSessionModel WorkSession { get; set; }
-
-		public DateTime StartTime { get; set; }
-
-		public DateTime? EndTime { get; set; }
-
-		public bool IsActive { get; set; }
+		
 	}
 }

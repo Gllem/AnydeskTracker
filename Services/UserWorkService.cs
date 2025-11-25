@@ -1,4 +1,5 @@
 ﻿using AnydeskTracker.Data;
+using AnydeskTracker.DTOs;
 using AnydeskTracker.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -141,6 +142,62 @@ namespace AnydeskTracker.Services
             
             await context.SaveChangesAsync();
             await actionService.LogAsync(session, ActionType.SessionEnd);
+        }
+
+        public async Task PauseWorkAsync(string userId)
+        {
+            var workSession = await GetActiveSessionAsync(userId);
+
+            if (workSession == null)
+                return;
+
+            if (workSession.IsPaused)
+                return;
+
+            workSession.IsPaused = true;
+            workSession.PauseStartTime = DateTime.UtcNow;
+
+            var activeUsage = workSession.ComputerUsages.FirstOrDefault(u => u.IsActive);
+
+            if (activeUsage != null)
+            {
+                activeUsage.IsPaused = true;
+                activeUsage.PauseStartTime = DateTime.UtcNow;
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task UnpauseWorkAsync(string userId)
+        {
+            var workSession = await GetActiveSessionAsync(userId);
+
+            if (workSession == null)
+                return;
+
+            if (!workSession.IsPaused)
+                return;
+
+            var pauseDuration = DateTime.UtcNow - workSession.PauseStartTime!.Value;
+            
+            workSession.TotalPauseTime += pauseDuration;
+            workSession.IsPaused = false;
+            workSession.PauseStartTime = null;
+
+            var activeUsage = workSession.ComputerUsages.FirstOrDefault(u => u.IsActive);
+
+            if (activeUsage != null)
+            {
+                if(!activeUsage.IsPaused)
+                    return;
+                
+                var usagePauseDuration = DateTime.UtcNow - activeUsage.PauseStartTime!.Value;
+                activeUsage.TotalPauseTime += usagePauseDuration;
+                activeUsage.IsPaused = false;
+                activeUsage.PauseStartTime = null;
+            }
+
+            await context.SaveChangesAsync();
         }
 
         private void FreeUpPc(PcUsage pcUsage)
