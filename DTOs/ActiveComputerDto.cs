@@ -19,7 +19,7 @@ public class ActiveComputerDto
 	{
 		ApproximateSessionEndTime = workSession.StartTime + TimeSettingsService.SessionTime + 
 		                            (workSession.CurrentPauseTime ?? TimeSpan.Zero);
-		ApproximatePcUsageEndTime = workSession.StartTime + TimeSettingsService.PcUsageTime +
+		ApproximatePcUsageEndTime = pcUsage.StartTime + TimeSettingsService.PcUsageTime +
 		                            (pcUsage.CurrentPauseTime ?? TimeSpan.Zero);
 
 		PcDto = new PcDto(pcUsage.Pc);
