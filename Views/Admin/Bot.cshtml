@@ -2,6 +2,7 @@
     Layout = "_Layout";
     ViewData["Title"] = "Бот";
 }
+@using AnydeskTracker.Extensions
 @model AnydeskTracker.DTOs.AdminBotPageDto
 
 <div class="w-100 h-100 d-flex flex-row">
@@ -11,6 +12,8 @@
             <input id="bot_id" type="text" placeholder="ID Бота" class="form-control" required />
             <button class="btn btn-success">Поменять</button>
         </form>
+        <h5><b>Время последней проверки Dolphin:</b></h5>
+        <h5 class="utc-time" data-time="@Model.LastDolphinCheck.ToUtc().ToString("o")"></h5>
     </div>
     <div class="col-9 px-1">
         <table class="table table-bordered rounded-3" id="userActions">

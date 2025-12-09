@@ -1,5 +1,6 @@
 ﻿using AnydeskTracker.Data;
 using AnydeskTracker.Extensions;
+using AnydeskTracker.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services;
@@ -7,7 +8,8 @@ namespace AnydeskTracker.Services;
 public class BotStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundService
 {
 	private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
-	private static readonly TimeSpan BotDeathTime = TimeSpan.FromMinutes(5);
+	private static readonly TimeSpan BotWatchdogDeathTime = TimeSpan.FromMinutes(5);
+	private static readonly TimeSpan BotDolphinDeathTime = TimeSpan.FromMinutes(5);
 	
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
@@ -26,19 +28,20 @@ public class BotStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundSer
 			using var scope = scopeFactory.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 			var telegramService = scope.ServiceProvider.GetRequiredService<TelegramService>();
-
+			
 			var now = DateTime.UtcNow;
 			var computers = await db.Pcs.ToListAsync(stoppingToken);
 
 			foreach (var pc in computers)
 			{
 				var lastAction = (await db.BotActions.Where(x => x.PcId == pc.Id).ToListAsync(stoppingToken)).MaxBy(x => x.Timestamp);
-				
+		
 				if(lastAction == null)
-					continue;
+					return;
 				
-				if(lastAction.Timestamp.Add(BotDeathTime) > now)
-					continue;
+				if(lastAction.Timestamp.Add(BotWatchdogDeathTime) > now &&
+				   (pc.LastBotHttpStatusCheck == null || pc.LastBotHttpStatusCheck.Add(BotDolphinDeathTime) > now))
+					return;
 
 				await telegramService.SendMessageToAdmin(
 					$"\u26a0\ufe0f Бот давно не отсылал статус!\n" +
@@ -46,7 +49,9 @@ public class BotStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundSer
 					$"AnyDesk ID: {pc.PcId}\n\n" +
 					$"Последний полученный статус: \n" +
 					lastAction.TelegramNotificationBotStatus + "\n" +
-					$"Время: {lastAction.Timestamp.ToUtc().ToLocalTime()} (По временному поясу сервера)");
+					$"Время: {lastAction.Timestamp.ToUtc().ToLocalTime()}\n"+
+					$"Время получения статуса от Dolphin: {pc.LastBotHttpStatusCheck.ToUtc().ToLocalTime()}\n"+
+					"(По временному поясу сервера)");
 			}
 
 			await db.SaveChangesAsync(stoppingToken);
