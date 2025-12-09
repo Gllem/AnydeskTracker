@@ -33,4 +33,5 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
     public DbSet<PcUsage> PcUsages { get; set; }
     public DbSet<GameModel> Games { get; set; }
     public DbSet<UserAction> UserActions { get; set; }
+    public DbSet<PcBotAction> BotActions { get; set; }
 }

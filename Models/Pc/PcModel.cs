@@ -27,6 +27,9 @@ namespace AnydeskTracker.Models
 		public string Password { get; set; } = string.Empty;
 
 		[Required]
+		public string BotId { get; set; } = string.Empty;
+
+		[Required]
 		public PcStatus Status { get; set; } = PcStatus.Free;
 
 		public DateTime LastStatusChange { get; set; } = DateTime.UtcNow;
