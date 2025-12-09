@@ -46,4 +46,21 @@ public class AdminController(ApplicationDbContext context) : Controller
 
 		return View("User", new AdminUserPageDto(user, sessions));
 	}
+
+	[HttpGet("Bots")]
+	public async Task<IActionResult> Bots()
+	{
+		return View("Bots");
+	}
+	
+	[HttpGet("Bot/{pcModelId}")]
+	public async Task<IActionResult> GetBot(int pcModelId)
+	{
+		var pc = await context.Pcs.FindAsync(pcModelId);
+		
+		if (pc == null)
+			return NotFound();
+		
+		return View("Bot", new AdminBotPageDto(pc));
+	}
 }

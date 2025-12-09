@@ -1,0 +1,76 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Бот";
+}
+@model AnydeskTracker.DTOs.AdminBotPageDto
+
+<div class="w-100 h-100 d-flex flex-row">
+    <div class="col-3 px-1">
+        <h4 class="text-truncate">@Model.PcId</h4>
+        <form id="changeBotInfo" class="mb-3 d-flex gap-3" style="height: 3em">
+            <input id="bot_id" type="text" placeholder="ID Бота" class="form-control" required />
+            <button class="btn btn-success">Поменять</button>
+        </form>
+    </div>
+    <div class="col-9 px-1">
+        <table class="table table-bordered rounded-3" id="userActions">
+            <thead>
+            <tr>
+                <th>Проверка</th>
+                <th>Ошибки</th>
+                <th>Время</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        ConvertAllToLocalTime(document);
+        document.getElementById('bot_id').value = "@Model.BotId";
+
+        async function loadActions()
+        {
+            const res = await fetch(`/api/admin/bot/@Model.PcModelId/actions`);
+            const data = await res.json();
+            const tbody = document.querySelector('#userActions tbody');
+            console.log(data);
+            tbody.innerHTML = data.map(botAction => {
+                const status = botAction.error ? "Ошибка" : "ОК";
+                const errors = Object.entries(botAction.statuses)
+                    .filter(([key, value]) => value && value.trim() !== "")
+                    .map(([key, value]) => `${key}: ${value} <br>`)
+                    .join("");
+                
+                return `
+                    <tr>
+                        <td>${status}</td>
+                        <td>${errors}</td>
+                        <td>${localTime(botAction.timestamp)}</td>
+                    </tr>
+                `
+            }).join('');
+        }
+        
+        document.getElementById('changeBotInfo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const botId = document.getElementById('bot_id').value;
+            const res = await fetch('/api/admin/bot/@Model.PcModelId', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ botId })
+            });
+            if (!res.ok)
+            {
+                alert("Ошибка при обновлении бота");
+                return;
+            }
+            window.location.href = "";
+        });
+
+        loadActions();
+    </script>
+}

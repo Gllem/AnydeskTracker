@@ -307,5 +307,67 @@ namespace AnydeskTracker.Controllers
 			}));
 		}
 #endregion
+
+#region Bots
+
+		[HttpGet("bots")]
+		public async Task<IActionResult> GetAllBots()
+		{
+			var pcs = await context.Pcs.ToListAsync();
+			return Ok(pcs.Select(pc =>
+			{
+				var lastAction = context.BotActions.Where(x => x.PcId == pc.Id).OrderBy(x => x.Timestamp).FirstOrDefault();
+				
+				return new
+				{
+					pc.BotId,
+					pc.PcId,
+					PcModelId = pc.Id,
+					HasChecks = lastAction != null,
+					LastCheckTime = lastAction?.Timestamp,
+					Error = lastAction?.Error ?? false,
+					lastAction?.ProcessesStatus,
+					lastAction?.SchedulerStatus,
+					lastAction?.DiskStatus,
+					lastAction?.UserStatus,
+					lastAction?.RamStatus
+				};
+			}));
+		}
+		
+		[HttpPut("bot/{pcModelId}")]
+		public async Task<IActionResult> UpdateBotInfo(int pcModelId, [FromBody]AdminBotUpdateDto updateDto)
+		{
+			var pc = await context.Pcs.FindAsync(pcModelId);
+			
+			if (pc == null)
+				return NotFound("PC ID Not found");
+
+			pc.BotId = updateDto.BotId;
+			await context.SaveChangesAsync();
+
+			return Ok();
+		}
+		
+		[HttpGet("bot/{pcModelId}/actions")]
+		public async Task<IActionResult> GetBotActions(int pcModelId)
+		{
+			var actions = await context.BotActions.Where(x => x.PcId == pcModelId).ToListAsync();
+
+			return Ok(actions.Select(x => new
+			{
+				x.Error,
+				Statuses = new Dictionary<string, string>
+				{
+					{"Выключенные процессы", x.ProcessesStatus},
+					{"Выключенные задачи", x.SchedulerStatus},
+					{"Диск", x.DiskStatus},
+					{"Пользователь", x.UserStatus},
+					{"Память", x.RamStatus}
+				},
+				timestamp = x.Timestamp.ToUtc()
+			}));
+		}
+#endregion
 	}
 }

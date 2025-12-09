@@ -18,12 +18,10 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext) : Controll
 		if (pc == null)
 			return NotFound();
 		
-		Dictionary<string, string> statuses = 
-			statusDto.StatusChecks
-				.ToDictionary(
+		Dictionary<string, string> statuses = statusDto.StatusChecks.ToDictionary(
 					x => x.Key,
 					x => x.Value ? "" : statusDto.ErrorDescriptions[x.Key]);
-
+		
 		var botAction = new PcBotAction
 		{
 			PcId = pc.Id,

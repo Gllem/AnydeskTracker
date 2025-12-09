@@ -1,0 +1,43 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Боты";
+}
+
+<div class="p-3">
+    <h2>Боты</h2>
+    <div id="bots" class="d-flex flex-wrap gap-3 mt-3"></div>
+</div>
+
+<script>
+    async function loadBots() {
+        const res = await fetch("/api/admin/bots");
+        if (!res.ok) return alert("Ошибка загрузки списка ботов");
+        const data = await res.json();
+        
+        const container = document.getElementById("bots");
+        container.innerHTML = "";
+
+        data.forEach(bot => {
+            const div = document.createElement("div");
+            div.className = "btn p-1 btn-primary d-flex flex-column";
+            div.style = "height: 12em; width: 15em"
+
+            let botName = bot.botId;
+            if (!botName)
+                botName = bot.pcId;
+            
+            div.innerHTML = `
+                <strong>${botName}</strong>
+                <div class="border border-light border-1 rounded-3 text-center align-content-center" style="flex: 1">
+
+                </div>
+            `;
+            div.onclick = async () => {
+                window.location.href = `/Admin/Bot/${bot.pcModelId}`;
+            };
+            container.appendChild(div);
+        });
+    }
+
+    loadBots();
+</script>
