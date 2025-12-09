@@ -18,27 +18,32 @@ namespace AnydeskTracker.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                try
-                {
-                    using var scope = scopeFactory.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                    var now = DateTime.UtcNow;
-                    var computers = await db.Pcs.ToListAsync(stoppingToken);
-
-                    foreach (var pc in computers)
-                    {
-                        await HandlePcStatus(pc, db, now, stoppingToken);
-                    }
-
-                    await db.SaveChangesAsync(stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Ошибка: {ex}");
-                }
+                await UpdatePcStatusAsync(stoppingToken);
 
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            }
+        }
+
+        private async Task UpdatePcStatusAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                var now = DateTime.UtcNow;
+                var computers = await db.Pcs.ToListAsync(stoppingToken);
+
+                foreach (var pc in computers)
+                {
+                    await HandlePcStatus(pc, db, now, stoppingToken);
+                }
+
+                await db.SaveChangesAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex}");
             }
         }
 

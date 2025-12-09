@@ -37,7 +37,7 @@
             const res = await fetch(`/api/admin/bot/@Model.PcModelId/actions`);
             const data = await res.json();
             const tbody = document.querySelector('#userActions tbody');
-            console.log(data);
+            
             tbody.innerHTML = data.map(botAction => {
                 const status = botAction.error ? "Ошибка" : "ОК";
                 const errors = Object.entries(botAction.statuses)
@@ -71,6 +71,7 @@
             window.location.href = "";
         });
 
+        setInterval(loadActions, 30000)
         loadActions();
     </script>
 }

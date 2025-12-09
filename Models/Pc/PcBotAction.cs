@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using AnydeskTracker.Extensions;
 
 namespace AnydeskTracker.Models;
@@ -28,4 +29,12 @@ public class PcBotAction
 	public string RamStatus { get; set; } = string.Empty;
 
 	public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+	[JsonIgnore] 
+	public string TelegramNotificationBotStatus =>
+		$"Выключенные процессы: {ProcessesStatus}\n" +
+		$"Выключенные задачи планировщика: {SchedulerStatus}\n" +
+		$"Диск: {(string.IsNullOrEmpty(DiskStatus) ? "OK" : DiskStatus)}\n" +
+		$"Пользователь: {(string.IsNullOrEmpty(UserStatus) ? "OK" : UserStatus)}\n" +
+		$"Память: {(string.IsNullOrEmpty(RamStatus) ? "OK" : RamStatus)}";
 }

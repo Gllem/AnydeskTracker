@@ -316,7 +316,7 @@ namespace AnydeskTracker.Controllers
 			var pcs = await context.Pcs.ToListAsync();
 			return Ok(pcs.Select(pc =>
 			{
-				var lastAction = context.BotActions.Where(x => x.PcId == pc.Id).OrderBy(x => x.Timestamp).FirstOrDefault();
+				var lastAction = context.BotActions.Where(x => x.PcId == pc.Id).MaxBy(x => x.Timestamp);
 				
 				return new
 				{

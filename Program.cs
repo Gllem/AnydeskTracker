@@ -34,8 +34,9 @@ builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClien
 }));
 
 builder.Services.AddHostedService<PcStatusUpdater>();
-builder.Services.AddHostedService<UserActionCleanupService>();
+builder.Services.AddHostedService<ActionCleanupService>();
 builder.Services.AddHostedService<TelegramNotifier>();
+builder.Services.AddHostedService<BotStatusUpdater>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

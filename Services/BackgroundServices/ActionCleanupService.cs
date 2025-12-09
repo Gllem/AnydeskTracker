@@ -2,7 +2,7 @@
 
 namespace AnydeskTracker.Services;
 
-public class UserActionCleanupService(IServiceProvider serviceProvider) : BackgroundService
+public class ActionCleanupService(IServiceProvider serviceProvider) : BackgroundService
 {
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
@@ -22,10 +22,13 @@ public class UserActionCleanupService(IServiceProvider serviceProvider) : Backgr
 		var oldActions = db.UserActions.Where(a => a.Timestamp < cutoff);
 		var oldSessions = db.WorkSessionModels.Where(a => a.EndTime < cutoff);
 		var oldUsages = db.PcUsages.Where(a => a.EndTime < cutoff);
-
+		
+		var oldBotActions = db.BotActions.Where(a => a.Timestamp < cutoff);
+		
 		db.UserActions.RemoveRange(oldActions);
 		db.WorkSessionModels.RemoveRange(oldSessions);
 		db.PcUsages.RemoveRange(oldUsages);
+		db.BotActions.RemoveRange(oldBotActions);
 		await db.SaveChangesAsync();
 	}
 }

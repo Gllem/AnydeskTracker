@@ -1,6 +1,7 @@
 ﻿using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Models;
+using AnydeskTracker.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace AnydeskTracker.Controllers;
 
 [Route("api/watchdog")]
 [ApiController]
-public class BotWatchdogApiController(ApplicationDbContext dbContext) : ControllerBase
+public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramService telegramService) : ControllerBase
 {
 	[HttpPost]
 	public async Task<IActionResult> WatchdogWebhook([FromBody] BotWatchdogStatusDto statusDto)
@@ -37,6 +38,17 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext) : Controll
 		dbContext.BotActions.Add(botAction);
 
 		await dbContext.SaveChangesAsync();
+
+		if (botAction.Error)
+		{
+			await telegramService.SendMessageToAdmin(
+				$"\u26a0\ufe0f Ошибка бота\n" +
+				$"Бот: {pc.BotId}\n" +
+				$"AnyDesk ID: {pc.PcId}\n\n" +
+				$"Статус: \n" +
+				botAction.TelegramNotificationBotStatus
+			);
+		}
 
 		return Ok();
 	}
