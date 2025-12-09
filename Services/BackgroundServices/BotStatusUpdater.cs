@@ -7,9 +7,9 @@ namespace AnydeskTracker.Services;
 
 public class BotStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundService
 {
-	private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
-	private static readonly TimeSpan BotWatchdogDeathTime = TimeSpan.FromMinutes(5);
-	private static readonly TimeSpan BotDolphinDeathTime = TimeSpan.FromMinutes(5);
+	private static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
+	private static readonly TimeSpan BotWatchdogDeathTime = TimeSpan.FromMinutes(10);
+	private static readonly TimeSpan BotDolphinDeathTime = TimeSpan.FromMinutes(50);
 	
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{

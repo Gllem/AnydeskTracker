@@ -52,9 +52,9 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 
 		return Ok();
 	}
-	
-	[HttpPost("dolphinStatus/{botId}")] 
-	public async Task<IActionResult> DolphinStatusHook(string botId)
+
+	[HttpGet("dolphinStatus/{botId}")]
+	public async Task<IActionResult> DolphinBotIdCheck(string botId)
 	{
 		var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x.BotId == botId);
 
@@ -64,17 +64,6 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		pc.LastBotHttpStatusCheck = DateTime.UtcNow;
 
 		await dbContext.SaveChangesAsync();
-
-		return Ok();
-	}
-
-	[HttpGet("dolphinStatus/{botId}")]
-	public async Task<IActionResult> DolphinBotIdCheck(string botId)
-	{
-		var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x.BotId == botId);
-		
-		if (pc == null)
-			return NotFound();
 
 		return Ok(new
 		{
