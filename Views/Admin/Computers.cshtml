@@ -71,7 +71,7 @@
             await fetch('/api/admin/pcs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pcId, password, status: @((int)PcStatus.Free) })
+                body: JSON.stringify({ pcId, password, status: @((int)PcStatus.Free), botId: "" })
             });
             e.target.reset();
             loadPcs();

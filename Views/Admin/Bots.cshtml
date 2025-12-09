@@ -5,7 +5,7 @@
 
 <div class="p-3">
     <h2>Боты</h2>
-    <div id="bots" class="d-flex flex-wrap gap-3 mt-3"></div>
+    <div id="bots" class="d-flex gap-3 mt-3 flex-wrap justify-content-center"></div>
 </div>
 
 <script>
@@ -19,17 +19,33 @@
 
         data.forEach(bot => {
             const div = document.createElement("div");
-            div.className = "btn p-1 btn-primary d-flex flex-column";
-            div.style = "height: 12em; width: 15em"
+            div.className = `btn p-1 ${bot.error ? "btn-danger" : "btn-primary"} d-flex flex-column`;
+            div.style = "width: 20em; min-height: 15em"
 
             let botName = bot.botId;
             if (!botName)
                 botName = bot.pcId;
             
+            console.log(bot);
+            
+            let botStatus = "";
+            if (bot.hasChecks)
+                botStatus = `
+                    <b>Статус: </b>${bot.error ? "Ошибка" : "Работает"}<br>
+                    <b>Время последней проверки: </b>${localTime(bot.lastCheckTime)}<br>
+                    <b>Выключенные процессы: </b>${bot.processesStatus}<br>
+                    <b>Выключенные задачи планировщика: </b>${bot.schedulerStatus}<br>
+                    <b>Диск: </b>${bot.diskStatus ? bot.diskStatus : "OK"}<br>
+                    <b>Пользователь: </b>${bot.userStatus ? bot.userStatus : "OK"}<br>
+                    <b>Память: </b>${bot.ramStatus ? bot.ramStatus : "OK"}<br>
+                `
+            else
+                botStatus = "Еще не получал ни одного статуса"
+            
             div.innerHTML = `
                 <strong>${botName}</strong>
                 <div class="border border-light border-1 rounded-3 text-center align-content-center" style="flex: 1">
-
+                    ${botStatus}
                 </div>
             `;
             div.onclick = async () => {

@@ -26,7 +26,6 @@ namespace AnydeskTracker.Models
 		[Required]
 		public string Password { get; set; } = string.Empty;
 
-		[Required]
 		public string BotId { get; set; } = string.Empty;
 
 		[Required]
