@@ -137,11 +137,4 @@ function Check(){
 
 Log "=== Watchdog ==="
 
-Start-Sleep -Seconds 3
-
 Check
-
-Start-Sleep -Seconds 5
-
-Check
-
