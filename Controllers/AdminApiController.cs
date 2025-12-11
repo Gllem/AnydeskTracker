@@ -353,7 +353,7 @@ namespace AnydeskTracker.Controllers
 		[HttpGet("bot/{pcModelId}/actions")]
 		public async Task<IActionResult> GetBotActions(int pcModelId)
 		{
-			var actions = await context.BotActions.Where(x => x.PcId == pcModelId).ToListAsync();
+			var actions = await context.BotActions.Where(x => x.PcId == pcModelId).OrderByDescending(x => x.Timestamp).ToListAsync();
 
 			return Ok(actions.Select(x => new
 			{
