@@ -17,9 +17,9 @@ function Log($msg) {
     Out-Host -InputObject "$time $msg"
 }
 
-Log "=== Watchdog ==="
+function Check(){
 
-while ($true) {
+    Log "=== Checking ==="
 
     $checks = @{
         Processes   = $true
@@ -133,6 +133,15 @@ while ($true) {
      -Method Post `
      -ContentType "application/json" `
      -Body $logInfo
-
-    Start-Sleep -Seconds 300
 }
+
+Log "=== Watchdog ==="
+
+Start-Sleep -Seconds 3
+
+Check
+
+Start-Sleep -Seconds 5
+
+Check
+
