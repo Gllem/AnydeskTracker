@@ -57,7 +57,7 @@
                 <tr>
                     <td>${userAction.actionType}</td>
                     <td>${userAction.description}</td>
-                    <td>${localTime(userAction.timestamp)}</td>
+                    <td>${localTime(userAction.timestamp).toLocaleString()}</td>
                 </tr>
             `).join('');
         }

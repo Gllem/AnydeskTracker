@@ -34,13 +34,23 @@ public class BotStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundSer
 
 			foreach (var pc in computers)
 			{
-				var lastAction = (await db.BotActions.Where(x => x.PcId == pc.Id).ToListAsync(stoppingToken)).MaxBy(x => x.Timestamp);
+				var lastAction = 
+					(await db.BotActions
+						.Where(x => x.PcId == pc.Id)
+						.ToListAsync(stoppingToken))
+						.MaxBy(x => x.Timestamp);
 		
 				if(lastAction == null)
 					return;
+
+				var lastDolphinStatusCheck = 
+					(await db.DolphinActions
+						.Where(x => x.PcId == pc.Id)
+						.ToListAsync(cancellationToken: stoppingToken))
+						.MaxBy(x => x.Timestamp);
 				
 				if(lastAction.Timestamp.Add(BotWatchdogDeathTime) > now &&
-				   (pc.LastBotHttpStatusCheck == null || pc.LastBotHttpStatusCheck.Add(BotDolphinDeathTime) > now))
+				   (lastDolphinStatusCheck == null || lastDolphinStatusCheck.Timestamp.Add(BotDolphinDeathTime) > now))
 					return;
 
 				await telegramService.SendMessageToAdmin(
@@ -50,7 +60,7 @@ public class BotStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundSer
 					$"Последний полученный статус: \n" +
 					lastAction.TelegramNotificationBotStatus + "\n" +
 					$"Время: {lastAction.Timestamp.ToUtc().ToLocalTime()}\n"+
-					$"Время получения статуса от Dolphin: {pc.LastBotHttpStatusCheck.ToUtc().ToLocalTime()}\n"+
+					$"Время получения статуса от Dolphin: {lastDolphinStatusCheck?.Timestamp.ToUtc().ToLocalTime()}\n"+
 					"(По временному поясу сервера)");
 			}
 

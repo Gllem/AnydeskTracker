@@ -10,6 +10,7 @@ namespace AnydeskTracker.Services;
 public class TelegramService(ApplicationDbContext context, UserManager<AppUser> userManager, ILogger<TelegramService> logger)
 {
 	public readonly TelegramBotClient Client = new(Environment.GetEnvironmentVariable("TG_BOT_KEY") ?? "");
+	private readonly bool SendTelegramNotifications = Environment.GetEnvironmentVariable("SEND_TG_NOTIFICATIONS") != "false"; 
 
 	public async Task HandleUpdate(Update update)
 	{
@@ -67,6 +68,9 @@ public class TelegramService(ApplicationDbContext context, UserManager<AppUser> 
 
 	public async Task<bool> SendMessageAsync(long chatId, string message)
 	{
+		if (!SendTelegramNotifications)
+			return false;
+
 		try
 		{
 			await Client.SendMessage(chatId, message, ParseMode.Html);

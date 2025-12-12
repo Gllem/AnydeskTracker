@@ -317,6 +317,7 @@ namespace AnydeskTracker.Controllers
 			return Ok(pcs.Select(pc =>
 			{
 				var lastAction = context.BotActions.Where(x => x.PcId == pc.Id).ToList().MaxBy(x => x.Timestamp);
+				var lastDolphinAction = context.BotActions.Where(x => x.PcId == pc.Id).ToList().MaxBy(x => x.Timestamp);
 				
 				return new
 				{
@@ -325,7 +326,7 @@ namespace AnydeskTracker.Controllers
 					PcModelId = pc.Id,
 					HasChecks = lastAction != null,
 					LastCheckTime = lastAction?.Timestamp.ToUtc(),
-					LastDolphinCheckTime = pc.LastBotHttpStatusCheck.ToUtc(),
+					LastDolphinCheckTime = lastDolphinAction?.Timestamp.ToUtc(),
 					Error = lastAction?.Error ?? false,
 					lastAction?.ProcessesStatus,
 					lastAction?.SchedulerStatus,
@@ -350,24 +351,50 @@ namespace AnydeskTracker.Controllers
 			return Ok();
 		}
 		
-		[HttpGet("bot/{pcModelId}/actions")]
-		public async Task<IActionResult> GetBotActions(int pcModelId)
+		[HttpGet("bot/{pcModelId}/actions/{date}")]
+		public async Task<IActionResult> GetBotActions(int pcModelId, string date)
 		{
-			var actions = await context.BotActions.Where(x => x.PcId == pcModelId).OrderByDescending(x => x.Timestamp).ToListAsync();
-
-			return Ok(actions.Select(x => new
+			DateTime logsDateTime;
+			try
 			{
-				x.Error,
-				Statuses = new Dictionary<string, string>
+				int[] dateParse = date.Split(".").Select(int.Parse).ToArray();
+				logsDateTime = new DateTime(dateParse[2], dateParse[1], dateParse[0]);
+			}
+			catch (Exception e)
+			{
+				return BadRequest($"Can't parse date: {e}");
+			}
+			
+			var watchDogActions = await context.BotActions
+				.Where(x => x.PcId == pcModelId && x.Timestamp.Date == logsDateTime)
+				.OrderByDescending(x => x.Timestamp)
+				.ToListAsync();
+
+			var dolphinActions = await context.DolphinActions
+				.Where(x => x.PcId == pcModelId && x.Timestamp.Date == logsDateTime)
+				.OrderByDescending(x => x.Timestamp)
+				.ToListAsync();
+			
+			return Ok(new
+			{
+				WatchDogActions = watchDogActions.Select(x => new
 				{
-					{"Выключенные процессы", x.ProcessesStatus},
-					{"Выключенные задачи", x.SchedulerStatus},
-					{"Диск", x.DiskStatus},
-					{"Пользователь", x.UserStatus},
-					{"Память", x.RamStatus}
-				},
-				timestamp = x.Timestamp.ToUtc()
-			}));
+					x.Error,
+					Statuses = new Dictionary<string, string>
+					{
+						{"Выключенные процессы", x.ProcessesStatus},
+						{"Выключенные задачи", x.SchedulerStatus},
+						{"Диск", x.DiskStatus},
+						{"Пользователь", x.UserStatus},
+						{"Память", x.RamStatus}
+					},
+					timestamp = x.Timestamp.ToUtc()
+				}),
+				DolphinActions = dolphinActions.Select(x => new
+				{
+					x.Timestamp
+				})
+			});
 		}
 #endregion
 	}

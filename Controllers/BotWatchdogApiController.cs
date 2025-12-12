@@ -60,9 +60,13 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 
 		if (pc == null)
 			return NotFound();
-		
-		pc.LastBotHttpStatusCheck = DateTime.UtcNow;
 
+		dbContext.DolphinActions.Add(new PcBotDolphinAction
+		{
+			PcId = pc.Id,
+			Timestamp = DateTime.UtcNow
+		});
+		
 		await dbContext.SaveChangesAsync();
 
 		return Ok(new

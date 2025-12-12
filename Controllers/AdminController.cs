@@ -2,6 +2,7 @@
 using AnydeskTracker.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Controllers;
 
@@ -60,7 +61,16 @@ public class AdminController(ApplicationDbContext context) : Controller
 		
 		if (pc == null)
 			return NotFound();
+
+		var botLogs = await context.BotActions.Where(x => x.PcId == pc.Id).ToListAsync();
+		var botLogDates = botLogs.Select(x => x.Timestamp.Date).Distinct().ToArray();
+
+		var dolphinLogs = await context.DolphinActions.Where(x => x.PcId == pc.Id).ToListAsync();
+		var lastDolphinCheck = dolphinLogs.Max(x => x.Timestamp);
 		
-		return View("Bot", new AdminBotPageDto(pc));
+		return View("Bot", new AdminBotPageDto(
+			pc,
+			lastDolphinCheck,
+			botLogDates.Select(x => new AdminBotPageDto.BotLog(x, dolphinLogs.Count(y => y.Timestamp.Date == x))).ToArray()));
 	}
 }

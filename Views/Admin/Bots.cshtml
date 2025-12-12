@@ -32,8 +32,8 @@
             if (bot.hasChecks)
                 botStatus = `
                     <b>Статус: </b>${bot.error ? "Ошибка" : "Работает"}<br>
-                    <b>Время последней проверки пк: </b>${localTime(bot.lastCheckTime)}<br>
-                    <b>Время последней проверки Dolphin: </b>${localTime(bot.lastDolphinCheckTime)}<br>
+                    <b>Время последней проверки пк: </b>${localTime(bot.lastCheckTime).toLocaleString()}<br>
+                    <b>Время последней проверки Dolphin: </b>${localTime(bot.lastDolphinCheckTime).toLocaleString()}<br>
                     <b>Выключенные процессы: </b>${bot.processesStatus}<br>
                     <b>Выключенные задачи планировщика: </b>${bot.schedulerStatus}<br>
                     <b>Диск: </b>${bot.diskStatus ? bot.diskStatus : "OK"}<br>

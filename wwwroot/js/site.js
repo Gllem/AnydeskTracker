@@ -16,9 +16,10 @@ function intervalTimer(endTime, timerElement, formatString, endCallback){
 }
 
 function localTime(utcTime){
-    return new Date(utcTime + "").toLocaleString();
+    return new Date(utcTime + "");
 }
 
 function ConvertAllToLocalTime(document){
-    document.querySelectorAll('.utc-time').forEach(el => el.textContent = localTime(el.dataset.time));
+    document.querySelectorAll('.utc-time').forEach(el => el.textContent = localTime(el.dataset.time).toLocaleString());
+    document.querySelectorAll('.utc-date').forEach(el => el.textContent = localTime(el.dataset.time).toDateString());
 }
