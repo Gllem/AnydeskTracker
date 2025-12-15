@@ -12,9 +12,13 @@
             <input id="bot_id" type="text" placeholder="ID Бота" class="form-control" required />
             <button class="btn btn-success">Поменять</button>
         </form>
-        <h5><b>Время последней проверки Dolphin:</b></h5>
-        <h5 class="utc-time" data-time="@Model.LastDolphinCheck?.ToUtc().ToString("o")"></h5>
-
+       
+        @if(Model.LastDolphinCheck != null)
+        {
+            <h5><b>Время последней проверки Dolphin:</b></h5>
+            <h5 class="utc-time" data-time="@Model.LastDolphinCheck.Value.ToUtc().ToString("o")"></h5>
+        }
+        
         <div class="d-flex flex-column gap-3">
             @foreach (var botLog in Model.BotLogs.Reverse())
             {
@@ -76,7 +80,6 @@
                     .filter(([key, value]) => value && value.trim() !== "")
                     .map(([key, value]) => `${key}: ${value} <br>`)
                     .join("");
-                
                 return `
                     <tr>
                         <td>${status}</td>
@@ -86,12 +89,14 @@
                 `
             }).join('');
             
-            dolphinTable.innerHTML = data.dolphinActions.map(dolphinAction => `
-                <tr>
-                    <td>OK</td>
-                    <td>${localTime(dolphinAction.timestamp).toLocaleTimeString()}</td>
-                </tr>
-            `).join('');
+            dolphinTable.innerHTML = data.dolphinActions.map(dolphinAction => {
+                return `
+                    <tr>
+                        <td>OK</td>
+                        <td>${localTime(dolphinAction.timestamp).toLocaleTimeString()}</td>
+                    </tr>
+                `
+            }).join('');
         }
 
         function loadActionsFromHash(){

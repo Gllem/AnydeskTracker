@@ -392,7 +392,7 @@ namespace AnydeskTracker.Controllers
 				}),
 				DolphinActions = dolphinActions.Select(x => new
 				{
-					x.Timestamp
+					Timestamp = x.Timestamp.ToUtc()
 				})
 			});
 		}
