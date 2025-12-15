@@ -13,7 +13,7 @@
             <button class="btn btn-success">Поменять</button>
         </form>
         <h5><b>Время последней проверки Dolphin:</b></h5>
-        <h5 class="utc-time" data-time="@Model.LastDolphinCheck.ToUtc().ToString("o")"></h5>
+        <h5 class="utc-time" data-time="@Model.LastDolphinCheck?.ToUtc().ToString("o")"></h5>
 
         <div class="d-flex flex-column gap-3">
             @foreach (var botLog in Model.BotLogs.Reverse())

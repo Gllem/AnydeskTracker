@@ -66,7 +66,7 @@ public class AdminController(ApplicationDbContext context) : Controller
 		var botLogDates = botLogs.Select(x => x.Timestamp.Date).Distinct().ToArray();
 
 		var dolphinLogs = await context.DolphinActions.Where(x => x.PcId == pc.Id).ToListAsync();
-		var lastDolphinCheck = dolphinLogs.Max(x => x.Timestamp);
+		DateTime? lastDolphinCheck = dolphinLogs.Count > 0 ? dolphinLogs.Max(x => x.Timestamp) : null;
 		
 		return View("Bot", new AdminBotPageDto(
 			pc,
