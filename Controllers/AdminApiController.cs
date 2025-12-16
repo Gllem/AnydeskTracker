@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
@@ -15,8 +19,14 @@ namespace AnydeskTracker.Controllers
 	[Authorize(Roles = "Admin")]
 	[Route("api/admin")]
 	[ApiController]
-	public class AdminApiController(ApplicationDbContext context, PcService pcService, SheetsService sheetService) : ControllerBase
+	public class AdminApiController(
+		ApplicationDbContext context,
+		PcService pcService,
+		SheetsService sheetService,
+		ParserService parserService)
+		: ControllerBase
 	{
+
 #region Pcs
 		[HttpGet("pcs")]
 		public async Task<IActionResult> GetAllPcs()
@@ -396,6 +406,17 @@ namespace AnydeskTracker.Controllers
 				})
 			});
 		}
+#endregion
+
+#region Other
+
+		[HttpPost("fetchCredentials")]
+		public async Task<IActionResult> FetchBlockedCredentials()
+		{
+			await parserService.FetchBlockedCredentials();
+			return Ok();
+		}
+
 #endregion
 	}
 }

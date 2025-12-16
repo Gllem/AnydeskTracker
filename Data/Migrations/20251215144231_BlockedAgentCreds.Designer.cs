@@ -3,6 +3,7 @@ using System;
 using AnydeskTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AnydeskTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251215144231_BlockedAgentCreds")]
+    partial class BlockedAgentCreds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -91,26 +94,19 @@ namespace AnydeskTracker.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("AnydeskTracker.Models.BlockedAgentEmail", b =>
+            modelBuilder.Entity("AnydeskTracker.Models.BlockedAgentCredentialsModel", b =>
                 {
-                    b.Property<string>("Email")
-                        .HasMaxLength(320)
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Credentials")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Email");
+                    b.HasKey("Id");
 
-                    b.ToTable("BlockedAgentEmails", (string)null);
-                });
-
-            modelBuilder.Entity("AnydeskTracker.Models.BlockedAgentPhone", b =>
-                {
-                    b.Property<string>("Phone")
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Phone");
-
-                    b.ToTable("BlockedAgentPhones", (string)null);
+                    b.ToTable("BlockedAgentCredentialsModel");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.GameModel", b =>

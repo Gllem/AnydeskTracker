@@ -26,6 +26,24 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
             .HasMany(s => s.Users)
             .WithMany(u => u.AssignedSchedules)
             .UsingEntity(j => j.ToTable("GameUserSchedulesUsers"));
+        
+        builder.Entity<BlockedAgentPhone>(e =>
+        {
+            e.ToTable("BlockedAgentPhones");
+            e.HasKey(x => x.Phone);
+            e.Property(x => x.Phone)
+                .HasMaxLength(32)
+                .IsRequired();
+        });
+        
+        builder.Entity<BlockedAgentEmail>(e =>
+        {
+            e.ToTable("BlockedAgentEmails");
+            e.HasKey(x => x.Email);
+            e.Property(x => x.Email)
+                .HasMaxLength(320)
+                .IsRequired();
+        });
     }
 
     public DbSet<PcModel?> Pcs { get; set; }
@@ -35,4 +53,6 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
     public DbSet<UserAction> UserActions { get; set; }
     public DbSet<PcBotAction> BotActions { get; set; }
     public DbSet<PcBotDolphinAction> DolphinActions { get; set; }
+    public DbSet<BlockedAgentPhone> BlockedPhoneNumbers => Set<BlockedAgentPhone>();
+    public DbSet<BlockedAgentEmail> BlockedEmails => Set<BlockedAgentEmail>();
 }

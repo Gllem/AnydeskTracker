@@ -5,33 +5,44 @@
 @using AnydeskTracker.Extensions
 @model AnydeskTracker.DTOs.ActiveComputerDto
 
-<div class="text-center mt-4">
+<div class="text-center">
     <h2>Текущий компьютер</h2>
-    <div id="pc-info" class="position-relative border rounded p-3 mt-3 d-inline-block text-left">
-        <a id="reportPc" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 p-1" style="height: 2em; width: 2em">
-            <img src="img/icons/warning.png" alt="Report" class="w-100 h-100 align-baseline">
-        </a>
-        <p><strong>AnyDesk ID: </strong>@Model.PcDto.AnyDeskId</p>
-        <p><strong>AnyDesk Пароль: </strong>@Model.PcDto.Password</p>
-        <p><strong>Статус: </strong>@Model.PcDto.StatusText</p>
-        <p><strong>Сессия начата: </strong> <utctime class="utc-time" data-time="@Model.PcDto.LastStatusChange.ToUtc().ToString("o")"></utctime>
-        <p></p>
-        <a class="btn btn-success w-100" href="anydesk:@Model.PcDto.AnyDeskId">Зайти через AnyDesk</a>
-        <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
-        <p></p>
-        <div id="pcFreeUpTimerDiv" style="display: none">
-            Компьютером можно пользоваться еще:
-            <p id="pcFreeUpTimer"></p>
+    <div class="d-flex flex-row flex-nowrap">
+        <div class="col-4">
+            <h2>Номера</h2>
+            <div id="phones" class="d-flex flex-row flex-wrap gap-1 overflow-scroll justify-content-center" style="height: 25em">
+            </div>
         </div>
-        <button id="pausePc" class="btn btn-warning w-100 mt-1">@(Model.IsPaused ? "Снять с паузы" : "Пауза")</button>
+        <div class="col-4">
+            <div id="pc-info" class="position-relative border rounded p-3 mt-3 d-inline-block text-left">
+                <a id="reportPc" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 p-1" style="height: 2em; width: 2em">
+                    <img src="img/icons/warning.png" alt="Report" class="w-100 h-100 align-baseline">
+                </a>
+                <p><strong>AnyDesk ID: </strong>@Model.PcDto.AnyDeskId</p>
+                <p><strong>AnyDesk Пароль: </strong>@Model.PcDto.Password</p>
+                <p><strong>Статус: </strong>@Model.PcDto.StatusText</p>
+                <p><strong>Сессия начата: </strong> <utctime class="utc-time" data-time="@Model.PcDto.LastStatusChange.ToUtc().ToString("o")"></utctime>
+                <p></p>
+                <a class="btn btn-success w-100" href="anydesk:@Model.PcDto.AnyDeskId">Зайти через AnyDesk</a>
+                <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
+                <p></p>
+                <div id="pcFreeUpTimerDiv" style="display: none">
+                    Компьютером можно пользоваться еще:
+                    <p id="pcFreeUpTimer"></p>
+                </div>
+                <button id="pausePc" class="btn btn-warning w-100 mt-1">@(Model.IsPaused ? "Снять с паузы" : "Пауза")</button>
+            </div>
+            <div class="mt-4" id="shiftTimer"></div>
+            <div class="mt-4">
+                <button id="endShiftBtn" class="btn btn-danger" style="display: none">Завершить смену</button>
+            </div>    
+        </div>
+        <div class="col-4">
+            <h2>Почты</h2>
+            <div id="emails" class="d-flex flex-column flex-nowrap gap-1 overflow-scroll" style="height: 25em">
+            </div>
+        </div>
     </div>
-    
-
-    <div class="mt-4" id="shiftTimer"></div>
-    <div class="mt-4">
-        <button id="endShiftBtn" class="btn btn-danger" style="display: none">Завершить смену</button>
-    </div>
-    
     @await Html.PartialAsync("Partials/GameListPartial")
 </div>
 
@@ -167,5 +178,23 @@
             if (res.ok) window.location.href = "/Work";
             else alert("Ошибка при завершении смены");
         });
+    </script>
+    <script>
+        async function Init(){
+            const res = await fetch("/Work/BlockedCredentials");
+            const data = await res.json();
+            
+            LoadTable(document.getElementById("phones"), data.phones, "8em");
+            LoadTable(document.getElementById("emails"), data.emails, "100%");
+        }
+        
+        function LoadTable(table, data, width){
+            console.log(data)
+            table.innerHTML = data.map(entry => `
+                <span class="border rounded fw-bold align-content-center" style="width: ${width}; height: 2em">${entry}</span>
+            `).join('');
+        }
+        
+        Init();
     </script>
 }

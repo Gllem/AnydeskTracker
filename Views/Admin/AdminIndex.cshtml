@@ -4,10 +4,32 @@
 }
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
-<div class="d-flex flex-nowrap gap-3 h-100">
+<div class="d-flex flex-nowrap gap-3 h-75">
     <a class="btn btn-success h-25 align-content-center align-self-center" asp-action="Computers" style="flex: 1; font-size: xx-large">Компьютеры</a>
     <a class="btn btn-success h-25 align-content-center align-self-center" asp-action="Games" style="flex: 1; font-size: xx-large">Игры</a>
     <a class="btn btn-success h-25 align-content-center align-self-center" asp-action="Users" style="flex: 1; font-size: xx-large">Пользователи</a>
     <a class="btn btn-success h-25 align-content-center align-self-center" asp-action="Bots" style="flex: 1; font-size: xx-large">Боты</a>
-    
 </div>
+<div class="d-flex flex-nowrap gap-3 h-25">
+    <a id="fetchBlocked" class="btn btn-success h-75 align-content-center align-self-center" style="flex: 1; font-size: xx-large">Стянуть номера и почты</a>
+</div>
+
+@section Scripts
+{
+    <script>
+        document.getElementById("fetchBlocked").addEventListener("click", async () => {
+            const res = await fetch('/api/admin/fetchCredentials', {
+                method: 'POST'
+            });
+            
+            if (res.ok)
+            {
+                alert("Все прошло успешно")
+            }
+            else
+            {
+                alert("Ошибка при парсинге почт и номеров");
+            }
+        })
+    </script>
+}

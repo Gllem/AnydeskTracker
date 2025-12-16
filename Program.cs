@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
@@ -25,9 +26,24 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders().AddDefaultUI();
 
+builder.Services.AddHttpClient("Beget")
+    .ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        var cookies = new CookieContainer();
+
+        cookies.Add(new Cookie("beget", "begetok", "/", "moshelovka.onf.ru"));
+        
+        return new HttpClientHandler
+        {
+            UseCookies = true,
+            CookieContainer = cookies
+        };
+    });
+
 builder.Services.AddScoped<UserWorkService>();
 builder.Services.AddScoped<TelegramService>();
 builder.Services.AddScoped<PcService>();
+builder.Services.AddScoped<ParserService>();
 builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClientService.Initializer()
 {
     ApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")
@@ -36,6 +52,7 @@ builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClien
 builder.Services.AddHostedService<PcStatusUpdater>();
 builder.Services.AddHostedService<ActionCleanupService>();
 builder.Services.AddHostedService<TelegramNotifier>();
+builder.Services.AddHostedService<DailyParserService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

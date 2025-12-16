@@ -109,6 +109,16 @@ namespace AnydeskTracker.Controllers
 				x.GameUrl
 			}));
 		}
+		
+		[HttpGet("BlockedCredentials")]
+		public async Task<IActionResult> FetchBlockedCredentials()
+		{
+			return Ok(new
+			{
+				Phones = context.BlockedPhoneNumbers.Select(x => x.Phone),
+				Emails = context.BlockedEmails.Select(x => x.Email)
+			});
+		}
 
 		[HttpGet("Active")]
 		public async Task<IActionResult> GetActivePc()
