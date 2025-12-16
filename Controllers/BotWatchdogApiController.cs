@@ -18,6 +18,9 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 
 		if (pc == null)
 			return NotFound();
+
+		if (pc.Status is PcStatus.Busy or PcStatus.CoolingDown)
+			return BadRequest("PC is busy");
 		
 		Dictionary<string, string> statuses = statusDto.StatusChecks.ToDictionary(
 					x => x.Key,
