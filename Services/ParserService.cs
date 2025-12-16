@@ -14,11 +14,6 @@ public class ParserService(ApplicationDbContext context, IHttpClientFactory http
 	
 	public async Task FetchBlockedCredentials(CancellationToken stoppingToken = default)
 	{
-		context.BlockedPhoneNumbers.RemoveRange(context.BlockedPhoneNumbers);
-		context.BlockedEmails.RemoveRange(context.BlockedEmails);
-
-		await context.SaveChangesAsync(stoppingToken);
-
 		var phoneNumbers = new List<string>();
 		var emails = new List<string>();
 
@@ -30,9 +25,13 @@ public class ParserService(ApplicationDbContext context, IHttpClientFactory http
 				.Where(x => x.All(char.IsDigit))); 
 				
 			emails.AddRange(nodes
-				.Where(x => Regex.IsMatch(x, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$")));
+				.Where(x => Regex.IsMatch(x, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$")) // E-Mail Regex check 
+				.Where(x => !x.Split("@")[1].ToLower().Contains("yandex"))); // No Yandex domains
 		}
-			
+	
+		context.BlockedPhoneNumbers.RemoveRange(context.BlockedPhoneNumbers);
+		context.BlockedEmails.RemoveRange(context.BlockedEmails);
+		
 		context.BlockedPhoneNumbers.AddRange(
 			phoneNumbers
 				.Distinct()
