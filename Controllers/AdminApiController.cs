@@ -327,7 +327,11 @@ namespace AnydeskTracker.Controllers
 			return Ok(pcs.Select(pc =>
 			{
 				var lastAction = context.BotActions.Where(x => x.PcId == pc.Id).ToList().MaxBy(x => x.Timestamp);
-				var lastDolphinAction = context.BotActions.Where(x => x.PcId == pc.Id).ToList().MaxBy(x => x.Timestamp);
+
+				var dolphinChecks = context.DolphinActions.Where(x => x.PcId == pc.Id).ToList();
+				
+				var lastDolphinAction = dolphinChecks.MaxBy(x => x.Timestamp);
+				var dolphinChecksCount = dolphinChecks.Count(x => x.Timestamp.Date == DateTime.UtcNow.Date);
 				
 				return new
 				{
@@ -340,9 +344,7 @@ namespace AnydeskTracker.Controllers
 					Error = lastAction?.Error ?? false,
 					lastAction?.ProcessesStatus,
 					lastAction?.SchedulerStatus,
-					lastAction?.DiskStatus,
-					lastAction?.UserStatus,
-					lastAction?.RamStatus
+					dolphinChecksCount
 				};
 			}));
 		}

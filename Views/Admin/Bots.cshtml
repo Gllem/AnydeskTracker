@@ -36,9 +36,7 @@
                     <b>Время последней проверки Dolphin: </b>${localTime(bot.lastDolphinCheckTime).toLocaleString()}<br>
                     <b>Выключенные процессы: </b>${bot.processesStatus}<br>
                     <b>Выключенные задачи планировщика: </b>${bot.schedulerStatus}<br>
-                    <b>Диск: </b>${bot.diskStatus ? bot.diskStatus : "OK"}<br>
-                    <b>Пользователь: </b>${bot.userStatus ? bot.userStatus : "OK"}<br>
-                    <b>Память: </b>${bot.ramStatus ? bot.ramStatus : "OK"}<br>
+                    <b>Количество проверок dolphin: </b>${bot.dolphinChecksCount}<br>
                 `
             else
                 botStatus = "Еще не получал ни одного статуса"
