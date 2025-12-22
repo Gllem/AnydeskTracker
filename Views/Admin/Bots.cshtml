@@ -19,25 +19,46 @@
 
         data.forEach(bot => {
             const div = document.createElement("div");
-            div.className = `btn p-1 ${bot.error ? "btn-danger" : "btn-primary"} d-flex flex-column`;
-            div.style = "width: 20em; min-height: 15em"
+            
+            let btnClass;
+            let botState;
+            
+            switch (bot.status){
+                case "BUSY":
+                    btnClass = "btn-warning"
+                    botState = "Занят"
+                    break
+                case "COOLING":
+                    btnClass = "btn-warning"
+                    botState = "Охлаждается"
+                    break
+                case "ERROR":
+                    btnClass = "btn-danger"
+                    botState = `Ошибка (${bot.errorStatuses.join(', ')})`
+                    break
+                default:
+                    btnClass = "btn-primary"
+                    botState = "ОК"
+                    break;
+            }
+            
+            div.className = `btn p-1 ${btnClass} d-flex flex-column`;
+            div.style = "width: 20em; min-height: 10em"
 
             let botName = bot.botId;
             if (!botName)
                 botName = bot.pcId;
             
-            console.log(bot);
-            
-            let botStatus = "";
-            if (bot.hasChecks)
+            let botStatus;
+            if (bot.hasChecks) 
+            {
                 botStatus = `
-                    <b>Статус: </b>${bot.error ? "Ошибка" : "Работает"}<br>
+                    <b>Статус: </b>${botState}<br>
                     <b>Время последней проверки пк: </b>${localTime(bot.lastCheckTime).toLocaleString()}<br>
-                    <b>Время последней проверки Dolphin: </b>${localTime(bot.lastDolphinCheckTime).toLocaleString()}<br>
-                    <b>Выключенные процессы: </b>${bot.processesStatus}<br>
-                    <b>Выключенные задачи планировщика: </b>${bot.schedulerStatus}<br>
+                    <b>Время последней проверки Dolphin: </b>${bot.lastDolphinCheckTime ? localTime(bot.lastDolphinCheckTime).toLocaleString() : "Не было проверок"}<br>
                     <b>Количество проверок dolphin: </b>${bot.dolphinChecksCount}<br>
                 `
+            }
             else
                 botStatus = "Еще не получал ни одного статуса"
             

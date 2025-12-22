@@ -61,6 +61,7 @@
     <script>
         ConvertAllToLocalTime(document);
         document.getElementById('bot_id').value = "@Model.BotId";
+        const lastLogDate = "@(Model.BotLogs.Length > 0 ? Model.BotLogs.Reverse().First().LogDate : "")"
 
         function loadActionsButtonClick(date){
             location.hash = date;
@@ -103,6 +104,8 @@
             const id = location.hash.replace('#', '');
             if (id)
                 loadActions(id);
+            else if (lastLogDate)
+                loadActionsButtonClick(lastLogDate)
         }
         
         document.getElementById('changeBotInfo').addEventListener('submit', async (e) => {

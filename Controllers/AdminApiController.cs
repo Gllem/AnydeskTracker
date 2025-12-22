@@ -332,6 +332,29 @@ namespace AnydeskTracker.Controllers
 				
 				var lastDolphinAction = dolphinChecks.MaxBy(x => x.Timestamp);
 				var dolphinChecksCount = dolphinChecks.Count(x => x.Timestamp.Date == DateTime.UtcNow.Date);
+
+				List<string> errorStatuses = new List<string> { };
+
+				if (lastAction != null)
+				{
+					if(!string.IsNullOrEmpty(lastAction.ProcessesStatus))
+						errorStatuses.Add("PRC");
+					if(!string.IsNullOrEmpty(lastAction.SchedulerStatus))
+						errorStatuses.Add("SC");
+					if(!string.IsNullOrEmpty(lastAction.DiskStatus))
+						errorStatuses.Add("DSK");
+					if(!string.IsNullOrEmpty(lastAction.RamStatus))
+						errorStatuses.Add("RAM");
+					if(!string.IsNullOrEmpty(lastAction.UserStatus))
+						errorStatuses.Add("USR");
+				}
+
+				string status = errorStatuses.Count > 0 ? "ERROR" : "OK";
+				
+				if (pc.Status == PcStatus.Busy)
+					status = "BUSY";
+				if (pc.Status == PcStatus.CoolingDown)
+					status = "COOLING";
 				
 				return new
 				{
@@ -339,11 +362,10 @@ namespace AnydeskTracker.Controllers
 					pc.PcId,
 					PcModelId = pc.Id,
 					HasChecks = lastAction != null,
+					ErrorStatuses = errorStatuses,
+					Status = status,
 					LastCheckTime = lastAction?.Timestamp.ToUtc(),
 					LastDolphinCheckTime = lastDolphinAction?.Timestamp.ToUtc(),
-					Error = lastAction?.Error ?? false,
-					lastAction?.ProcessesStatus,
-					lastAction?.SchedulerStatus,
 					dolphinChecksCount
 				};
 			}));

@@ -73,6 +73,6 @@ public class AdminController(ApplicationDbContext context) : Controller
 		return View("Bot", new AdminBotPageDto(
 			pc,
 			lastDolphinCheck,
-			botLogDates.Select(x => new AdminBotPageDto.BotLog(x, dolphinLogs.Count(y => y.Timestamp.Date == x))).ToArray()));
+			botLogDates.Order().Select(x => new AdminBotPageDto.BotLog(x, dolphinLogs.Count(y => y.Timestamp.Date == x))).ToArray()));
 	}
 }
