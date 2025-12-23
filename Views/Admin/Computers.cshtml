@@ -58,7 +58,7 @@
             tbody.innerHTML = data.map(p => {
                 const freeUpButtonHtml = `<button class="btn btn-sm btn-secondary" onclick="forceFreePc(${p.id})">Освободить</button>`
                 return `
-                <tr data-id="${p.id}" data-order="">
+                <tr data-id="${p.id}" data-order="${p.sortOrder}">
                     <td class="drag-handle text-muted">
                       ☰
                     </td>
@@ -217,7 +217,6 @@
             
 
             start: function () {
-                // блокируем drag если идёт редактирование
                 if (editing) {
                     return false;
                 }
