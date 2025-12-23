@@ -334,8 +334,8 @@ namespace AnydeskTracker.Controllers
 				var dolphinChecksCount = dolphinChecks.Count(x => x.Timestamp.Date == DateTime.UtcNow.Date);
 
 				List<string> errorStatuses = new List<string> { };
-
-				if (lastAction != null)
+				
+				if (lastAction != null && (lastDolphinAction == null || lastDolphinAction.Timestamp < lastAction.Timestamp))
 				{
 					if(!string.IsNullOrEmpty(lastAction.ProcessesStatus))
 						errorStatuses.Add("PRC");
