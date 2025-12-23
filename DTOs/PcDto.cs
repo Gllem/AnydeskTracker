@@ -3,26 +3,18 @@ using AnydeskTracker.Models;
 
 namespace AnydeskTracker.DTOs;
 
-public class PcDto
+public class PcDto(PcModel model)
 {
-	public int Id { get; set; }
+	public int Id { get; set; } = model.Id;
+	public string BotId { get; set; } = model.BotId;
 
-	public string AnyDeskId { get; set; }
+	public string AnyDeskId { get; set; } = model.PcId;
 
-	public string Password { get; set; }
+	public string Password { get; set; } = model.Password;
 
-	public PcStatus Status { get; set; }
+	public PcStatus Status { get; set; } = model.Status;
 
 	public string StatusText => Status.GetDisplayName();
 	
-	public DateTime LastStatusChange { get; set; }
-	
-	public PcDto(PcModel model)
-	{
-		Id = model.Id;
-		AnyDeskId = model.PcId;
-		Password = model.Password;
-		Status = model.Status;
-		LastStatusChange = model.LastStatusChange.ToUtc();
-	}
+	public DateTime LastStatusChange { get; set; } = model.LastStatusChange.ToUtc();
 }

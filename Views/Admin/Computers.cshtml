@@ -6,7 +6,7 @@
 
 <div class="d-flex h-100 gap-3">
     <div class="col-4 d-flex gap-3 flex-column">
-        <h2>Управление ПК</h2>
+        <h2 class="m-0">Управление ПК</h2>
 
         <form id="addForm" class="border rounded-3 p-3">
             <input id="pcId" type="text" placeholder="ID ПК" class="form-control mb-2" required/>
@@ -26,23 +26,27 @@
         </div>
     </div>
 
-    <table class="table h-25 table-bordered" id="pcTable">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>AnyDesk ID</th>
-            <th>Пароль</th>
-            <th>Статус</th>
-            <th>Последнее изменение</th>
-            <th></th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div class="flex-grow-1 d-flex gap-3 flex-column">
+        <button id="saveBtn" class="btn btn-success w-25">Сохранить изменения</button>
+        <table class="table h-25 table-bordered" id="pcTable">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>AnyDesk ID</th>
+                <th>Пароль</th>
+                <th>Статус</th>
+                <th>Последнее изменение</th>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 
 @section Scripts {
+    <!-- TableFetch -->
     <script>
         async function loadPcs() {
             const res = await fetch('/api/admin/pcs');
@@ -53,10 +57,10 @@
             tbody.innerHTML = data.map(p => {
                 const freeUpButtonHtml = `<button class="btn btn-sm btn-secondary" onclick="forceFreePc(${p.id})">Освободить</button>`
                 return `
-                <tr>
-                    <td>${p.id}</td>
-                    <td>${p.anyDeskId}</td>
-                    <td>${p.password}</td>
+                <tr data-id="${p.id}">
+                    <td class="editable" data-field="botId">${p.botId}</td>
+                    <td class="editable" data-field="anyDeskId">${p.anyDeskId}</td>
+                    <td class="editable" data-field="password">${p.password}</td>
                     <td class="${p.status === 3 ? "text-danger" : ""}">${p.statusText}</td>
                     <td>${new Date(p.lastStatusChange).toLocaleString()}</td>
                     <td>
@@ -76,15 +80,31 @@
             await fetch('/api/admin/pcs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pcId, password, status: @((int)PcStatus.Free), botId: "" })
+                body: JSON.stringify({ pcId, password, status: @((int) PcStatus.Free), botId: "" })
             });
             e.target.reset();
-            loadPcs();
+            await loadPcs();
         });
+
+        async function deletePc(id) {
+            await fetch(`/api/admin/pcs/${id}`, { method: 'DELETE' });
+            await loadPcs();
+        }
         
+        async function forceFreePc(id) {
+            await fetch(`/api/admin/pcs/${id}/forceFreeUp`, { method: 'PUT' })
+            await loadPcs();
+        }
+
+        loadPcs();
+    
+    </script>
+    
+    <!-- Left buttons -->
+    <script>
         document.getElementById('updatePasswords').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const sheetUrl = document.getElementById('spreadSheetLink').value;
             const sheetName = document.getElementById('spreadSheetName').value;
             await fetch('/api/admin/pcs/updatePcs', {
@@ -92,19 +112,89 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sheetUrl, sheetName })
             });
-            loadPcs();
+            await loadPcs();
+        });
+    </script>
+
+    <!-- Table editing -->
+    <script>
+        let editing = null;
+        const pcTable = $('#pcTable');
+
+        pcTable.on('click', '.editable', function () {
+            if (editing) return;
+
+            const cell = $(this);
+            const oldValue = cell.text().trim();
+
+            let input = $(`<input type="text" class="form-control form-control-sm flex-wrap m-0">`);
+            input.val(oldValue);
+
+            cell.data('original', oldValue);
+            cell.empty().append(input);
+            input.focus();
+
+            editing = cell;
+        });
+        
+        pcTable.on('blur', 'input, select', function () {
+            finishEdit($(this).closest('.editable'), true);
         });
 
-        async function deletePc(id) {
-            await fetch(`/api/admin/pcs/${id}`, { method: 'DELETE' });
-            loadPcs();
-        }
-        
-        async function forceFreePc(id) {
-            await fetch(`/api/admin/pcs/${id}/forceFreeUp`, { method: 'PUT' })
-            loadPcs();
+        pcTable.on('keydown', 'input, select', function (e) {
+            if (e.key === 'Enter') {
+                finishEdit($(this).closest('.editable'), true);
+            }
+            if (e.key === 'Escape') {
+                finishEdit($(this).closest('.editable'), false);
+            }
+        });
+
+        function finishEdit(cell, save) {
+            const input = cell.find('input, select');
+            const newValue = input.val();
+            const oldValue = cell.data('original');
+
+            cell.empty().text(save ? newValue : oldValue);
+            
+            if (save && newValue !== oldValue) {
+                cell.closest('tr').addClass('table-warning');
+                cell.data('changed', true);
+            }
+
+            editing = null;
         }
 
-        loadPcs();
+        $('#saveBtn').on('click', function () {
+            const changes = [];
+
+            $('#pcTable tbody tr.table-warning').each(function () {
+                const row = $(this);
+                const item = { id: row.data('id') };
+
+                row.find('.editable').each(function () {
+                    const cell = $(this);
+                    item[cell.data('field')] = cell.text().trim();
+                });
+
+                changes.push(item);
+            });
+
+            if (!changes.length) {
+                alert('Нет изменений');
+                return;
+            }
+            
+            $.ajax({
+                url: '/api/admin/pcs/bulk-update',
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(changes),
+                success: () => {
+                    loadPcs();
+                },
+                error: () => alert('Ошибка')
+            });
+        });
     </script>
 }

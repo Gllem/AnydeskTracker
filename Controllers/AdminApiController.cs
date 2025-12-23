@@ -103,6 +103,24 @@ namespace AnydeskTracker.Controllers
 			return Ok(existing);
 		}
 
+		[HttpPut("pcs/bulk-update")]
+		public async Task<IActionResult> BulkUpdatePcs([FromBody] PcBulkUpdateDto[] updateDtos)
+		{
+			foreach (var updateDto in updateDtos)
+			{
+				var existing = await context.Pcs.FindAsync(updateDto.Id);
+				if (existing == null)
+					return NotFound();
+
+				existing.PcId = updateDto.AnyDeskId;
+				existing.BotId = updateDto.BotId;
+				existing.Password = updateDto.Password;
+			}
+
+			await context.SaveChangesAsync();
+			return Ok();
+		}
+
 		[HttpPut("pcs/{id}/forceFreeUp")]
 		public async Task<IActionResult> ForceFreeUpPc(int id)
 		{
