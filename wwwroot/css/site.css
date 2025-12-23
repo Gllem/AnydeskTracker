@@ -26,9 +26,3 @@ main{
   height: 80%;
 }
 
-.editable{
-  cursor: pointer;
-}
-.editable:hover {
-  background: #f8f9fa;
-}

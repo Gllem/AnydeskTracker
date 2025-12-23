@@ -31,6 +31,7 @@
         <table class="table h-25 table-bordered" id="pcTable">
             <thead>
             <tr>
+                <th style="width:30px"></th>
                 <th>ID</th>
                 <th>AnyDesk ID</th>
                 <th>Пароль</th>
@@ -57,7 +58,10 @@
             tbody.innerHTML = data.map(p => {
                 const freeUpButtonHtml = `<button class="btn btn-sm btn-secondary" onclick="forceFreePc(${p.id})">Освободить</button>`
                 return `
-                <tr data-id="${p.id}">
+                <tr data-id="${p.id}" data-order="">
+                    <td class="drag-handle text-muted">
+                      ☰
+                    </td>
                     <td class="editable" data-field="botId">${p.botId}</td>
                     <td class="editable" data-field="anyDeskId">${p.anyDeskId}</td>
                     <td class="editable" data-field="password">${p.password}</td>
@@ -170,7 +174,10 @@
 
             $('#pcTable tbody tr.table-warning').each(function () {
                 const row = $(this);
-                const item = { id: row.data('id') };
+                const item = {
+                    id: row.data('id'),
+                    sortOrder: row.data('order')
+                };
 
                 row.find('.editable').each(function () {
                     const cell = $(this);
@@ -179,6 +186,8 @@
 
                 changes.push(item);
             });
+            
+            console.log(changes)
 
             if (!changes.length) {
                 alert('Нет изменений');
@@ -197,4 +206,56 @@
             });
         });
     </script>
+
+    <!-- Table drag -->
+    <script>
+        $('#pcTable tbody').sortable({
+            handle: '.drag-handle',
+            axis: 'y',
+            helper: 'clone',
+            placeholder: 'sortable-placeholder',
+            
+
+            start: function () {
+                // блокируем drag если идёт редактирование
+                if (editing) {
+                    return false;
+                }
+            },
+
+            update: function () {
+                updateOrder();
+            }
+        });
+
+        function updateOrder() {
+            $('#pcTable tbody tr').each(function (index) {
+                $(this)
+                    .attr('data-order', index + 1)
+                    .addClass('table-warning')
+                    .data('orderChanged', true);
+            });
+        }
+    </script>
+    
+    <style>
+        .editable{
+            cursor: pointer;
+        }
+        .editable:hover {
+            background: #f8f9fa;
+        }
+
+        .drag-handle {
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .sortable-placeholder {
+            height: 45px;
+            background: #e9ecef;
+        }
+    </style>
 }

@@ -115,6 +115,7 @@ namespace AnydeskTracker.Controllers
 				existing.PcId = updateDto.AnyDeskId;
 				existing.BotId = updateDto.BotId;
 				existing.Password = updateDto.Password;
+				existing.SortOrder = updateDto.SortOrder;
 			}
 
 			await context.SaveChangesAsync();

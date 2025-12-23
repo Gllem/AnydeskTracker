@@ -7,6 +7,7 @@ public class PcDto(PcModel model)
 {
 	public int Id { get; set; } = model.Id;
 	public string BotId { get; set; } = model.BotId;
+	public int SortOrder { get; set; } = model.SortOrder;
 
 	public string AnyDeskId { get; set; } = model.PcId;
 
