@@ -266,14 +266,14 @@ namespace AnydeskTracker.Controllers
 			{
 				var session = context.WorkSessionModels.FirstOrDefault(workSession => workSession.IsActive && workSession.UserId == user.Id);
 				
-				var currentPcUsage = session == null ? null : context.PcUsages.FirstOrDefault(pc => pc.IsActive && pc.WorkSessionId == session.Id);
+				var currentPcUsage = session == null ? null : context.PcUsages.Include(x => x.Pc).FirstOrDefault(pc => pc.IsActive && pc.WorkSessionId == session.Id);
 				
 				return new
 				{
 					UserId = user.Id,
 					UserName = user.UserName ?? String.Empty,
 					SessionStartTime = session?.StartTime.ToUtc(),
-					CurrentPcId = currentPcUsage?.PcId,
+					CurrentPcId = currentPcUsage?.Pc.DisplayId,
 					Paused = currentPcUsage?.IsPaused,
 					PauseTime = currentPcUsage?.PauseStartTime?.ToUtc()
 				};

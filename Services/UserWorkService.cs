@@ -66,7 +66,7 @@ namespace AnydeskTracker.Services
             context.PcUsages.Add(usage);
             
             await context.SaveChangesAsync();
-            await actionService.LogAsync(session, ActionType.PcAssign, $"{computerId}");
+            await actionService.LogAsync(session, ActionType.PcAssign, $"{computer.DisplayId}");
 
             return usage;
         }
@@ -94,7 +94,7 @@ namespace AnydeskTracker.Services
 
             await context.SaveChangesAsync();
             
-            await actionService.LogAsync(session, ActionType.PcReport, $"ID: {pc.Id}, ПРИЧИНА: {reason}");
+            await actionService.LogAsync(session, ActionType.PcReport, $"ID: {pc.Id}, BotID: {pc.BotId}, AnyDeskID: {pc.PcId}, ПРИЧИНА: {reason}");
 
             var user = await context.Users.FindAsync(userId);
             
@@ -102,6 +102,7 @@ namespace AnydeskTracker.Services
                 $"\u26a0\ufe0f Репорт\n" +
                 $"Пользователь: {user?.UserName}\n" +
                 $"ID: {pc.Id}\n" +
+                $"BotID: {pc.BotId}\n" +
                 $"AnyDesk ID: {pc.PcId}\n" +
                 $"Причина: {reason}"
                 );
@@ -120,7 +121,7 @@ namespace AnydeskTracker.Services
 
             FreeUpPc(activeUsage);
             await context.SaveChangesAsync();
-            await actionService.LogAsync(session, ActionType.PcRelease, $"{activeUsage.PcId}");
+            await actionService.LogAsync(session, ActionType.PcRelease, $"{activeUsage.Pc.DisplayId}");
             return true;
         }
         
@@ -137,7 +138,7 @@ namespace AnydeskTracker.Services
             if (activeUsage != null)
             {
                 FreeUpPc(activeUsage);
-                await actionService.LogAsync(session, ActionType.PcRelease, $"{activeUsage.PcId}");
+                await actionService.LogAsync(session, ActionType.PcRelease, $"{activeUsage.Pc.DisplayId}");
             }
             
             await context.SaveChangesAsync();

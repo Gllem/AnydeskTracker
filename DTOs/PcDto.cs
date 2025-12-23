@@ -18,4 +18,5 @@ public class PcDto(PcModel model)
 	public string StatusText => Status.GetDisplayName();
 	
 	public DateTime LastStatusChange { get; set; } = model.LastStatusChange.ToUtc();
+	public string DisplayId => model.DisplayId;
 }
