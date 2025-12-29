@@ -451,6 +451,41 @@ namespace AnydeskTracker.Controllers
 		}
 #endregion
 
+#region BotGames
+
+		[HttpGet("bots/games")]
+		public async Task<IActionResult> GetBotGames()
+		{
+			var games = await context.BotGames.ToListAsync();
+			return Ok(games);
+		}
+		
+		[HttpPost("bots/games")]
+		public async Task<IActionResult> AddBotGame([FromBody] BotGame? game)
+		{
+			if (game == null)
+				return BadRequest();
+			
+			context.BotGames.Add(game);
+			
+			await context.SaveChangesAsync();
+			return Ok(game);
+		}
+		
+		[HttpDelete("bots/games/{id}")]
+		public async Task<IActionResult> DeleteBotGame(int id)
+		{
+			var existing = await context.BotGames.FindAsync(id);
+			
+			if (existing == null) 
+				return NotFound();
+
+			context.BotGames.Remove(existing);
+			await context.SaveChangesAsync();
+			return NoContent();
+		}
+#endregion		
+		
 #region Other
 
 		[HttpPost("fetchCredentials")]

@@ -50,6 +50,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
     public DbSet<WorkSessionModel> WorkSessionModels { get; set; }
     public DbSet<PcUsage> PcUsages { get; set; }
     public DbSet<GameModel> Games { get; set; }
+    public DbSet<BotGame> BotGames { get; set; }
     public DbSet<UserAction> UserActions { get; set; }
     public DbSet<PcBotAction> BotActions { get; set; }
     public DbSet<PcBotDolphinAction> DolphinActions { get; set; }

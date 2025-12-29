@@ -75,4 +75,10 @@ public class AdminController(ApplicationDbContext context) : Controller
 			lastDolphinCheck,
 			botLogDates.Order().Select(x => new AdminBotPageDto.BotLog(x, dolphinLogs.Count(y => y.Timestamp.Date == x))).ToArray()));
 	}
+	
+	[HttpGet("BotGames")]
+	public async Task<IActionResult> BotGames()
+	{
+		return View("BotGames");
+	}
 }

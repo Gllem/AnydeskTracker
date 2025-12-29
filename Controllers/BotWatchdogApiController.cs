@@ -1,4 +1,5 @@
-﻿using AnydeskTracker.Data;
+﻿using System.Text;
+using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Models;
 using AnydeskTracker.Services;
@@ -77,5 +78,25 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 			pc.PcId,
 			pc.BotId
 		});
+	}
+
+	[HttpGet("BotGames")]
+	public async Task<IActionResult> GetBotGames()
+	{
+		var games = await dbContext.BotGames.ToListAsync();
+		
+		var sb = new StringBuilder();
+		foreach (var game in games)
+		{
+			sb.AppendLine(game.GameUrl);
+		}
+
+		var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+
+		return File(
+			bytes,
+			"text/plain",
+			"bt1.txt"
+		);
 	}
 }
