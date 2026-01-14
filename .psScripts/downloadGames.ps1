@@ -1,4 +1,4 @@
-$Url = "https://adt.carrothood.ru/api/watchdog/BotGames"
+$Url = "https://adt.carrothood.ru/api/watchdog/BotGames/R1"
 $TargetDir = "E:\"
 $TargetFile = Join-Path $TargetDir "bt1.txt"
 
