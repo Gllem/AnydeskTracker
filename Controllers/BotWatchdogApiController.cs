@@ -80,23 +80,40 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		});
 	}
 
-	[HttpGet("BotGames")]
-	public async Task<IActionResult> GetBotGames()
+	[HttpGet("botGames/{botId}")]
+	public async Task<IActionResult> GetBotGames(string botId)
 	{
-		var games = await dbContext.BotGames.ToListAsync();
+		var pc = await dbContext.Pcs.Include(x => x.OverrideBotGames).FirstOrDefaultAsync(x => x.BotId == botId);
+
+		if (pc == null)
+			return NotFound();
+
+		IQueryable<BotGame> query;
 		
+		if (pc.OverrideBotGames.Count != 0)
+			query = dbContext.PcModelToBotGames
+				.Where(x => x.PcModelId == pc.Id)
+				.Select(x => x.BotGame);
+		else
+			query = dbContext.BotGames.Where(x => x.IsGlobal);
+
+		var games = await query.ToListAsync();
+		
+		return File(
+			GetBotGamesFile(games),
+			"text/plain",
+			$"{botId}.txt"
+		);
+	}
+
+	private byte[] GetBotGamesFile(List<BotGame> botGames)
+	{
 		var sb = new StringBuilder();
-		foreach (var game in games)
+		foreach (var game in botGames)
 		{
 			sb.AppendLine(game.GameUrl);
 		}
 
-		var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-
-		return File(
-			bytes,
-			"text/plain",
-			"bt1.txt"
-		);
+		return Encoding.UTF8.GetBytes(sb.ToString());
 	}
 }

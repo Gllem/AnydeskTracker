@@ -1,5 +1,6 @@
 ﻿using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
+using AnydeskTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace AnydeskTracker.Controllers;
 
 [Authorize(Roles = "Admin")]
 [Route("Admin")]
-public class AdminController(ApplicationDbContext context) : Controller
+public class AdminController(ApplicationDbContext context, PcService pcService) : Controller
 {
 	[HttpGet]
 	public async Task<IActionResult> Index()
@@ -79,6 +80,8 @@ public class AdminController(ApplicationDbContext context) : Controller
 	[HttpGet("BotGames")]
 	public async Task<IActionResult> BotGames()
 	{
-		return View("BotGames");
+		var pcs = await pcService.GetAllPcs();
+		
+		return View("BotGames", new AdminBotGamesDto(pcs.ToArray()));
 	}
 }

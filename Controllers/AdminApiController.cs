@@ -454,10 +454,24 @@ public class AdminApiController(
 #region BotGames
 
 	[HttpGet("bots/games")]
-	public async Task<IActionResult> GetBotGames()
+	public async Task<IActionResult> GetAllBotsGames()
 	{
-		var games = await context.BotGames.ToListAsync();
+		var games = await context.BotGames.Where(x => x.IsGlobal).ToListAsync();
 		return Ok(games);
+	}
+	
+	[HttpGet("bots/games/{pcId}")]
+	public async Task<IActionResult> GetOverrideBotGames(int pcId)
+	{
+		var pc = await context.Pcs
+			.Include(x => x.OverrideBotGames)
+			.ThenInclude(x => x.BotGame)
+			.FirstOrDefaultAsync(x => x.Id == pcId);
+		
+		if (pc == null)
+			return NotFound();
+		
+		return Ok(pc.OverrideBotGames.Select(x => x.BotGame));
 	}
 		
 	[HttpPost("bots/games")]
@@ -471,16 +485,54 @@ public class AdminApiController(
 		await context.SaveChangesAsync();
 		return Ok(game);
 	}
+	
+	[HttpPost("bots/games/{pcId}")]
+	public async Task<IActionResult> AddBotGameOverride(int pcId, [FromBody] BotGame? game)
+	{
+		var pc = await context.Pcs
+			.Include(x => x.OverrideBotGames)
+			.ThenInclude(x => x.BotGame)
+			.FirstOrDefaultAsync(x => x.Id == pcId);
+
+		if (pc == null)
+			return NotFound();
+		
+		if (game == null)
+			return BadRequest();
+
+		game.IsGlobal = false;
+
+		context.BotGames.Add(game);
+		
+		await context.SaveChangesAsync();
+		
+		context.PcModelToBotGames.Add(new PcModelToBotGame
+		{
+			PcModelId = pc.Id,
+			BotGameId = game.Id,
+		});
+			
+		await context.SaveChangesAsync();
+		return Ok(game);
+	}
 		
 	[HttpDelete("bots/games/{id}")]
 	public async Task<IActionResult> DeleteBotGame(int id)
 	{
-		var existing = await context.BotGames.FindAsync(id);
+		var botGame = await context.BotGames.FindAsync(id);
 			
-		if (existing == null) 
+		if (botGame == null) 
 			return NotFound();
 
-		context.BotGames.Remove(existing);
+		var pcModelToBotGame = await context.PcModelToBotGames.FirstOrDefaultAsync(x => x.BotGameId == id);
+
+		if (pcModelToBotGame != null)
+		{
+			context.PcModelToBotGames.Remove(pcModelToBotGame);
+		}
+		
+		context.BotGames.Remove(botGame);
+		
 		await context.SaveChangesAsync();
 		return NoContent();
 	}

@@ -32,7 +32,9 @@ namespace AnydeskTracker.Models
 		public PcStatus Status { get; set; } = PcStatus.Free;
 
 		public DateTime LastStatusChange { get; set; } = DateTime.UtcNow;
-
+		
+		public ICollection<PcModelToBotGame> OverrideBotGames { get; set; } = new List<PcModelToBotGame>();
+		
 		public int SortOrder { get; set; }
 		
 		public string DisplayId => 

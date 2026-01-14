@@ -19,4 +19,5 @@ public class PcDto(PcModel model)
 	
 	public DateTime LastStatusChange { get; set; } = model.LastStatusChange.ToUtc();
 	public string DisplayId => model.DisplayId;
+	public bool HasOverridenGames => model.OverrideBotGames.Count != 0;
 }
