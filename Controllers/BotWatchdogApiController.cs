@@ -88,9 +88,31 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		if (pc == null)
 			return NotFound();
 
+		return await GetGames(pc);
+	}
+	
+	[HttpGet("botGamesId/{pcId}")]
+	public async Task<IActionResult> GetBotGames(int pcId)
+	{
+		var pc = await dbContext.Pcs.Include(x => x.OverrideBotGames).FirstOrDefaultAsync(x => x.Id == pcId);
+
+		if (pc == null)
+			return NotFound();
+
+		return await GetGames(pc);
+	}
+	
+	[HttpGet("botGamesId/")]
+	public async Task<IActionResult> GetBotGames()
+	{
+		return await GetGames(null);
+	}
+
+	private async Task<IActionResult> GetGames(PcModel? pc)
+	{
 		IQueryable<BotGame> query;
 		
-		if (pc.OverrideBotGames.Count != 0)
+		if (pc != null && pc.OverrideBotGames.Count != 0)
 			query = dbContext.PcModelToBotGames
 				.Where(x => x.PcModelId == pc.Id)
 				.Select(x => x.BotGame);
@@ -102,7 +124,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		return File(
 			GetBotGamesFile(games),
 			"text/plain",
-			$"{botId}.txt"
+			$"{pc?.DisplayId ?? "Games"}.txt"
 		);
 	}
 

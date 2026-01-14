@@ -46,6 +46,7 @@
 {
     <script>
         let currentPcId = '';
+        let currentBotId = '';
         
         function loadPcGamesButtonClick(pcId){
             location.hash = pcId;
@@ -59,6 +60,7 @@
             const res = await fetch(`/api/admin/bots/games/${pcId}`);
             const data = await res.json();
             const tbody = document.querySelector('#gamesTable tbody');
+            
             tbody.innerHTML = data.map(botGame => `
                 <tr>
                     <td>${botGame.gameUrl}</td>
@@ -100,7 +102,7 @@
         }
         
         async function downloadBotGames(){
-            window.location.href = `/admin/bots/games/export/${currentPcId}`;
+            window.location.href = `/api/watchdog/botGamesId/${currentPcId}`;
         }
         
         window.addEventListener('load', loadActionsFromHash);
