@@ -9,5 +9,6 @@ public class BotGame
 	[Required]
 	public string GameUrl { get; set; } = string.Empty;
 
-	public bool IsGlobal { get; set; } = true;
+	public bool IsGlobal { get; set; }
+	public int GlobalOrder { get; set; }
 }

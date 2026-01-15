@@ -115,9 +115,10 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		if (pc != null && pc.OverrideBotGames.Count != 0)
 			query = dbContext.PcModelToBotGames
 				.Where(x => x.PcModelId == pc.Id)
+				.OrderBy(x => x.Order)
 				.Select(x => x.BotGame);
 		else
-			query = dbContext.BotGames.Where(x => x.IsGlobal);
+			query = dbContext.BotGames.Where(x => x.IsGlobal).OrderBy(x => x.GlobalOrder);
 
 		var games = await query.ToListAsync();
 		

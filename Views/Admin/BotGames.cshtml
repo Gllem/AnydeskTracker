@@ -8,13 +8,13 @@
 
 <div class="w-100 h-100 d-flex flex-row justify-content-between">
     <div class="col-3 px-1 d-flex flex-column gap-3 pe-3">
-        <button class="btn btn-outline-primary fw-bold w-100" onclick="loadPcGamesButtonClick('')">
+        <button data-id="" class="botButton btn btn-outline-primary fw-bold w-100" onclick="loadPcGamesButtonClick('')">
             Общий список
         </button>
         <div class="d-grid gap-2 justify-content-between" style="grid-template-columns: repeat(2, 49%)">
             @foreach (var pc in Model.Pcs)
             {
-                <button data-id="@pc.Id" class="btn btn-outline-secondary text-truncate fw-bold position-relative" onclick="loadPcGamesButtonClick(@pc.Id)">
+                <button data-id="@pc.Id" class="botButton btn btn-outline-secondary text-truncate fw-bold position-relative" onclick="loadPcGamesButtonClick(@pc.Id)">
                     @pc.DisplayId
                     <span class="pc-dot position-absolute top-0 end-0 m-1 p-1 bg-danger rounded-circle @(pc.HasOverridenGames ? "" : "d-none")"></span>
                 </button>
@@ -30,9 +30,13 @@
             <button class="btn btn-secondary" onclick="downloadBotGames()">Скачать список</button>
         </form>
 
+        <button id="saveBtn" class="btn btn-secondary col-12 mb-3">Сохранить очередность</button>
+
         <table class="table table-bordered" id="gamesTable">
             <thead>
             <tr>
+                <th style="width: 30px"></th>
+                <th style="width: 30px" class="text-center">ID</th>
                 <th>URL</th>
                 <th class="col-1"></th>
             </tr>
@@ -44,9 +48,11 @@
 
 @section Scripts
 {
+    <!-- Table updating && left buttons -->
     <script>
         let currentPcId = '';
         let currentBotId = '';
+        const saveBtn = $('#saveBtn');
         
         function loadPcGamesButtonClick(pcId){
             location.hash = pcId;
@@ -62,13 +68,19 @@
             const tbody = document.querySelector('#gamesTable tbody');
             
             tbody.innerHTML = data.map(botGame => `
-                <tr>
+                <tr data-id="${botGame.id}" data-order="${botGame.order}">
+                    <td class="drag-handle text-muted text-center">
+                      ☰
+                    </td>
+                    <td class="text-center">${botGame.order === 0 ? "" : botGame.order}</td>
                     <td>${botGame.gameUrl}</td>
                     <td class="text-center"><button class="btn btn-sm btn-danger" onclick="deleteGame(${botGame.id})">Удалить</button></td>
                 </tr>
             `).join('');
 
             setPcDot(pcId, data.length > 0);
+            setLeftButtonsColor(pcId);
+            saveBtn.removeClass("btn-primary").addClass("btn-secondary");
         }
         
         function loadActionsFromHash(){
@@ -101,6 +113,19 @@
             dot.classList.toggle('d-none', !hasGames);
         }
         
+        function setLeftButtonsColor(selectedPcId){
+            $(`.botButton`).each(function () {
+                $(this)
+                    .removeClass('btn-outline-primary')
+                    .addClass('btn-outline-secondary')
+                
+                if ($(this).attr("data-id") === selectedPcId)
+                    $(this)
+                        .removeClass('btn-outline-secondary')
+                        .addClass('btn-outline-primary')
+            });
+        }
+        
         async function downloadBotGames(){
             window.location.href = `/api/watchdog/botGamesId/${currentPcId}`;
         }
@@ -109,4 +134,79 @@
         window.addEventListener('hashchange', loadActionsFromHash);
     
     </script>
+    
+    <!-- Table drag -->
+    <script>        
+        $('#gamesTable tbody').sortable({
+            handle: '.drag-handle',
+            axis: 'y',
+            helper: 'clone',
+            placeholder: 'sortable-placeholder',
+
+            update: function () {
+                updateOrder();
+            }
+        });
+
+        function updateOrder() {
+            $('#gamesTable tbody tr').each(function (index) {
+                $(this)
+                    .attr('data-order', index + 1)
+                    .addClass('table-warning');
+            });
+            
+            saveBtn.removeClass("btn-secondary").addClass("btn-primary");
+        }
+
+        saveBtn.on('click', function () {
+            const changes = [];
+
+            $('#gamesTable tbody tr.table-warning').each(function () {
+                const row = $(this);
+                const item = {
+                    id: row.data('id'),
+                    sortOrder: row.data('order')
+                };
+
+                changes.push(item);
+            });
+            
+            changes.sort(function (a, b){
+                return a.sortOrder - b.sortOrder;
+            })
+
+            console.log(changes)
+
+            if (!changes.length) {
+                return;
+            }
+            
+            $.ajax({
+                url: `/api/admin/bots/games/reorder/${currentPcId}`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(changes.map(x => x.id)),
+                success: () => {
+                    loadPcGames(currentPcId);
+                },
+                error: () => alert('Ошибка')
+            });
+        });
+    
+    </script>
+
+    <style>
+        .drag-handle {
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .sortable-placeholder {
+            height: 45px;
+            background: #e9ecef;
+            width: 100%;
+        }
+    </style>
 }

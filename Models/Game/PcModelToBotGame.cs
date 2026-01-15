@@ -7,4 +7,6 @@ public class PcModelToBotGame
 
 	public int BotGameId { get; set; }
 	public BotGame BotGame { get; set; }
+
+	public int Order { get; set; }
 }

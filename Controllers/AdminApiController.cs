@@ -454,14 +454,19 @@ public class AdminApiController(
 #region BotGames
 
 	[HttpGet("bots/games")]
-	public async Task<IActionResult> GetAllBotsGames()
+	public async Task<IActionResult> GetGlobalBotGames()
 	{
 		var games = await context.BotGames.Where(x => x.IsGlobal).ToListAsync();
-		return Ok(games);
+		return Ok(games.Select(x => new
+		{
+			x.Id,
+			x.GameUrl,
+			Order = x.GlobalOrder,
+		}).OrderBy(x => x.Order));
 	}
 	
 	[HttpGet("bots/games/{pcId}")]
-	public async Task<IActionResult> GetOverrideBotGames(int pcId)
+	public async Task<IActionResult> GetOverridenBotGames(int pcId)
 	{
 		var pc = await context.Pcs
 			.Include(x => x.OverrideBotGames)
@@ -471,15 +476,27 @@ public class AdminApiController(
 		if (pc == null)
 			return NotFound();
 		
-		return Ok(pc.OverrideBotGames.Select(x => x.BotGame));
+		return Ok(pc.OverrideBotGames.Select(x => new
+		{
+			x.BotGame.Id,
+			x.BotGame.GameUrl,
+			x.Order
+		}).OrderBy(x => x.Order));
 	}
 		
 	[HttpPost("bots/games")]
-	public async Task<IActionResult> AddBotGame([FromBody] BotGame? game)
+	public async Task<IActionResult> AddGlobalBotGame([FromBody] BotGame? game)
 	{
 		if (game == null)
 			return BadRequest();
-			
+		
+		var maxOrder = await context.BotGames
+			.Where(x => x.IsGlobal)
+			.MaxAsync(x => (int?)x.GlobalOrder) ?? 0;
+
+		game.IsGlobal = true;
+		game.GlobalOrder = maxOrder + 1;
+		
 		context.BotGames.Add(game);
 			
 		await context.SaveChangesAsync();
@@ -487,7 +504,7 @@ public class AdminApiController(
 	}
 	
 	[HttpPost("bots/games/{pcId}")]
-	public async Task<IActionResult> AddBotGameOverride(int pcId, [FromBody] BotGame? game)
+	public async Task<IActionResult> AddOverridenBotGame(int pcId, [FromBody] BotGame? game)
 	{
 		var pc = await context.Pcs
 			.Include(x => x.OverrideBotGames)
@@ -506,10 +523,15 @@ public class AdminApiController(
 		
 		await context.SaveChangesAsync();
 		
+		var maxOrder = await context.PcModelToBotGames
+			.Where(x => x.PcModelId == pc.Id)
+			.MaxAsync(x => (int?)x.Order) ?? 0;
+		
 		context.PcModelToBotGames.Add(new PcModelToBotGame
 		{
 			PcModelId = pc.Id,
 			BotGameId = game.Id,
+			Order = maxOrder + 1
 		});
 			
 		await context.SaveChangesAsync();
@@ -535,6 +557,44 @@ public class AdminApiController(
 		
 		await context.SaveChangesAsync();
 		return NoContent();
+	}
+	
+	[HttpPost("bots/games/reorder")]
+	public async Task<IActionResult> ReorderGlobalGames([FromBody] int[] orderedGameIds)
+	{
+		var games = await context.BotGames
+			.Where(x => x.IsGlobal)
+			.ToListAsync();
+
+		var map = games.ToDictionary(x => x.Id);
+
+		for (int i = 0; i < orderedGameIds.Length; i++)
+		{
+			map[orderedGameIds[i]].GlobalOrder = i + 1;
+		}
+
+		await context.SaveChangesAsync();
+		
+		return Ok();
+	}
+	
+	[HttpPost("bots/games/reorder/{pcModelId}")]
+	public async Task<IActionResult> ReorderOverridenBotGames(int pcModelId, [FromBody] int[] orderedGameIds)
+	{
+		var links = await context.PcModelToBotGames
+			.Where(x => x.PcModelId == pcModelId)
+			.ToListAsync();
+
+		var map = links.ToDictionary(x => x.BotGameId);
+		
+		for (int i = 0; i < orderedGameIds.Length; i++)
+		{
+			map[orderedGameIds[i]].Order = i + 1;
+		}
+
+		await context.SaveChangesAsync();
+		
+		return Ok();
 	}
 #endregion		
 		
