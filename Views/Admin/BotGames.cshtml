@@ -72,7 +72,7 @@
                     <td class="drag-handle text-muted text-center">
                       ☰
                     </td>
-                    <td class="text-center">${botGame.order === 0 ? "" : botGame.order}</td>
+                    <td class="orderTd text-center">${botGame.order === 0 ? "" : botGame.order}</td>
                     <td>${botGame.gameUrl}</td>
                     <td class="text-center"><button class="btn btn-sm btn-danger" onclick="deleteGame(${botGame.id})">Удалить</button></td>
                 </tr>
@@ -149,10 +149,14 @@
         });
 
         function updateOrder() {
-            $('#gamesTable tbody tr').each(function (index) {
+            const tableRows = $('#gamesTable tbody tr');
+            const count = tableRows.length;
+
+            tableRows.each(function (index) {
                 $(this)
                     .attr('data-order', index + 1)
-                    .addClass('table-warning');
+                    .addClass('table-warning')
+                    .children(".orderTd").text(count - index);
             });
             
             saveBtn.removeClass("btn-secondary").addClass("btn-primary");
@@ -172,7 +176,7 @@
             });
             
             changes.sort(function (a, b){
-                return a.sortOrder - b.sortOrder;
+                return b.sortOrder - a.sortOrder;
             })
 
             console.log(changes)

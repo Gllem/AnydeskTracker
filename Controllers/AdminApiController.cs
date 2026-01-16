@@ -463,7 +463,7 @@ public class AdminApiController(
 			x.Id,
 			x.GameUrl,
 			Order = x.GlobalOrder,
-		}).OrderBy(x => x.Order));
+		}).OrderByDescending(x => x.Order));
 	}
 	
 	[HttpGet("bots/games/{pcId}")]
@@ -482,7 +482,7 @@ public class AdminApiController(
 			x.BotGame.Id,
 			x.BotGame.GameUrl,
 			x.Order
-		}).OrderBy(x => x.Order));
+		}).OrderByDescending(x => x.Order));
 	}
 		
 	[HttpPost("bots/games")]
