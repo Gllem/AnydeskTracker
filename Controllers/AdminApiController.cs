@@ -116,6 +116,7 @@ public class AdminApiController(
 			existing.BotId = updateDto.BotId;
 			existing.Password = updateDto.Password;
 			existing.SortOrder = updateDto.SortOrder;
+			existing.AgentReady = updateDto.AgentReady;
 		}
 
 		await context.SaveChangesAsync();

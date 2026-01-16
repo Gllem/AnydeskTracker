@@ -82,7 +82,7 @@ namespace AnydeskTracker.Controllers
 		public async Task<IActionResult> FetchFreeComputers()
 		{
 			var pcs = await pcService.GetAllPcs();
-			return Ok(pcs.Where(x => x.Status == PcStatus.Free));
+			return Ok(pcs.Where(x => x is {Status: PcStatus.Free, AgentReady: true}));
 		}
 		
 		[HttpGet("Games")]

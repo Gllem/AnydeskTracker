@@ -21,6 +21,9 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
         BuildBlockedAgents(builder);
         
         BuildBotGames(builder);
+        
+        builder.Entity<PcModel>().Property(x => x.AgentReady)
+            .HasDefaultValue(true);
     }
 
     private static void BuildBotGames(ModelBuilder builder)

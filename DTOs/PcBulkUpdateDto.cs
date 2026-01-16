@@ -10,4 +10,6 @@ public class PcBulkUpdateDto
 	public string AnyDeskId { get; set; } = string.Empty;
 
 	public string Password { get; set; } = string.Empty;
+
+	public bool AgentReady { get; set; }
 }

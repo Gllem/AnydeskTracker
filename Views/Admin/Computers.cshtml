@@ -37,6 +37,7 @@
                 <th>Пароль</th>
                 <th>Статус</th>
                 <th>Последнее изменение</th>
+                <th>Доступ агентам</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -67,10 +68,15 @@
                     <td class="editable" data-field="password">${p.password}</td>
                     <td class="${p.status === 3 ? "text-danger" : ""}">${p.statusText}</td>
                     <td>${new Date(p.lastStatusChange).toLocaleString()}</td>
-                    <td>
+                    <td class="text-center">
+                        <input type="checkbox" class="row-check" 
+                            data-field="agentReady" data-original="${p.agentReady ? '1' : '0'}"
+                            ${p.agentReady ? 'checked' : ''}/>
+                    </td>
+                    <td class="text-center">
                         <button class="btn btn-sm btn-danger" onclick="deletePc(${p.id})">Удалить</button>
                     </td>
-                    <td>
+                    <td class="text-center">
                         ${p.status !== 0 ? freeUpButtonHtml : ""}
                     </td>
                 </tr>
@@ -140,6 +146,33 @@
 
             editing = cell;
         });
+
+        pcTable.on('change', '.row-check', function () {
+            const checkBox = $(this);
+            const newVal = checkBox.is(':checked') ? '1' : '0';
+            const oldVal = String(checkBox.data('original'));
+
+            if (newVal !== oldVal) {
+                checkBox.closest('tr').addClass('table-warning');
+                checkBox.data('changed', true);
+            } else {
+                checkBox.data('changed', false);
+                updateRowWarning(checkBox.closest('tr'));
+            }
+        });
+
+        function updateRowWarning(row) {
+            const hasEditableChanges = row.find('.editable').toArray().some(td => $(td).data('changed') === true);
+            const hasCheckboxChanges = row.find('.row-check').toArray().some(cb => $(cb).data('changed') === true);
+            
+            console.log(hasEditableChanges)
+            console.log(hasCheckboxChanges)
+            
+            if (hasEditableChanges || hasCheckboxChanges) 
+                row.addClass('table-warning');
+            else 
+                row.removeClass('table-warning');
+        }
         
         pcTable.on('blur', 'input, select', function () {
             finishEdit($(this).closest('.editable'), true);
@@ -162,10 +195,13 @@
             cell.empty().text(save ? newValue : oldValue);
             
             if (save && newValue !== oldValue) {
-                cell.closest('tr').addClass('table-warning');
                 cell.data('changed', true);
             }
-
+            else{
+                cell.data('changed', false);
+            }
+            
+            updateRowWarning(cell.closest('tr'));
             editing = null;
         }
 
@@ -182,6 +218,11 @@
                 row.find('.editable').each(function () {
                     const cell = $(this);
                     item[cell.data('field')] = cell.text().trim();
+                });
+
+                row.find('.row-check').each(function () {
+                    const checkbox = $(this);
+                    item[checkbox.data('field')] = checkbox.is(':checked');
                 });
 
                 changes.push(item);

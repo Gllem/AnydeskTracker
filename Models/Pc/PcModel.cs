@@ -36,7 +36,9 @@ namespace AnydeskTracker.Models
 		public ICollection<PcModelToBotGame> OverrideBotGames { get; set; } = new List<PcModelToBotGame>();
 		
 		public int SortOrder { get; set; }
-		
+
+		public bool AgentReady { get; set; } = true;
+
 		public string DisplayId => 
 			!string.IsNullOrEmpty(BotId) ? BotId : 
 			!string.IsNullOrEmpty(PcId) ? PcId :

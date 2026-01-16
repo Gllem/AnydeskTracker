@@ -49,8 +49,8 @@ namespace AnydeskTracker.Services
             if (session == null) return null;
 
             var computer = await context.Pcs.FindAsync(computerId);
-            if (computer == null || computer.Status != PcStatus.Free)
-                return null;
+            if (computer == null || computer.Status != PcStatus.Free || !computer.AgentReady)
+                return null; 
 
             computer.Status = PcStatus.Busy;
             computer.LastStatusChange = DateTime.UtcNow;
