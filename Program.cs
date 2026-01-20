@@ -54,6 +54,8 @@ builder.Services.AddHostedService<ActionCleanupService>();
 builder.Services.AddHostedService<TelegramNotifier>();
 builder.Services.AddHostedService<DailyParserService>();
 
+builder.Services.AddSignalR();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<UserActionService>();
@@ -88,6 +90,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.MapHub<AgentHub>("/hubs/agent");
 
 app.UseAuthorization();
 

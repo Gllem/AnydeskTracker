@@ -1,8 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
@@ -12,8 +8,7 @@ using AnydeskTracker.Models;
 using AnydeskTracker.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
-using HtmlAgilityPack;
-
+using Microsoft.AspNetCore.SignalR;
 namespace AnydeskTracker.Controllers;
 
 [Authorize(Roles = "Admin")]
@@ -23,7 +18,8 @@ public class AdminApiController(
 	ApplicationDbContext context,
 	PcService pcService,
 	SheetsService sheetService,
-	ParserService parserService)
+	ParserService parserService,
+	IHubContext<AgentHub> hub)
 	: ControllerBase
 {
 
@@ -608,5 +604,15 @@ public class AdminApiController(
 		return Ok();
 	}
 
+	[HttpGet("bots/{agentId}/kill-apps")]
+	public async Task<IActionResult> KillMain(string agentId)
+	{
+		var cmd = new Command("cmd-" + Guid.NewGuid().ToString("N"), "KillMain");
+		await hub.Clients.Group($"machine:{agentId}").SendAsync("Command", cmd);
+		return Ok(cmd);
+	}
+	
 #endregion
 }
+
+public record Command(string CommandId, string Type);
