@@ -50,7 +50,7 @@
         
         async function loadActions(sessionId)
         {
-            const res = await fetch(`/api/admin/user/@Model.UserId/${sessionId}/actions`);
+            const res = await fetch(`/api/admin/users/@Model.UserId/${sessionId}/actions`);
             const data = await res.json();
             const tbody = document.querySelector('#userActions tbody');
             tbody.innerHTML = data.map(userAction => `
@@ -73,7 +73,7 @@
             const userName = document.getElementById('user_name').value;
             const userId = "@Model.UserId";
             const workSessions = null;
-            const res = await fetch('/api/admin/user/@Model.UserId', {
+            const res = await fetch('/api/admin/users/@Model.UserId', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userName, userId, workSessions })

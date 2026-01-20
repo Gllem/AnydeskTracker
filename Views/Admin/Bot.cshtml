@@ -70,7 +70,7 @@
         
         async function loadActions(date)
         {
-            const res = await fetch(`/api/admin/bot/@Model.PcModelId/actions/${date}`);
+            const res = await fetch(`/api/admin/bots/@Model.PcModelId/actions/${date}`);
             const data = await res.json();
             const watchdogTable = document.querySelector('#watchdogActions tbody');
             const dolphinTable = document.querySelector('#dolphinActions tbody');
@@ -111,7 +111,7 @@
         document.getElementById('changeBotInfo').addEventListener('submit', async (e) => {
             e.preventDefault();
             const botId = document.getElementById('bot_id').value;
-            const res = await fetch('/api/admin/bot/@Model.PcModelId', {
+            const res = await fetch('/api/admin/bots/@Model.PcModelId', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ botId })
