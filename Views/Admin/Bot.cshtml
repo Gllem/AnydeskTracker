@@ -4,6 +4,7 @@
 }
 @using AnydeskTracker.Extensions
 @model AnydeskTracker.DTOs.AdminBotPageDto
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <div class="w-100 h-100 d-flex flex-row">
     <div class="col-5 px-1">
@@ -12,6 +13,21 @@
             <input id="bot_id" type="text" placeholder="ID Бота" class="form-control" required />
             <button class="btn btn-success">Поменять</button>
         </form>
+        
+        <div>
+            <h5 class="mb-2">Статус бота</h5>
+            <div class="d-flex flex-row text-center align-items-center justify-content-between">
+                <div class="d-inline-flex align-items-center gap-1">
+                    <span id="statusKnob" class="rounded-circle bg-secondary d-inline-block" style="width: 1em; height: 1em"></span>
+                    <span id="statusText">
+                        Статус
+                    </span>
+                </div>
+                <a class="btn btn-danger" onclick="killApps()">
+                    Отключить процессы
+                </a>
+            </div>
+        </div>
        
         @if(Model.LastDolphinCheck != null)
         {
@@ -154,5 +170,70 @@
             btnWatchdog.classList.add('btn-outline-success');
             btnWatchdog.classList.remove('btn-success');
         });
+    </script>
+    <script>
+        async function loadAgentStatus(){
+            const res = await fetch(`/api/admin/agents/@Model.BotId`);
+            const data = await res.json();
+
+            const knob = document.querySelector('#statusKnob');
+            const text = document.querySelector('#statusText');
+            
+            if (res.status === 404)
+            {
+                knob.classList.toggle("bg-secondary", true)
+                knob.classList.toggle("bg-danger", false)
+                knob.classList.toggle("bg-success", false)
+                
+                text.innerHTML = "Не появлялся в сети"
+            
+                return;
+            }
+            
+            if (data.online)
+            {
+                knob.classList.toggle("bg-secondary", false)
+                knob.classList.toggle("bg-danger", false)
+                knob.classList.toggle("bg-success", true)
+                
+                text.innerHTML = "Онлайн"
+            }
+            else
+            {
+                knob.classList.toggle("bg-secondary", false)
+                knob.classList.toggle("bg-danger", true)
+                knob.classList.toggle("bg-success", false)
+
+                text.innerHTML = `Последний онлайн: ${localTime(data.lastSeenUtc).toLocaleString()}`
+            }
+        }
+        
+        async function killApps()
+        {
+            const res = await fetch('/api/admin/agents/@Model.BotId/killApps', {
+                method: 'GET'
+            });
+            
+            if(res.status === 404){
+                alert("Бот не найден")
+                return;
+            }
+            
+            if (res.status === 409)
+            {
+                alert("Бот оффлайн")
+                return;
+            }
+            
+            if (res.ok)
+            {
+                alert("Успех")
+                return
+            }
+            
+            alert("Ошибка при выключении процессов бота")
+        }
+
+        loadAgentStatus();
     </script>
 }

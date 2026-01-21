@@ -10,7 +10,11 @@
         <a class="col-3 btn btn-success p-3" target="_blank" rel="noopener noreferrer" href="https://wall.carrothood.ru/wall">Изображения компьютеров</a>
         <a class="col-2 btn btn-success p-3" asp-action="BotGames">Игры для ботов</a>
     </div>
-    <hr class="hr">
+    <hr>
+    <a class="btn btn-danger" onclick="KillAppsAllBots()">
+        Отключить всех ботов
+    </a>
+    <hr>
     <div id="bots" class="d-flex gap-3 mt-3 flex-wrap justify-content-center"></div>
 </div>
 
@@ -79,6 +83,21 @@
             };
             container.appendChild(div);
         });
+    }
+    
+    async function KillAppsAllBots()
+    {
+        const res = await fetch('/api/admin/agents/killAppsAllBots', {
+            method: 'GET'
+        });
+        
+        if (res.ok)
+        {
+            alert("Успех")
+            return;
+        }
+        
+        alert("Ошибка")
     }
 
     loadBots();

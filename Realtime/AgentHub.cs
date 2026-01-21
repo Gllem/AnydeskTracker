@@ -2,13 +2,29 @@
 
 public class AgentHub : Hub
 {
-	public Task Register(string agentId) =>
-		Groups.AddToGroupAsync(Context.ConnectionId, $"machine:{agentId}");
+	public async Task Register(string agentId)
+	{
+		Context.Items["agentId"] = agentId;
+		AgentPresence.SetOnline(agentId);
+		
+		
+		await Groups.AddToGroupAsync(Context.ConnectionId, $"machine:{agentId}");
+		await Groups.AddToGroupAsync(Context.ConnectionId, "agents:all");
+	}
 
 	public Task CommandResult(CommandResult res)
 	{
 		Console.WriteLine($"[{res.AgentId}] {res.CommandId} ok={res.Ok} msg={res.Message}");
+		AgentPresence.Touch(res.AgentId);
 		return Task.CompletedTask;
+	}
+	
+	public override Task OnDisconnectedAsync(Exception? exception)
+	{
+		if (Context.Items.TryGetValue("agentId", out var id) && id is string agentId)
+			AgentPresence.SetOffline(agentId);
+
+		return base.OnDisconnectedAsync(exception);
 	}
 }
 
