@@ -78,7 +78,7 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 		return Ok();
 	}
 		
-	[HttpGet("cModelId}/actions/{date}")]
+	[HttpGet("actions/{date}")]
 	public async Task<IActionResult> GetBotActions(int pcModelId, string date)
 	{
 		DateTime logsDateTime;
