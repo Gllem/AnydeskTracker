@@ -34,6 +34,7 @@
                 <th style="width:30px"></th>
                 <th>ID</th>
                 <th>AnyDesk ID</th>
+                <th>RustDesk ID</th>
                 <th>Пароль</th>
                 <th>Статус</th>
                 <th>Последнее изменение</th>
@@ -65,6 +66,7 @@
                     </td>
                     <td class="editable" data-field="botId">${p.botId}</td>
                     <td class="editable" data-field="anyDeskId">${p.anyDeskId}</td>
+                    <td class="editable" data-field="rustDeskId">${p.rustDeskId}</td>
                     <td class="editable" data-field="password">${p.password}</td>
                     <td class="${p.status === 3 ? "text-danger" : ""}">${p.statusText}</td>
                     <td>${new Date(p.lastStatusChange).toLocaleString()}</td>

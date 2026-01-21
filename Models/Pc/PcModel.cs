@@ -20,8 +20,12 @@ namespace AnydeskTracker.Models
 		[Key]
 		public int Id { get; set; }
 
+		// TODO: Rename to AnyDesk ID
 		[Required]
 		public string PcId { get; set; } = string.Empty;
+
+		[Required]
+		public string RustDeskId { get; set; } = string.Empty;
 
 		[Required]
 		public string Password { get; set; } = string.Empty;

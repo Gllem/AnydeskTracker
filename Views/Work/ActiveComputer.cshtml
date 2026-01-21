@@ -19,7 +19,8 @@
                     <img src="img/icons/warning.png" alt="Report" class="w-100 h-100 align-baseline">
                 </a>
                 <p><strong>AnyDesk ID: </strong>@Model.PcDto.AnyDeskId</p>
-                <p><strong>AnyDesk Пароль: </strong>@Model.PcDto.Password</p>
+                <p><strong>RustDesk ID: </strong>@Model.PcDto.RustDeskId</p>
+                <p><strong>Пароль: </strong>@Model.PcDto.Password</p>
                 <p><strong>Статус: </strong>@Model.PcDto.StatusText</p>
                 <p><strong>Сессия начата: </strong> <utctime class="utc-time" data-time="@Model.PcDto.LastStatusChange.ToUtc().ToString("o")"></utctime>
                 <p></p>

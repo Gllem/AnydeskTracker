@@ -10,6 +10,7 @@ public class PcDto(PcModel model)
 	public int SortOrder { get; set; } = model.SortOrder;
 
 	public string AnyDeskId { get; set; } = model.PcId;
+	public string RustDeskId { get; set; } = model.RustDeskId;
 
 	public string Password { get; set; } = model.Password;
 

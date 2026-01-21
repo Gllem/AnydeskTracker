@@ -8,6 +8,7 @@ public class PcBulkUpdateDto
 	public string BotId { get; set; } = string.Empty;
 
 	public string AnyDeskId { get; set; } = string.Empty;
+	public string RustDeskId { get; set; } = String.Empty;
 
 	public string Password { get; set; } = string.Empty;
 

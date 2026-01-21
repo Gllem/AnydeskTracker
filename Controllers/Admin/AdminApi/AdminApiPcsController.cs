@@ -72,6 +72,7 @@ public class AdminApiPcsController(ApplicationDbContext dbContext, PcService pcS
 			existing.Password = updateDto.Password;
 			existing.SortOrder = updateDto.SortOrder;
 			existing.AgentReady = updateDto.AgentReady;
+			existing.RustDeskId = updateDto.RustDeskId;
 		}
 
 		await dbContext.SaveChangesAsync();
