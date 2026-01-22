@@ -56,7 +56,7 @@ public class BotStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundSer
 				await telegramService.SendMessageToAdmin(
 					$"\u26a0\ufe0f Бот давно не отсылал статус!\n" +
 					$"Бот: {pc.BotId}\n" +
-					$"AnyDesk ID: {pc.PcId}\n\n" +
+					$"AnyDesk ID: {pc.AnyDeskId}\n\n" +
 					$"Последний полученный статус: \n" +
 					lastAction.TelegramNotificationBotStatus + "\n" +
 					$"Время: {lastAction.Timestamp.ToUtc().ToLocalTime()}\n"+

@@ -38,7 +38,7 @@ public class AdminApiPcsController(ApplicationDbContext dbContext, PcService pcS
 		var existing = await dbContext.Pcs.FindAsync(id);
 		if (existing == null) return NotFound();
 
-		existing.PcId = pc.PcId;
+		existing.AnyDeskId = pc.AnyDeskId;
 		existing.Password = pc.Password;
 		existing.Status = pc.Status;
 		existing.LastStatusChange = DateTime.UtcNow;
@@ -67,7 +67,7 @@ public class AdminApiPcsController(ApplicationDbContext dbContext, PcService pcS
 			if (existing == null)
 				return NotFound();
 
-			existing.PcId = updateDto.AnyDeskId;
+			existing.AnyDeskId = updateDto.AnyDeskId;
 			existing.BotId = updateDto.BotId;
 			existing.Password = updateDto.Password;
 			existing.SortOrder = updateDto.SortOrder;
@@ -135,7 +135,7 @@ public class AdminApiPcsController(ApplicationDbContext dbContext, PcService pcS
 				string anydeskPcId = row[0].ToString() ?? "";
 				string password = row[1].ToString() ?? "";
 
-				var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x != null && x.PcId == anydeskPcId);
+				var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x != null && x.AnyDeskId == anydeskPcId);
 
 				if(pc == null)
 					continue;

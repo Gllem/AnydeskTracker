@@ -94,7 +94,7 @@ namespace AnydeskTracker.Services
 
             await context.SaveChangesAsync();
             
-            await actionService.LogAsync(session, ActionType.PcReport, $"ID: {pc.Id}, BotID: {pc.BotId}, AnyDeskID: {pc.PcId}, ПРИЧИНА: {reason}");
+            await actionService.LogAsync(session, ActionType.PcReport, $"ID: {pc.Id}, BotID: {pc.BotId}, AnyDeskID: {pc.AnyDeskId}, ПРИЧИНА: {reason}");
 
             var user = await context.Users.FindAsync(userId);
             
@@ -103,7 +103,7 @@ namespace AnydeskTracker.Services
                 $"Пользователь: {user?.UserName}\n" +
                 $"ID: {pc.Id}\n" +
                 $"BotID: {pc.BotId}\n" +
-                $"AnyDesk ID: {pc.PcId}\n" +
+                $"AnyDesk ID: {pc.AnyDeskId}\n" +
                 $"Причина: {reason}"
                 );
 

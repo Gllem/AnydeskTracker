@@ -48,7 +48,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 			await telegramService.SendMessageToAdmin(
 				$"\u26a0\ufe0f Ошибка бота\n" +
 				$"Бот: {pc.BotId}\n" +
-				$"AnyDesk ID: {pc.PcId}\n\n" +
+				$"AnyDesk ID: {pc.AnyDeskId}\n\n" +
 				$"Статус: \n" +
 				botAction.TelegramNotificationBotStatus
 			);
@@ -75,7 +75,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 
 		return Ok(new
 		{
-			pc.PcId,
+			pc.AnyDeskId,
 			pc.BotId
 		});
 	}

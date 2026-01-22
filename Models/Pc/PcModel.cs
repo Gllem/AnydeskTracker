@@ -22,7 +22,7 @@ namespace AnydeskTracker.Models
 
 		// TODO: Rename to AnyDesk ID
 		[Required]
-		public string PcId { get; set; } = string.Empty;
+		public string AnyDeskId { get; set; } = string.Empty;
 
 		[Required]
 		public string RustDeskId { get; set; } = string.Empty;
@@ -45,7 +45,7 @@ namespace AnydeskTracker.Models
 
 		public string DisplayId => 
 			!string.IsNullOrEmpty(BotId) ? BotId : 
-			!string.IsNullOrEmpty(PcId) ? PcId :
+			!string.IsNullOrEmpty(AnyDeskId) ? AnyDeskId :
 			SortOrder.ToString();
 	}
 }

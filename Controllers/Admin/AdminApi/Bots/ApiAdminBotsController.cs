@@ -52,7 +52,7 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 			return new
 			{
 				pc.BotId,
-				pc.PcId,
+				pc.AnyDeskId,
 				PcModelId = pc.Id,
 				HasChecks = lastAction != null,
 				ErrorStatuses = errorStatuses,
