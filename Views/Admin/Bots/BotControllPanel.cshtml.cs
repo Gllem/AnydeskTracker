@@ -2,7 +2,7 @@
 
 namespace AnydeskTracker.Views.Admin;
 
-public class Bot : PageModel
+public class BotControllPanel : PageModel
 {
 	public void OnGet()
 	{

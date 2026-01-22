@@ -33,7 +33,7 @@ public class AdminController(ApplicationDbContext context, PcService pcService) 
 	[HttpGet("Users")]
 	public async Task<IActionResult> Users()
 	{
-		return View("Users");
+		return View("Users/Users");
 	}
 
 	[HttpGet("User/{userId}")]
@@ -46,13 +46,13 @@ public class AdminController(ApplicationDbContext context, PcService pcService) 
 		
 		var sessions = context.WorkSessionModels.Where(x => x.User.Id == userId).ToArray();
 
-		return View("User", new AdminUserPageDto(user, sessions));
+		return View("Users/User", new AdminUserPageDto(user, sessions));
 	}
 
 	[HttpGet("Bots")]
 	public async Task<IActionResult> Bots()
 	{
-		return View("Bots");
+		return View("Bots/Bots");
 	}
 	
 	[HttpGet("Bot/{pcModelId}")]
@@ -71,7 +71,7 @@ public class AdminController(ApplicationDbContext context, PcService pcService) 
 
 		DateTime? lastDolphinCheck = dolphinLogs.Count > 0 ? dolphinLogs.Max(x => x.Timestamp) : null;
 		
-		return View("Bot", new AdminBotPageDto(
+		return View("Bots/BotStatus", new AdminBotPageDto(
 			pc,
 			lastDolphinCheck,
 			botLogDates.Order().Select(x => new AdminBotPageDto.BotLog(x, dolphinLogs.Count(y => y.Timestamp.Date == x))).ToArray()));
@@ -82,6 +82,6 @@ public class AdminController(ApplicationDbContext context, PcService pcService) 
 	{
 		var pcs = await pcService.GetAllPcs();
 		
-		return View("BotGames", new AdminBotGamesDto(pcs.ToArray()));
+		return View("Bots/BotGames", new AdminBotGamesDto(pcs.ToArray()));
 	}
 }
