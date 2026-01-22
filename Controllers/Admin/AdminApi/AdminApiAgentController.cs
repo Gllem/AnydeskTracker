@@ -24,35 +24,53 @@ public class AdminApiAgentController(IHubContext<AgentHub> hub) : ControllerBase
 			lastSeenUtc = agentState.LastSeenUtc.ToUtc()
 		});
 	}
-	
-	[HttpGet("{agentId}/killApps")]
-	public async Task<IActionResult> KillApps(string agentId)
+
+	private async Task<IActionResult> SendCommandToAgent(string agentId, string command)
 	{
 		var agentState = AgentPresence.Get(agentId);
 		if (agentState is null) 
 			return NotFound(new { agentId, message = "Agent never connected" });
 		if (!agentState.Online) 
 			return Conflict(new { agentId, message = "Agent offline", lastSeenUtc = agentState.LastSeenUtc });
-		
-		var cmd = new Command("cmd-" + Guid.NewGuid().ToString("N"), "KillMain");
-		await hub.Clients.Group($"machine:{agentId}").SendAsync("Command", cmd);
-		return Ok(cmd);
+
+		return await SendCommand($"machine:{agentId}", command);
 	}
 
-	[HttpGet("killAppsAllBots")]
-	public async Task<IActionResult> KillAppsAllBots()
-	{
-		var cmd = new Command("cmd-" + Guid.NewGuid().ToString("N"), "KillMain");
+	private async Task<IActionResult> SendCommandToAll(string command) => await SendCommand("agents:all", command);
 
-		await hub.Clients.Group("agents:all")
+	private async Task<IActionResult> SendCommand(string group, string command)
+	{
+		var cmd = new Command("cmd-" + Guid.NewGuid().ToString("N"), command);
+
+		await hub.Clients.Group(group)
 			.SendAsync("Command", cmd);
 
 		return Ok(new
 		{
-			sent = "agents:all",
+			sent = group,
 			commandId = cmd.CommandId
-		});
+		});			
 	}
+
+#region KillApps
+
+	[HttpGet("killApps/{agentId}")]
+	public async Task<IActionResult> KillApps(string agentId) => await SendCommandToAgent(agentId, "KillMain");
+
+	[HttpGet("killApps")]
+	public async Task<IActionResult> KillApps() => await SendCommandToAll("KillMain");
+#endregion
+
+#region StartMain
+
+	[HttpGet("startMain/{agentId}")]
+	public async Task<IActionResult> StartMain(string agentId) => await SendCommandToAgent(agentId, "StartMain");
+
+
+	[HttpGet("startMain")]
+	public async Task<IActionResult> StartMain() => await SendCommandToAll("StartMain");
+
+#endregion
 }
 
 public record Command(string CommandId, string Type);
