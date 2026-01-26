@@ -14,21 +14,30 @@
             <button class="btn btn-success">Поменять</button>
         </form>
         
+        <hr/>
+        
         <div>
             <h5 class="mb-2">Статус бота</h5>
-            <div class="d-flex flex-row text-center align-items-center justify-content-between">
+            <div class="d-flex flex-column text-center gap-3">
                 <div class="d-inline-flex align-items-center gap-1">
                     <span id="statusKnob" class="rounded-circle bg-secondary d-inline-block" style="width: 1em; height: 1em"></span>
                     <span id="statusText">
                         Статус
                     </span>
                 </div>
-                <a class="btn btn-danger" onclick="killApps()">
-                    Отключить процессы
-                </a>
+                <div class="d-flex flex-row gap-3">
+                    <a class="btn btn-danger" onclick="killApps()">
+                        Отключить процессы
+                    </a>
+                    <a class="btn btn-success" onclick="StartBat()">
+                        Запустить .bat
+                    </a>
+                </div>
             </div>
         </div>
-       
+
+        <hr/>
+        
         @if(Model.LastDolphinCheck != null)
         {
             <h5><b>Время последней проверки Dolphin:</b></h5>
@@ -74,6 +83,7 @@
 
 @section Scripts
 {
+    <!-- Action date Switching -->
     <script>
         ConvertAllToLocalTime(document);
         document.getElementById('bot_id').value = "@Model.BotId";
@@ -143,6 +153,7 @@
         window.addEventListener('load', loadActionsFromHash);
         window.addEventListener('hashchange', loadActionsFromHash);
     </script>
+    <!-- Action tab Switching -->
     <script>
         const btnWatchdog = document.getElementById('btnWatchdog');
         const btnDolphin = document.getElementById('btnDolphin');
@@ -171,6 +182,7 @@
             btnWatchdog.classList.remove('btn-success');
         });
     </script>
+    <!-- Agent Status -->
     <script>
         async function loadAgentStatus(){
             const res = await fetch(`/api/admin/agents/@Model.BotId`);
@@ -210,27 +222,39 @@
         
         async function killApps()
         {
-            const res = await fetch('/api/admin/agents/@Model.BotId/killApps', {
+            const res = await fetch('/api/admin/agents/killApps/@Model.BotId', {
                 method: 'GET'
             });
             
+            AlertCommandStatus(res);
+        }
+        
+        async function StartBat(){
+            const res = await fetch('/api/admin/agents/startMain/@Model.BotId', {
+                method: 'GET'
+            });
+            
+            AlertCommandStatus(res);
+        }
+        
+        function AlertCommandStatus(res){
             if(res.status === 404){
                 alert("Бот не найден")
                 return;
             }
-            
+
             if (res.status === 409)
             {
                 alert("Бот оффлайн")
                 return;
             }
-            
+
             if (res.ok)
             {
                 alert("Успех")
                 return
             }
-            
+
             alert("Ошибка при выключении процессов бота")
         }
 
