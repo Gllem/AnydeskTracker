@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using AnydeskTracker.Models;
+using AnydeskTracker.Services;
+using Microsoft.AspNetCore.SignalR;
 
-public class AgentHub : Hub
+public class AgentHub(AgentActionsService actionsService) : Hub
 {
 	public async Task Register(string agentId)
 	{
 		Context.Items["agentId"] = agentId;
 		AgentPresence.SetOnline(agentId);
-		
 		
 		await Groups.AddToGroupAsync(Context.ConnectionId, $"machine:{agentId}");
 		await Groups.AddToGroupAsync(Context.ConnectionId, "agents:all");
@@ -19,6 +20,20 @@ public class AgentHub : Hub
 		return Task.CompletedTask;
 	}
 	
+	public async Task AgentEvent(AgentEventDto ev)
+    {
+	    AgentPresence.Touch(ev.AgentId);
+
+	    switch (ev.Type)
+	    {
+		    case "AhkError":
+			    await actionsService.LogAction(AgentActionType.Error, "AHK", "Ошибка AHK");
+			    break;
+		    default:
+			    return;
+	    }
+    }
+	
 	public override Task OnDisconnectedAsync(Exception? exception)
 	{
 		if (Context.Items.TryGetValue("agentId", out var id) && id is string agentId)
@@ -29,3 +44,4 @@ public class AgentHub : Hub
 }
 
 public record CommandResult(string CommandId, string AgentId, bool Ok, string Message);
+public record AgentEventDto(string AgentId, string Type, string Message, DateTime TimeUtc);

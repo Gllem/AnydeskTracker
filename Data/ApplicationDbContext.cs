@@ -85,6 +85,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
     public DbSet<PcModelToBotGame> PcModelToBotGames { get; set; }
     public DbSet<UserAction> UserActions { get; set; }
     public DbSet<PcBotAction> BotActions { get; set; }
+    public DbSet<PcAgentAction> AgentActions { get; set; }
     public DbSet<PcBotDolphinAction> DolphinActions { get; set; }
     public DbSet<BlockedAgentPhone> BlockedPhoneNumbers => Set<BlockedAgentPhone>();
     public DbSet<BlockedAgentEmail> BlockedEmails => Set<BlockedAgentEmail>();
