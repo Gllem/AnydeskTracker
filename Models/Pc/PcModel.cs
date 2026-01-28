@@ -20,7 +20,6 @@ namespace AnydeskTracker.Models
 		[Key]
 		public int Id { get; set; }
 
-		// TODO: Rename to AnyDesk ID
 		[Required]
 		public string AnyDeskId { get; set; } = string.Empty;
 
@@ -36,7 +35,9 @@ namespace AnydeskTracker.Models
 		public PcStatus Status { get; set; } = PcStatus.Free;
 
 		public DateTime LastStatusChange { get; set; } = DateTime.UtcNow;
-		
+
+		public bool AhkError { get; set; }
+
 		public ICollection<PcModelToBotGame> OverrideBotGames { get; set; } = new List<PcModelToBotGame>();
 		
 		public int SortOrder { get; set; }

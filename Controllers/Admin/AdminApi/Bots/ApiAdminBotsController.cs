@@ -41,6 +41,9 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 				if(!string.IsNullOrEmpty(lastAction.UserStatus))
 					errorStatuses.Add("USR");
 			}
+			
+			if(pc.AhkError)
+				errorStatuses.Add("AHK");
 
 			string status = errorStatuses.Count > 0 ? "ERROR" : "OK";
 				
@@ -54,7 +57,7 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 				pc.BotId,
 				pc.AnyDeskId,
 				PcModelId = pc.Id,
-				HasChecks = lastAction != null,
+				HasChecks = lastAction != null || errorStatuses.Count > 0,
 				ErrorStatuses = errorStatuses,
 				Status = status,
 				LastCheckTime = lastAction?.Timestamp.ToUtc(),

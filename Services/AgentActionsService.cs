@@ -1,20 +1,20 @@
 ﻿using AnydeskTracker.Data;
 using AnydeskTracker.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services;
 
 public class AgentActionsService(ApplicationDbContext dbContext)
 {
-	public async Task LogAction(AgentActionType actionType, string actionName, string actionDescription)
+	public async Task SetAhkErrorState(string botId, bool state)
 	{
-		var action = new PcAgentAction
-		{
-			ActionType = actionType,
-			Name = actionName,
-			Description = actionDescription
-		};
+		var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x.BotId == botId);
 
-		dbContext.AgentActions.Add(action);
+		if(pc == null)
+			return;
+		
+		pc.AhkError = state;
+
 		await dbContext.SaveChangesAsync();
 	}
 }

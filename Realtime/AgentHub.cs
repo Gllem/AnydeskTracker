@@ -23,11 +23,14 @@ public class AgentHub(AgentActionsService actionsService) : Hub
 	public async Task AgentEvent(AgentEventDto ev)
     {
 	    AgentPresence.Touch(ev.AgentId);
-
+	    
 	    switch (ev.Type)
 	    {
 		    case "AhkError":
-			    await actionsService.LogAction(AgentActionType.Error, "AHK", "Ошибка AHK");
+			    await actionsService.SetAhkErrorState(ev.AgentId, true);
+			    break;
+		    case "AhkOk":
+			    await actionsService.SetAhkErrorState(ev.AgentId, false);
 			    break;
 		    default:
 			    return;

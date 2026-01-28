@@ -12,7 +12,7 @@
     </div>
     <hr>
     <a class="btn btn-danger" onclick="KillAppsAllBots()">
-        Отключить всех ботов
+        Выключить процессы всех ботов 
     </a>
     <hr>
     <div id="bots" class="d-flex gap-3 mt-3 flex-wrap justify-content-center"></div>
@@ -64,8 +64,8 @@
             {
                 botStatus = `
                     <b>Статус: </b>${botState}<br>
-                    <b>Время последней проверки пк: </b>${localTime(bot.lastCheckTime).toLocaleString()}<br>
-                    <b>Время последней проверки Dolphin: </b>${bot.lastDolphinCheckTime ? localTime(bot.lastDolphinCheckTime).toLocaleString() : "Не было проверок"}<br>
+                    <b>Время последней проверки пк: </b>${bot.lastCheckTime ? localTime(bot.lastCheckTime).toLocaleString() : "-"}<br>
+                    <b>Время последней проверки Dolphin: </b>${bot.lastDolphinCheckTime ? localTime(bot.lastDolphinCheckTime).toLocaleString() : "-"}<br>
                     <b>Количество проверок dolphin: </b>${bot.dolphinChecksCount}<br>
                 `
             }
