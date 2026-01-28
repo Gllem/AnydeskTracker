@@ -1,5 +1,6 @@
 ﻿using AnydeskTracker.Data;
 using AnydeskTracker.Models;
+using AnydeskTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace AnydeskTracker.Controllers.Bots;
 [Authorize(Roles = "Admin")]
 [Route("api/admin/bots/games")]
 [ApiController]
-public class ApiAdminBotGamesController(ApplicationDbContext dbContext) : ControllerBase
+public class ApiAdminBotGamesController(ApplicationDbContext dbContext, AgentGamesUpdater agentGamesUpdater) : ControllerBase
 {
 	[HttpGet]
 	public async Task<IActionResult> GetGlobalBotGames()
@@ -59,6 +60,7 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext) : Contro
 		dbContext.BotGames.Add(game);
 			
 		await dbContext.SaveChangesAsync();
+		await agentGamesUpdater.UpdateGamesDefault();
 		return Ok(game);
 	}
 	
@@ -94,6 +96,7 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext) : Contro
 		});
 			
 		await dbContext.SaveChangesAsync();
+		await agentGamesUpdater.UpdateGamesOverride(pc.BotId);
 		return Ok(game);
 	}
 		
@@ -106,16 +109,22 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext) : Contro
 		if (botGame == null) 
 			return NotFound();
 
-		var pcModelToBotGame = await dbContext.PcModelToBotGames.FirstOrDefaultAsync(x => x.BotGameId == id);
+		var pcModelToBotGame = await dbContext.PcModelToBotGames.Include(x => x.PcModel).FirstOrDefaultAsync(x => x.BotGameId == id);
 
-		if (pcModelToBotGame != null)
-		{
-			dbContext.PcModelToBotGames.Remove(pcModelToBotGame);
-		}
+		var pcModel = pcModelToBotGame?.PcModel;
 		
+		if (pcModelToBotGame != null) 
+			dbContext.PcModelToBotGames.Remove(pcModelToBotGame);
+
 		dbContext.BotGames.Remove(botGame);
 		
 		await dbContext.SaveChangesAsync();
+		
+		if(pcModel == null)
+			await agentGamesUpdater.UpdateGamesDefault();
+		else
+			await agentGamesUpdater.UpdateGamesOverride(pcModel.BotId);
+		
 		return NoContent();
 	}
 	
@@ -135,7 +144,8 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext) : Contro
 		}
 
 		await dbContext.SaveChangesAsync();
-		
+		await agentGamesUpdater.UpdateGamesDefault();
+
 		return Ok();
 	}
 	
@@ -146,6 +156,8 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext) : Contro
 			.Where(x => x.PcModelId == pcModelId)
 			.ToListAsync();
 
+		var pc = await dbContext.Pcs.FindAsync(pcModelId);
+		
 		var map = links.ToDictionary(x => x.BotGameId);
 		
 		for (int i = 0; i < orderedGameIds.Length; i++)
@@ -154,6 +166,9 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext) : Contro
 		}
 
 		await dbContext.SaveChangesAsync();
+		
+		if(pc != null)
+			await agentGamesUpdater.UpdateGamesOverride(pc.BotId);
 		
 		return Ok();
 	}

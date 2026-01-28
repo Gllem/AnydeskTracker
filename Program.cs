@@ -45,6 +45,8 @@ builder.Services.AddScoped<TelegramService>();
 builder.Services.AddScoped<PcService>();
 builder.Services.AddScoped<ParserService>();
 builder.Services.AddScoped<AgentActionsService>();
+builder.Services.AddScoped<AgentCommandsService>();
+builder.Services.AddScoped<AgentGamesUpdater>();
 builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClientService.Initializer()
 {
     ApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")

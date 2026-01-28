@@ -1,14 +1,14 @@
 ﻿using AnydeskTracker.Extensions;
+using AnydeskTracker.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace AnydeskTracker.Controllers;
 
 [Authorize(Roles = "Admin")]
 [Route("api/admin/agents")]
 [ApiController]
-public class AdminApiAgentController(IHubContext<AgentHub> hub) : ControllerBase
+public class AdminApiAgentController(AgentCommandsService agentCommandsService) : ControllerBase
 {
 	[HttpGet("{agentId}")]
 	public async Task<IActionResult> GetAgentStatus(string agentId)
@@ -25,51 +25,39 @@ public class AdminApiAgentController(IHubContext<AgentHub> hub) : ControllerBase
 		});
 	}
 
-	private async Task<IActionResult> SendCommandToAgent(string agentId, string command)
-	{
-		var agentState = AgentPresence.Get(agentId);
-		if (agentState is null) 
-			return NotFound(new { agentId, message = "Agent never connected" });
-		if (!agentState.Online) 
-			return Conflict(new { agentId, message = "Agent offline", lastSeenUtc = agentState.LastSeenUtc });
-
-		return await SendCommand($"machine:{agentId}", command);
-	}
-
-	private async Task<IActionResult> SendCommandToAll(string command) => await SendCommand("agents:all", command);
-
-	private async Task<IActionResult> SendCommand(string group, string command)
-	{
-		var cmd = new Command("cmd-" + Guid.NewGuid().ToString("N"), command);
-
-		await hub.Clients.Group(group)
-			.SendAsync("Command", cmd);
-
-		return Ok(new
-		{
-			sent = group,
-			commandId = cmd.CommandId
-		});			
-	}
-
 #region KillApps
 
 	[HttpGet("killApps/{agentId}")]
-	public async Task<IActionResult> KillApps(string agentId) => await SendCommandToAgent(agentId, "KillMain");
+	public async Task<IActionResult> KillApps(string agentId)
+	{
+		var (code, payload) = await agentCommandsService.SendCommandToAgent(agentId, "KillMain");
+		return StatusCode((int) code, payload);
+	}
 
 	[HttpGet("killApps")]
-	public async Task<IActionResult> KillApps() => await SendCommandToAll("KillMain");
+	public async Task<IActionResult> KillApps()
+	{
+		var (code, payload) = await agentCommandsService.SendCommandToAll("KillMain");
+		return StatusCode((int)code, payload);
+	}
+
 #endregion
 
 #region StartMain
-
 	[HttpGet("startMain/{agentId}")]
-	public async Task<IActionResult> StartMain(string agentId) => await SendCommandToAgent(agentId, "StartMain");
+	public async Task<IActionResult> StartMain(string agentId)
+	{
+		var (code, payload) = await agentCommandsService.SendCommandToAgent(agentId, "StartMain");
+		return StatusCode((int)code, payload);
+	}
 
 
 	[HttpGet("startMain")]
-	public async Task<IActionResult> StartMain() => await SendCommandToAll("StartMain");
-
+	public async Task<IActionResult> StartMain()
+	{
+		var (code, payload) = await agentCommandsService.SendCommandToAll("StartMain");
+		return StatusCode((int)code, payload);
+	}
 #endregion
 }
 
