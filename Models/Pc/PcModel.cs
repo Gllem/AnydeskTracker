@@ -38,12 +38,6 @@ namespace AnydeskTracker.Models
 		public DateTime LastStatusChange { get; set; } = DateTime.UtcNow;
 
 		public bool AhkError { get; set; }
-
-		
-		// LEGACY
-		public ICollection<PcModelToBotGame> OverrideBotGames { get; set; } = new List<PcModelToBotGame>();
-		// LEGACY
-		
 		
 		public ICollection<BotGameOrderOverride> OverridenBotGames { get; set; } = new List<BotGameOrderOverride>();
 

@@ -8,13 +8,11 @@ public class BotGameOrderOverride
 	[Required]
 	public int PcId { get; set; }
 
-	[ForeignKey(nameof(PcId))]
-	public PcModel Pc { get; set; } = null!;
+	public PcModel Pc { get; set; }
 
 	[Required]
 	public int GameId { get; set; }
-	[ForeignKey(nameof(GameId))]
-	public Game Game { get; set; } = null!;
+	public Game Game { get; set; }
 
 	[Required]
 	public int Order { get; set; }

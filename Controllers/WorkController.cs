@@ -104,13 +104,13 @@ namespace AnydeskTracker.Controllers
 
 			var gameIds = schedule.Select(x => x.GameSchedule.Game.Id);
 			
-			var games = context.Games.Where(x => gameIds.Contains(x.Id));
+			var games = context.GameCatalog.Where(x => gameIds.Contains(x.Id));
 			
 			return Ok(games.Select(x => new
 			{
 				x.Id,
-				x.GameName,
-				x.GameUrl
+				x.Name,
+				x.Url
 			}));
 		}
 		

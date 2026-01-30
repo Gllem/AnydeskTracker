@@ -9,7 +9,7 @@ public class BotGameOrderGlobal
 	public int GameId { get; set; }
 
 	[ForeignKey(nameof(GameId))]
-	public Game Game { get; set; } = null!;
+	public Game Game { get; set; }
 
 	[Required]
 	public int Order { get; set; }

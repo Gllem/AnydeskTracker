@@ -18,9 +18,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         BuildGameUserSchedule(builder);
         BuildBotGameOrder(builder);
         
-        BuildLegacyGameUserSchedule(builder);
-        BuildLegacyBotGames(builder);
-        
         BuildBlockedAgents(builder);
         
         builder.Entity<PcModel>().Property(x => x.AgentReady)
@@ -40,8 +37,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         builder.Entity<GameUserScheduleToUser>()
             .HasOne(x => x.User)
-            .WithMany()
+            .WithMany(x => x.GameScheduleLinks)
             .HasForeignKey(x => x.UserId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
     }
 
@@ -53,50 +51,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey<BotGameOrderGlobal>(x => x.GameId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Entity<BotGameOrderOverride>()
-            .HasKey(x => new {x.PcId, x.GameId});
+        builder.Entity<BotGameOrderOverride>(e =>
+        {
+            e.HasKey(x => new { x.PcId, x.GameId});
 
-        builder.Entity<BotGameOrderOverride>()
-            .HasOne(x => x.Game)
-            .WithMany(x => x.PcOverrides)
-            .HasForeignKey(x => x.GameId)
-            .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Game)
+                .WithMany(x => x.PcOverrides)
+                .HasForeignKey(x => x.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Entity<BotGameOrderOverride>()
-            .HasOne(x => x.Pc)
-            .WithMany()
-            .HasForeignKey(x => x.PcId)
-            .OnDelete(DeleteBehavior.Cascade);
-    }
-    
-    private static void BuildLegacyGameUserSchedule(ModelBuilder builder)
-    {
-        builder.Entity<GameUserSchedule>()
-            .HasOne(s => s.Game)
-            .WithMany(g => g.Schedules)
-            .HasForeignKey(s => s.GameId)
-            .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Pc)
+                .WithMany(x => x.OverridenBotGames)
+                .HasForeignKey(x => x.PcId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Entity<GameUserSchedule>()
-            .HasMany(s => s.Users)
-            .WithMany(u => u.AssignedSchedules)
-            .UsingEntity(j => j.ToTable("GameUserSchedulesUsers"));
-    }
-    
-    private static void BuildLegacyBotGames(ModelBuilder builder)
-    {
-        builder.Entity<PcModelToBotGame>()
-            .HasKey(x => new { x.PcModelId, x.BotGameId });
-        
-        builder.Entity<PcModelToBotGame>()
-            .HasOne(x => x.PcModel)
-            .WithMany(b => b.OverrideBotGames)
-            .HasForeignKey(x => x.PcModelId);
-
-        builder.Entity<PcModelToBotGame>()
-            .HasOne(x => x.BotGame)
-            .WithMany()
-            .HasForeignKey(x => x.BotGameId);
+            e.Ignore("PcModelId");
+        });
     }
     
     private static void BuildBlockedAgents(ModelBuilder builder)
@@ -123,20 +94,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PcModel> Pcs { get; set; }
     public DbSet<WorkSessionModel> WorkSessionModels { get; set; }
     public DbSet<PcUsage> PcUsages { get; set; }
-
     
-    // OLD GAMES
-    public DbSet<GameModel> Games { get; set; }
-    public DbSet<BotGame> BotGames { get; set; }
-    public DbSet<PcModelToBotGame> PcModelToBotGames { get; set; }
-    //
-    
-    // NEW GAMES
-
     public DbSet<Game> GameCatalog { get; set; }
+    public DbSet<GameSchedule> GameSchedules { get; set; }
+    public DbSet<BotGameOrderGlobal> BotGameOrdersGlobal { get; set; }
+    public DbSet<BotGameOrderOverride> BotGameOrdersOverride { get; set; }
 
-    //
-    
     public DbSet<UserAction> UserActions { get; set; }
     public DbSet<PcBotAction> BotActions { get; set; }
     public DbSet<PcBotDolphinAction> DolphinActions { get; set; }

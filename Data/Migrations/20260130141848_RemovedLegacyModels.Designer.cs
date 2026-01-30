@@ -3,6 +3,7 @@ using System;
 using AnydeskTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AnydeskTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260130141848_RemovedLegacyModels")]
+    partial class RemovedLegacyModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -137,9 +140,14 @@ namespace AnydeskTracker.Data.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("PcModelId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("PcId", "GameId");
 
                     b.HasIndex("GameId");
+
+                    b.HasIndex("PcModelId");
 
                     b.ToTable("BotGameOrdersOverride");
                 });
@@ -193,7 +201,12 @@ namespace AnydeskTracker.Data.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("GameUserScheduleId", "UserId");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("UserId");
 
@@ -558,10 +571,14 @@ namespace AnydeskTracker.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("AnydeskTracker.Models.PcModel", "Pc")
-                        .WithMany("OverridenBotGames")
+                        .WithMany()
                         .HasForeignKey("PcId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("AnydeskTracker.Models.PcModel", null)
+                        .WithMany("OverridenBotGames")
+                        .HasForeignKey("PcModelId");
 
                     b.Navigation("Game");
 
@@ -581,6 +598,10 @@ namespace AnydeskTracker.Data.Migrations
 
             modelBuilder.Entity("AnydeskTracker.Models.GameRefactor.GameUserScheduleToUser", b =>
                 {
+                    b.HasOne("AnydeskTracker.Models.AppUser", null)
+                        .WithMany("GameScheduleLinks")
+                        .HasForeignKey("AppUserId");
+
                     b.HasOne("AnydeskTracker.Models.GameRefactor.GameSchedule", "GameSchedule")
                         .WithMany("UserLinks")
                         .HasForeignKey("GameUserScheduleId")
@@ -588,7 +609,7 @@ namespace AnydeskTracker.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("AnydeskTracker.Models.AppUser", "User")
-                        .WithMany("GameScheduleLinks")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

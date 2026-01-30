@@ -2,6 +2,7 @@
 using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Models;
+using AnydeskTracker.Models.GameRefactor;
 using AnydeskTracker.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -88,7 +89,8 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		if (pc == null)
 			return NotFound();
 
-		return await GetGames(pc);
+		return BadRequest();
+		// return await GetGames(pc);
 	}
 	
 	[HttpGet("botGamesId/{pcId}")]
@@ -99,42 +101,44 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		if (pc == null)
 			return NotFound();
 
-		return await GetGames(pc);
+		return BadRequest();
+		// return await GetGames(pc);
 	}
 	
 	[HttpGet("botGamesId/")]
 	public async Task<IActionResult> GetBotGames()
 	{
-		return await GetGames(null);
+		return BadRequest();
+		// return await GetGames(null);
 	}
 
-	private async Task<IActionResult> GetGames(PcModel? pc)
-	{
-		IQueryable<BotGame> query;
-		
-		if (pc != null && pc.OverridenBotGames.Count != 0)
-			query = dbContext.PcModelToBotGames
-				.Where(x => x.PcModelId == pc.Id)
-				.OrderBy(x => x.Order)
-				.Select(x => x.BotGame);
-		else
-			query = dbContext.BotGames.Where(x => x.IsGlobal).OrderBy(x => x.GlobalOrder);
+	// private async Task<IActionResult> GetGames(PcModel? pc)
+	// {
+	// 	IQueryable<BotGame> query;
+	// 	
+	// 	if (pc != null && pc.OverridenBotGames.Count != 0)
+	// 		query = dbContext.PcModelToBotGames
+	// 			.Where(x => x.PcModelId == pc.Id)
+	// 			.OrderBy(x => x.Order)
+	// 			.Select(x => x.BotGame);
+	// 	else
+	// 		query = dbContext.BotGames.Where(x => x.IsGlobal).OrderBy(x => x.GlobalOrder);
+	//
+	// 	var games = await query.ToListAsync();
+	// 	
+	// 	return File(
+	// 		GetBotGamesFile(games),
+	// 		"text/plain",
+	// 		$"{pc?.DisplayId ?? "Games"}.txt"
+	// 	);
+	// }
 
-		var games = await query.ToListAsync();
-		
-		return File(
-			GetBotGamesFile(games),
-			"text/plain",
-			$"{pc?.DisplayId ?? "Games"}.txt"
-		);
-	}
-
-	private byte[] GetBotGamesFile(List<BotGame> botGames)
+	private byte[] GetBotGamesFile(List<Game> botGames)
 	{
 		var sb = new StringBuilder();
 		foreach (var game in botGames)
 		{
-			sb.AppendLine(game.GameUrl);
+			sb.AppendLine(game.Url);
 		}
 
 		return Encoding.UTF8.GetBytes(sb.ToString());
