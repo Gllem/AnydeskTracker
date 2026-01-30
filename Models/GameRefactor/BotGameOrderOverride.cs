@@ -6,15 +6,14 @@ namespace AnydeskTracker.Models.GameRefactor;
 public class BotGameOrderOverride
 {
 	[Required]
-	[ForeignKey(nameof(Pc))]
 	public int PcId { get; set; }
 
+	[ForeignKey(nameof(PcId))]
 	public PcModel Pc { get; set; } = null!;
 
 	[Required]
-	[ForeignKey(nameof(Game))]
 	public int GameId { get; set; }
-
+	[ForeignKey(nameof(GameId))]
 	public Game Game { get; set; } = null!;
 
 	[Required]

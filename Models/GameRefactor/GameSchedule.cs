@@ -10,8 +10,9 @@ public class GameSchedule
 	public int Id { get; set; }
 	
 	[Required]
-	[ForeignKey(nameof(Game))]
 	public int GameId { get; set; }
+	
+	[ForeignKey(nameof(GameId))]
 	public Game Game { get; set; } = null!;
 
 	[Required]

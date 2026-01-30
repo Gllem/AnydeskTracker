@@ -12,8 +12,8 @@ public class GameUserScheduleToUser
 	public GameSchedule GameSchedule { get; set; } = null!;
 
 	[Required]
-	[ForeignKey(nameof(User))]
 	public string UserId { get; set; } = string.Empty;
-
+	
+	[ForeignKey(nameof(UserId))]
 	public AppUser User { get; set; } = null!;
 }
