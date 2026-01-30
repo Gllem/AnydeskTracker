@@ -8,8 +8,8 @@ public class AgentGamesUpdater(AgentCommandsService agentCommandsService, Applic
 {
 	public async Task<(HttpStatusCode code, object payload)> UpdateGamesDefault()
 	{
-		var eligibleIds = dbContext.Pcs.Include(x => x.OverrideBotGames)
-			.Where(x => x.OverrideBotGames.Count == 0)
+		var eligibleIds = dbContext.Pcs.Include(x => x.OverridenBotGames)
+			.Where(x => x.OverridenBotGames.Count == 0)
 			.Select(x => x.BotId)
 			.ToArray();
 		

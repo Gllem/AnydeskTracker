@@ -83,7 +83,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 	[HttpGet("botGames/{botId}")]
 	public async Task<IActionResult> GetBotGames(string botId)
 	{
-		var pc = await dbContext.Pcs.Include(x => x.OverrideBotGames).FirstOrDefaultAsync(x => x.BotId == botId);
+		var pc = await dbContext.Pcs.Include(x => x.OverridenBotGames).FirstOrDefaultAsync(x => x.BotId == botId);
 
 		if (pc == null)
 			return NotFound();
@@ -94,7 +94,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 	[HttpGet("botGamesId/{pcId}")]
 	public async Task<IActionResult> GetBotGames(int pcId)
 	{
-		var pc = await dbContext.Pcs.Include(x => x.OverrideBotGames).FirstOrDefaultAsync(x => x.Id == pcId);
+		var pc = await dbContext.Pcs.Include(x => x.OverridenBotGames).FirstOrDefaultAsync(x => x.Id == pcId);
 
 		if (pc == null)
 			return NotFound();
@@ -112,7 +112,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 	{
 		IQueryable<BotGame> query;
 		
-		if (pc != null && pc.OverrideBotGames.Count != 0)
+		if (pc != null && pc.OverridenBotGames.Count != 0)
 			query = dbContext.PcModelToBotGames
 				.Where(x => x.PcModelId == pc.Id)
 				.OrderBy(x => x.Order)

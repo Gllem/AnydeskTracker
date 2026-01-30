@@ -3,6 +3,7 @@ using System;
 using AnydeskTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AnydeskTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260130111157_AddNewGameModels")]
+    partial class AddNewGameModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -131,7 +134,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BotGames", (string)null);
+                    b.ToTable("BotGames");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.GameModel", b =>
@@ -150,7 +153,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Games", (string)null);
+                    b.ToTable("Games");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.GameRefactor.BotGameOrderGlobal", b =>
@@ -163,7 +166,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasKey("GameId");
 
-                    b.ToTable("BotGameOrderGlobal", (string)null);
+                    b.ToTable("BotGameOrderGlobal");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.GameRefactor.BotGameOrderOverride", b =>
@@ -186,7 +189,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("PcModelId");
 
-                    b.ToTable("BotGameOrderOverride", (string)null);
+                    b.ToTable("BotGameOrderOverride");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.GameRefactor.Game", b =>
@@ -208,7 +211,7 @@ namespace AnydeskTracker.Data.Migrations
                     b.HasIndex("Url")
                         .IsUnique();
 
-                    b.ToTable("GameCatalog", (string)null);
+                    b.ToTable("GameCatalog");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.GameRefactor.GameSchedule", b =>
@@ -227,7 +230,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("GameSchedule", (string)null);
+                    b.ToTable("GameSchedule");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.GameRefactor.GameUserScheduleToUser", b =>
@@ -247,7 +250,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("GameUserScheduleToUser", (string)null);
+                    b.ToTable("GameUserScheduleToUser");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.PcBotAction", b =>
@@ -289,7 +292,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("PcId");
 
-                    b.ToTable("BotActions", (string)null);
+                    b.ToTable("BotActions");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.PcBotDolphinAction", b =>
@@ -308,7 +311,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("PcId");
 
-                    b.ToTable("DolphinActions", (string)null);
+                    b.ToTable("DolphinActions");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.PcModel", b =>
@@ -352,7 +355,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pcs", (string)null);
+                    b.ToTable("Pcs");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.PcModelToBotGame", b =>
@@ -370,7 +373,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("BotGameId");
 
-                    b.ToTable("PcModelToBotGames", (string)null);
+                    b.ToTable("PcModelToBotGames");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.PcUsage", b =>
@@ -409,7 +412,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("WorkSessionId");
 
-                    b.ToTable("PcUsages", (string)null);
+                    b.ToTable("PcUsages");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.UserAction", b =>
@@ -440,7 +443,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("WorkSessionId");
 
-                    b.ToTable("UserActions", (string)null);
+                    b.ToTable("UserActions");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.WorkSessionModel", b =>
@@ -475,7 +478,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("WorkSessionModels", (string)null);
+                    b.ToTable("WorkSessionModels");
                 });
 
             modelBuilder.Entity("AppUserGameUserSchedule", b =>
@@ -509,7 +512,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("GameUserSchedule", (string)null);
+                    b.ToTable("GameUserSchedule");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

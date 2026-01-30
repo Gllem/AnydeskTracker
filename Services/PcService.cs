@@ -16,12 +16,12 @@ namespace AnydeskTracker.Services
 		
 		public async Task<List<PcDto>> GetAllPcs()
 		{
-			return await _dbContext.Pcs.Include(x => x.OverrideBotGames).OrderBy(x => x.SortOrder).Select(x => new PcDto(x)).ToListAsync();
+			return await _dbContext.Pcs.Include(x => x.OverridenBotGames).OrderBy(x => x.SortOrder).Select(x => new PcDto(x)).ToListAsync();
 		}
 
 		public async Task<List<NonSensitivePcDto>> GetAllPcsNonSensitive()
 		{
-			return await _dbContext.Pcs.Include(x => x.OverrideBotGames).OrderBy(x => x.SortOrder).Select(x => new NonSensitivePcDto(x)).ToListAsync();
+			return await _dbContext.Pcs.Include(x => x.OverridenBotGames).OrderBy(x => x.SortOrder).Select(x => new NonSensitivePcDto(x)).ToListAsync();
 		}
 
 		public async Task<PcModel?> GetPc(int id)

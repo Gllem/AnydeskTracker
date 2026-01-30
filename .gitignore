@@ -484,3 +484,4 @@ $RECYCLE.BIN/
 *.swp
 
 app_data/anydesk.db
+app_data/anydesk.db.back

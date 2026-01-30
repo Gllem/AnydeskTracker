@@ -28,17 +28,17 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext, AgentGam
 	public async Task<IActionResult> GetOverridenBotGames(int pcId)
 	{
 		var pc = await dbContext.Pcs
-			.Include(x => x.OverrideBotGames)
-			.ThenInclude(x => x.BotGame)
+			.Include(x => x.OverridenBotGames)
+			.ThenInclude(x => x.Game)
 			.FirstOrDefaultAsync(x => x.Id == pcId);
 		
 		if (pc == null)
 			return NotFound();
 		
-		return Ok(pc.OverrideBotGames.Select(x => new
+		return Ok(pc.OverridenBotGames.Select(x => new
 		{
-			x.BotGame.Id,
-			x.BotGame.GameUrl,
+			x.Game.Id,
+			x.Game.Url,
 			x.Order
 		}).OrderByDescending(x => x.Order));
 	}
@@ -68,8 +68,8 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext, AgentGam
 	public async Task<IActionResult> AddOverridenBotGame(int pcId, [FromBody] BotGame? game)
 	{
 		var pc = await dbContext.Pcs
-			.Include(x => x.OverrideBotGames)
-			.ThenInclude(x => x.BotGame)
+			.Include(x => x.OverridenBotGames)
+			.ThenInclude(x => x.Game)
 			.FirstOrDefaultAsync(x => x.Id == pcId);
 
 		if (pc == null)

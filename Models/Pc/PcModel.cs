@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using AnydeskTracker.Models.GameRefactor;
 
 namespace AnydeskTracker.Models
 {
@@ -38,8 +39,14 @@ namespace AnydeskTracker.Models
 
 		public bool AhkError { get; set; }
 
-		public ICollection<PcModelToBotGame> OverrideBotGames { get; set; } = new List<PcModelToBotGame>();
 		
+		// LEGACY
+		public ICollection<PcModelToBotGame> OverrideBotGames { get; set; } = new List<PcModelToBotGame>();
+		// LEGACY
+		
+		
+		public ICollection<BotGameOrderOverride> OverridenBotGames { get; set; } = new List<BotGameOrderOverride>();
+
 		public int SortOrder { get; set; }
 
 		public bool AgentReady { get; set; } = true;
