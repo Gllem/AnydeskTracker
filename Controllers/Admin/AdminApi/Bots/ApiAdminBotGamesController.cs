@@ -66,6 +66,19 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext, AgentGam
 		dbContext.BotGameAssignmentsGlobal.Remove(existing);
 		
 		await dbContext.SaveChangesAsync();
+		
+		var assignments = 
+			await dbContext.BotGameAssignmentsGlobal
+				.OrderBy(x => x.Order)
+				.ToListAsync();
+
+		for (int i = 0; i < assignments.Count; i++)
+		{
+			assignments[i].Order = i + 1;
+		}
+
+		await dbContext.SaveChangesAsync();
+		
 		await agentGamesUpdater.UpdateGamesDefault();
 		return Ok();
 	}
@@ -137,8 +150,21 @@ public class ApiAdminBotGamesController(ApplicationDbContext dbContext, AgentGam
 		var pc = existing.Pc;
 
 		dbContext.BotGameAssignmentsOverride.Remove(existing);
-		
+
 		await dbContext.SaveChangesAsync();
+
+		var assignments = 
+			await dbContext.BotGameAssignmentsOverride
+				.OrderBy(x => x.Order)
+				.ToListAsync();
+
+		for (int i = 0; i < assignments.Count; i++)
+		{
+			assignments[i].Order = i + 1;
+		}
+
+		await dbContext.SaveChangesAsync();
+		
 		await agentGamesUpdater.UpdateGamesOverride(pc.BotId);
 		return Ok();
 	}
