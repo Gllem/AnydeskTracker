@@ -2,6 +2,8 @@
     Layout = "_Layout";
     ViewData["Title"] = "Каталог";
 }
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
 
 <div class="d-flex h-100 gap-3">
     <div class="col-4 d-flex gap-3 flex-column">
@@ -12,6 +14,8 @@
             <input id="gameName" type="text" placeholder="Название" class="form-control mb-2" required/>
             <button class="btn btn-success">Добавить игру</button>
         </form>
+        
+        <a class="btn btn-success" asp-action="GameSchedules">Расписания игр</a>
     </div>
 
 

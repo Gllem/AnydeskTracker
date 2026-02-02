@@ -3,22 +3,13 @@
     ViewData["Title"] = "Игры";
 }
 
-<h2>Управление Играми</h2>
 
-<div>
-    <form id="addForm" class="mb-3">
-        <input id="gameUrl" type="text" placeholder="URL Игры" class="form-control mb-2" required />
-        <input id="gameName" type="text" placeholder="Имя игры" class="form-control mb-2" required />
-        <button class="btn btn-success">Добавить Игру</button>
-    </form>
-</div>
+<h2>Расписания игр</h2>
 
 <table class="table table-bordered" id="gamesTable">
     <thead>
     <tr>
-        <th>ID</th>
-        <th>Имя</th>
-        <th>URL</th>
+        <th>Игра</th>
         <th>ПН</th>
         <th>ВТ</th>
         <th>СР</th>
@@ -26,7 +17,6 @@
         <th>ПТ</th>
         <th>СБ</th>
         <th>ВС</th>
-        <th></th>
     </tr>
     </thead>
     <tbody></tbody>
@@ -47,11 +37,10 @@
             });
             
             tbody.innerHTML = data.map(p => {
+                const name = p.name ? p.name : p.url;
                 return `
                 <tr>
-                    <td>${p.id}</td>
-                    <td>${p.gameName}</td>
-                    <td><a href="${p.gameUrl}" target="_blank" rel="noopener noreferrer">${p.gameUrl}</a></td>
+                    <td><a href="${p.url}" target="_blank" rel="noopener noreferrer">${name}</a></td>
                     <td>
                         <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="1"></select>
                     </td><td>
@@ -67,26 +56,10 @@
                     </td><td>
                         <select class="user-select" multiple data-game-id="${p.id}" data-game-weekday-index="0"></select>
                     </td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
-                    </td>
                 </tr>
                 `}).join('');
             await loadUsersForSelects();
         }
-
-        document.getElementById('addForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const gameUrl = document.getElementById('gameUrl').value;
-            const gameName = document.getElementById('gameName').value;
-            await fetch('/api/admin/games', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gameUrl, gameName })
-            });
-            e.target.reset();
-            loadGames();
-        });
 
         async function loadUsersForSelects() {
             const res = await fetch('/api/admin/users');
@@ -137,7 +110,7 @@
 
         async function deleteGame(id) {
             await fetch(`/api/admin/games/${id}`, { method: 'DELETE' });
-            loadGames();
+            await loadGames();
         }
 
         (async () => {
