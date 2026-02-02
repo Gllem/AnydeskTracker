@@ -89,8 +89,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		if (pc == null)
 			return NotFound();
 
-		return BadRequest();
-		// return await GetGames(pc);
+		return await GetGames(pc);
 	}
 	
 	[HttpGet("botGamesId/{pcId}")]
@@ -101,37 +100,35 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		if (pc == null)
 			return NotFound();
 
-		return BadRequest();
-		// return await GetGames(pc);
+		return await GetGames(pc);
 	}
 	
 	[HttpGet("botGamesId/")]
 	public async Task<IActionResult> GetBotGames()
 	{
-		return BadRequest();
-		// return await GetGames(null);
+		return await GetGames(null);
 	}
 
-	// private async Task<IActionResult> GetGames(PcModel? pc)
-	// {
-	// 	IQueryable<BotGame> query;
-	// 	
-	// 	if (pc != null && pc.OverridenBotGames.Count != 0)
-	// 		query = dbContext.PcModelToBotGames
-	// 			.Where(x => x.PcModelId == pc.Id)
-	// 			.OrderBy(x => x.Order)
-	// 			.Select(x => x.BotGame);
-	// 	else
-	// 		query = dbContext.BotGames.Where(x => x.IsGlobal).OrderBy(x => x.GlobalOrder);
-	//
-	// 	var games = await query.ToListAsync();
-	// 	
-	// 	return File(
-	// 		GetBotGamesFile(games),
-	// 		"text/plain",
-	// 		$"{pc?.DisplayId ?? "Games"}.txt"
-	// 	);
-	// }
+	private async Task<IActionResult> GetGames(PcModel? pc)
+	{
+		IQueryable<Game> query;
+		
+		if (pc != null && pc.OverridenBotGames.Count != 0)
+			query = dbContext.BotGameAssignmentsOverride
+				.Where(x => x.PcId == pc.Id)
+				.OrderBy(x => x.Order)
+				.Select(x => x.Game);
+		else
+			query = dbContext.BotGameAssignmentsGlobal.OrderBy(x => x.Order).Select(x => x.Game);
+	
+		var games = await query.ToListAsync();
+		
+		return File(
+			GetBotGamesFile(games),
+			"text/plain",
+			$"{pc?.DisplayId ?? "Games"}.txt"
+		);
+	}
 
 	private byte[] GetBotGamesFile(List<Game> botGames)
 	{
