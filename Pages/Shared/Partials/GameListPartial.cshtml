@@ -16,11 +16,11 @@
             const card = document.createElement("a");
             card.className = "border p-3 rounded bg-light cursor-pointer text-truncate";
             card.style.width = "180px";
-            card.href = game.gameUrl;
+            card.href = game.url;
             card.target = "_blank";
             card.rel = "noopener noreferrer";
 
-            const gameName = game.gameName ? game.gameName : game.gameUrl;
+            const gameName = game.name ? game.name : game.url;
 
             card.innerHTML = `<strong>${gameName}</strong>`;
             container.appendChild(card);
