@@ -26,3 +26,16 @@ main{
   height: 80%;
 }
 
+ .drag-handle {
+   cursor: grab;
+ }
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.sortable-placeholder {
+  height: 45px;
+  background: #e9ecef;
+  width: 100%;
+}
+

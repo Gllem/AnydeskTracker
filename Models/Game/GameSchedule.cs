@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AnydeskTracker.Models.GameRefactor;
+namespace AnydeskTracker.Models.Game;
 
 // Привязка пользователей к игре по дням недели
 public class GameSchedule

@@ -2,7 +2,7 @@
 using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Models;
-using AnydeskTracker.Models.GameRefactor;
+using AnydeskTracker.Models.Game;
 using AnydeskTracker.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

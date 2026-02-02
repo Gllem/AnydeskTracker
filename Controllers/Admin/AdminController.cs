@@ -87,7 +87,8 @@ public class AdminController(ApplicationDbContext context, PcService pcService) 
 	public async Task<IActionResult> BotGames()
 	{
 		var pcs = await pcService.GetAllPcs();
+		var games = await context.GameCatalog.Select(x => new GameDto(x)).ToListAsync();
 		
-		return View("Bots/BotGames", new AdminBotGamesDto(pcs.ToArray()));
+		return View("Bots/BotGames", new AdminBotGamesDto(pcs.ToArray(), games.ToArray()));
 	}
 }

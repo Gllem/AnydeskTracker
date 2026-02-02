@@ -1,4 +1,4 @@
-﻿using AnydeskTracker.Models.GameRefactor;
+﻿using AnydeskTracker.Models.Game;
 using Microsoft.AspNetCore.Identity;
 
 namespace AnydeskTracker.Models;

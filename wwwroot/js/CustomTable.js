@@ -1,50 +1,52 @@
 ﻿let editingTable = false;
 
-function CustomTable(tableSelector, bulkUpdateUrl, updateCallback, drag){
+function CustomTable(tableSelector, bulkUpdateUrlGetter, updateCallback, edit, drag){
     const table = $(tableSelector);
 
-    table.on('click', '.editable', function () {
-        if (editingTable) return;
+    if(edit){
+        table.on('click', '.editable', function () {
+            if (editingTable) return;
 
-        const cell = $(this);
-        const oldValue = cell.text().trim();
+            const cell = $(this);
+            const oldValue = cell.text().trim();
 
-        let input = $(`<input type="text" class="form-control form-control-sm flex-wrap m-0">`);
-        input.val(oldValue);
+            let input = $(`<input type="text" class="form-control form-control-sm flex-wrap m-0">`);
+            input.val(oldValue);
 
-        cell.data('original', oldValue);
-        cell.empty().append(input);
-        input.focus();
+            cell.data('original', oldValue);
+            cell.empty().append(input);
+            input.focus();
 
-        editingTable = cell;
-    });
+            editingTable = cell;
+        });
 
-    table.on('change', '.row-check', function () {
-        const checkBox = $(this);
-        const newVal = checkBox.is(':checked') ? '1' : '0';
-        const oldVal = String(checkBox.data('original'));
+        table.on('change', '.row-check', function () {
+            const checkBox = $(this);
+            const newVal = checkBox.is(':checked') ? '1' : '0';
+            const oldVal = String(checkBox.data('original'));
 
-        if (newVal !== oldVal) {
-            checkBox.closest('tr').addClass('table-warning');
-            checkBox.data('changed', true);
-        } else {
-            checkBox.data('changed', false);
-            updateRowWarning(checkBox.closest('tr'));
-        }
-    });
+            if (newVal !== oldVal) {
+                checkBox.closest('tr').addClass('table-warning');
+                checkBox.data('changed', true);
+            } else {
+                checkBox.data('changed', false);
+                updateRowWarning(checkBox.closest('tr'));
+            }
+        });
 
-    table.on('blur', 'input, select', function () {
-        finishEdit($(this).closest('.editable'), true);
-    });
-
-    table.on('keydown', 'input, select', function (e) {
-        if (e.key === 'Enter') {
+        table.on('blur', 'input, select', function () {
             finishEdit($(this).closest('.editable'), true);
-        }
-        if (e.key === 'Escape') {
-            finishEdit($(this).closest('.editable'), false);
-        }
-    });
+        });
+
+        table.on('keydown', 'input, select', function (e) {
+            if (e.key === 'Enter') {
+                finishEdit($(this).closest('.editable'), true);
+            }
+            if (e.key === 'Escape') {
+                finishEdit($(this).closest('.editable'), false);
+            }
+        });   
+    }
 
     if(drag){
         $(`${tableSelector} tbody`).sortable({
@@ -88,13 +90,17 @@ function CustomTable(tableSelector, bulkUpdateUrl, updateCallback, drag){
             changes.push(item);
         });
 
+        changes.sort(function (a, b){
+            return b.sortOrder - a.sortOrder;
+        })
+        
         if (!changes.length) {
             alert('Нет изменений');
             return;
         }
 
         $.ajax({
-            url: bulkUpdateUrl,
+            url: bulkUpdateUrlGetter(),
             method: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(changes),
@@ -134,11 +140,16 @@ function CustomTable(tableSelector, bulkUpdateUrl, updateCallback, drag){
     }
 
     function updateOrder(tableSelector) {
-        $(`${tableSelector} tbody tr`).each(function (index) {
+        const tableRows = $(`${tableSelector} tbody tr`);
+        const count = tableRows.length;
+
+        tableRows.each(function (index) {
             $(this)
-                .attr('data-order', index + 1)
+                .attr('data-order', count - index)
                 .addClass('table-warning')
-                .data('orderChanged', true);
+                .children(".orderTd").text(count - index);
         });
+
+        saveBtn.removeClass("btn-secondary").addClass("btn-primary");
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Models;
-using AnydeskTracker.Models.GameRefactor;
+using AnydeskTracker.Models.Game;
 
 namespace AnydeskTracker.Data;
 
@@ -45,13 +45,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void BuildBotGameOrder(ModelBuilder builder)
     {
-        builder.Entity<BotGameOrderGlobal>()
+        builder.Entity<BotGameAssignmentGlobal>()
             .HasOne(x => x.Game)
             .WithOne(x => x.GlobalOrder)
-            .HasForeignKey<BotGameOrderGlobal>(x => x.GameId)
+            .HasForeignKey<BotGameAssignmentGlobal>(x => x.GameId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Entity<BotGameOrderOverride>(e =>
+        builder.Entity<BotGameAssignmentOverride>(e =>
         {
             e.HasKey(x => new { x.PcId, x.GameId});
 
@@ -97,8 +97,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     
     public DbSet<Game> GameCatalog { get; set; }
     public DbSet<GameSchedule> GameSchedules { get; set; }
-    public DbSet<BotGameOrderGlobal> BotGameOrdersGlobal { get; set; }
-    public DbSet<BotGameOrderOverride> BotGameOrdersOverride { get; set; }
+    public DbSet<BotGameAssignmentGlobal> BotGameAssignmentsGlobal  { get; set; }
+    public DbSet<BotGameAssignmentOverride> BotGameAssignmentsOverride  { get; set; }
 
     public DbSet<UserAction> UserActions { get; set; }
     public DbSet<PcBotAction> BotActions { get; set; }

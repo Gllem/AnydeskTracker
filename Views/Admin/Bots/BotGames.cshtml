@@ -22,13 +22,18 @@
         </div>
     </div>
     <div class="col-9 px-1">
-        <form id="addForm" class="mb-3 d-flex justify-content-between gap-3">
-            <button class="btn btn-success col-2">Добавить Игру</button>
-            <div class="flex-grow-1">
-                <input id="gameUrl" type="text" placeholder="URL Игры" class="form-control" required/>
-            </div>
+        <div id="addForm" class="mb-3 d-flex justify-content-between gap-3">
+            <button class="btn btn-success col-2" onclick="addGame()">Добавить Игру</button>
+            <select id="gameSelect" class="form-select w-auto flex-grow-1">
+                <option value="">-- выберите игру --</option>
+                @foreach (var game in Model.Games)
+                {
+                    var gameName = !string.IsNullOrEmpty(game.Name) ? game.Name : game.Url;
+                    <option value="@game.Id" data-name="@gameName">@gameName</option>
+                }
+            </select>
             <button class="btn btn-secondary" onclick="downloadBotGames()">Скачать список</button>
-        </form>
+        </div>
 
         <button id="saveBtn" class="btn btn-secondary col-12 mb-3">Сохранить очередность</button>
 
@@ -37,7 +42,7 @@
             <tr>
                 <th style="width: 30px"></th>
                 <th style="width: 30px" class="text-center">ID</th>
-                <th>URL</th>
+                <th>Игра</th>
                 <th class="col-1"></th>
             </tr>
             </thead>
@@ -67,20 +72,24 @@
             const data = await res.json();
             const tbody = document.querySelector('#gamesTable tbody');
             
-            tbody.innerHTML = data.map(botGame => `
-                <tr data-id="${botGame.id}" data-order="${botGame.order}">
-                    <td class="drag-handle text-muted text-center">
-                      ☰
-                    </td>
-                    <td class="orderTd text-center">${botGame.order === 0 ? "" : botGame.order}</td>
-                    <td>${botGame.gameUrl}</td>
-                    <td class="text-center"><button class="btn btn-sm btn-danger" onclick="deleteGame(${botGame.id})">Удалить</button></td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = data.map(botGame => {
+                const gameName = botGame.name ? botGame.name : botGame.url;
+                return `
+                    <tr data-id="${botGame.id}" data-order="${botGame.order}">
+                        <td class="drag-handle text-muted text-center">
+                          ☰
+                        </td>
+                        <td class="orderTd text-center">${botGame.order === 0 ? "" : botGame.order}</td>
+                        <td><a href="${botGame.url}" target="_blank" rel="noopener noreferrer">${gameName}</a></td>
+                        <td class="text-center"><button class="btn btn-sm btn-danger" onclick="deleteGame(${botGame.id})">Удалить</button></td>
+                    </tr>
+                `
+            }).join('');
 
             setPcDot(pcId, data.length > 0);
             setLeftButtonsColor(pcId);
             saveBtn.removeClass("btn-primary").addClass("btn-secondary");
+            syncSelectWithTable();
         }
         
         function loadActionsFromHash(){
@@ -88,20 +97,50 @@
             loadPcGames(id);
         }
 
-        document.getElementById('addForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const gameUrl = document.getElementById('gameUrl').value;
+        function getTableIds() {
+            return $('#gamesTable tbody tr')
+                .map(function () {
+                    return String($(this).data('id'));
+                })
+                .get();
+        }
+
+        function syncSelectWithTable() {
+            const usedIds = new Set(getTableIds());
+
+            $('#gameSelect option').each(function () {
+                const opt = $(this);
+                const val = opt.val();
+
+                if (!val) 
+                    return;
+
+                if (usedIds.has(val)) {
+                    opt.prop('disabled', true).addClass('d-none');
+                } else {
+                    opt.prop('disabled', false).removeClass('d-none');
+                }
+            });
+
+            $('#gameSelect').val('');
+        }
+
+        async function addGame(){
+            const gameId = document.getElementById('gameSelect').value;
             await fetch(`/api/admin/bots/games/${currentPcId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gameUrl })
+                body: gameId
             });
-            e.target.reset();
             await loadActionsFromHash();
-        });
+        }
 
-        async function deleteGame(id) {
-            await fetch(`/api/admin/bots/games/${id}`, { method: 'DELETE' });
+        async function deleteGame(gameId) {
+            await fetch(`/api/admin/bots/games/${currentPcId}`, { 
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: gameId
+            });
             await loadActionsFromHash();
         }
 
@@ -132,85 +171,7 @@
         
         window.addEventListener('load', loadActionsFromHash);
         window.addEventListener('hashchange', loadActionsFromHash);
-    
+
+        CustomTable("#gamesTable", () => `/api/admin/bots/games/bulk-update/${currentPcId}`, () => loadPcGames(currentPcId), false, true);
     </script>
-    
-    <!-- Table drag -->
-    <script>        
-        $('#gamesTable tbody').sortable({
-            handle: '.drag-handle',
-            axis: 'y',
-            helper: 'clone',
-            placeholder: 'sortable-placeholder',
-
-            update: function () {
-                updateOrder();
-            }
-        });
-
-        function updateOrder() {
-            const tableRows = $('#gamesTable tbody tr');
-            const count = tableRows.length;
-
-            tableRows.each(function (index) {
-                $(this)
-                    .attr('data-order', index + 1)
-                    .addClass('table-warning')
-                    .children(".orderTd").text(count - index);
-            });
-            
-            saveBtn.removeClass("btn-secondary").addClass("btn-primary");
-        }
-
-        saveBtn.on('click', function () {
-            const changes = [];
-
-            $('#gamesTable tbody tr.table-warning').each(function () {
-                const row = $(this);
-                const item = {
-                    id: row.data('id'),
-                    sortOrder: row.data('order')
-                };
-
-                changes.push(item);
-            });
-            
-            changes.sort(function (a, b){
-                return b.sortOrder - a.sortOrder;
-            })
-
-            console.log(changes)
-
-            if (!changes.length) {
-                return;
-            }
-            
-            $.ajax({
-                url: `/api/admin/bots/games/reorder/${currentPcId}`,
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(changes.map(x => x.id)),
-                success: () => {
-                    loadPcGames(currentPcId);
-                },
-                error: () => alert('Ошибка')
-            });
-        });
-    
-    </script>
-
-    <style>
-        .drag-handle {
-            cursor: grab;
-        }
-        .drag-handle:active {
-            cursor: grabbing;
-        }
-
-        .sortable-placeholder {
-            height: 45px;
-            background: #e9ecef;
-            width: 100%;
-        }
-    </style>
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AnydeskTracker.Models.GameRefactor;
+namespace AnydeskTracker.Models.Game;
 
 public class Game
 {
@@ -12,6 +12,6 @@ public class Game
 	public string Name { get; set; } = null!;
 	
 	public ICollection<GameSchedule> UserSchedules { get; set; } = new List<GameSchedule>();
-	public BotGameOrderGlobal? GlobalOrder { get; set; }
-	public ICollection<BotGameOrderOverride> PcOverrides { get; set; } = new List<BotGameOrderOverride>();
+	public BotGameAssignmentGlobal? GlobalOrder { get; set; }
+	public ICollection<BotGameAssignmentOverride> PcOverrides { get; set; } = new List<BotGameAssignmentOverride>();
 }

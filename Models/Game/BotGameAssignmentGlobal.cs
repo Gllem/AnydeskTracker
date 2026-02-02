@@ -1,17 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AnydeskTracker.Models.GameRefactor;
+namespace AnydeskTracker.Models.Game;
 
-public class BotGameOrderOverride
+public class BotGameAssignmentGlobal
 {
-	[Required]
-	public int PcId { get; set; }
-
-	public PcModel Pc { get; set; }
-
-	[Required]
+	[Key]
 	public int GameId { get; set; }
+
+	[ForeignKey(nameof(GameId))]
 	public Game Game { get; set; }
 
 	[Required]

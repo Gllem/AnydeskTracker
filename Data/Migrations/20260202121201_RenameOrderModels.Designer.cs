@@ -3,6 +3,7 @@ using System;
 using AnydeskTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AnydeskTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260202121201_RenameOrderModels")]
+    partial class RenameOrderModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -123,7 +126,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasKey("GameId");
 
-                    b.ToTable("BotGameAssignmentsGlobal");
+                    b.ToTable("BotGameOrdersGlobal");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.Game.BotGameAssignmentOverride", b =>
@@ -141,7 +144,7 @@ namespace AnydeskTracker.Data.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("BotGameAssignmentsOverride");
+                    b.ToTable("BotGameOrdersOverride");
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.Game.Game", b =>

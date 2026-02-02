@@ -2,7 +2,7 @@
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Extensions;
 using AnydeskTracker.Models;
-using AnydeskTracker.Models.GameRefactor;
+using AnydeskTracker.Models.Game;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -66,7 +66,7 @@ public class AdminApiGamesController(ApplicationDbContext dbContext) : Controlle
 	}
 	
 	[HttpPut("bulk-update")]
-	public async Task<IActionResult> BulkUpdateGames([FromBody] GameBulkUpdateDto[] updateDtos)
+	public async Task<IActionResult> BulkUpdateGames([FromBody] GameDto[] updateDtos)
 	{
 		foreach (var updateDto in updateDtos)
 		{
