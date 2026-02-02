@@ -23,8 +23,8 @@
     </div>
     <div class="col-9 px-1">
         <div id="addForm" class="mb-3 d-flex justify-content-between gap-3">
-            <button class="btn btn-success col-2" onclick="addGame()">Добавить Игру</button>
-            <select id="gameSelect" class="form-select w-auto flex-grow-1">
+            <button id="addGameButton" class="btn btn-secondary col-2" onclick="addGame()">Добавить Игру</button>
+            <select id="gameSelect" class="form-select w-auto flex-grow-1" onchange="updateAddGameButtonState(this.value !== '')">
                 <option value="">-- выберите игру --</option>
                 @foreach (var game in Model.Games)
                 {
@@ -88,8 +88,20 @@
 
             setPcDot(pcId, data.length > 0);
             setLeftButtonsColor(pcId);
-            saveBtn.removeClass("btn-primary").addClass("btn-secondary");
+            SetButtonState(saveBtn, "btn-primary", false);
             syncSelectWithTable();
+        }
+        
+        function SetButtonState(button, onStateClass, state){
+            const offStateClass = "btn-secondary";
+            
+            button
+                .removeClass(state ? offStateClass : onStateClass)
+                .addClass(state ? onStateClass : offStateClass);
+        }
+        
+        function updateAddGameButtonState(state){
+            SetButtonState($("#addGameButton"), "btn-success", state)
         }
         
         function loadActionsFromHash(){
@@ -123,6 +135,7 @@
             });
 
             $('#gameSelect').val('');
+            updateAddGameButtonState(false);
         }
 
         async function addGame(){
@@ -171,7 +184,12 @@
         
         window.addEventListener('load', loadActionsFromHash);
         window.addEventListener('hashchange', loadActionsFromHash);
-
-        CustomTable("#gamesTable", () => `/api/admin/bots/games/bulk-update/${currentPcId}`, () => loadPcGames(currentPcId), false, true);
+        
+        CustomTable(
+            "#gamesTable", 
+            () => `/api/admin/bots/games/bulk-update/${currentPcId}`, 
+            () => loadPcGames(currentPcId), 
+            (x) => SetButtonState(saveBtn, "btn-primary", x),
+            false, true);
     </script>
 }

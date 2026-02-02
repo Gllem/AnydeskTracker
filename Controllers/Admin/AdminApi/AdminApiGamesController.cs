@@ -75,7 +75,7 @@ public class AdminApiGamesController(ApplicationDbContext dbContext) : Controlle
 				return NotFound();
 
 			existing.Name = updateDto.Name;
-			existing.Url = updateDto.Url;
+			existing.Url = updateDto.Url.NormalizeUrl();
 		}
 
 		await dbContext.SaveChangesAsync();

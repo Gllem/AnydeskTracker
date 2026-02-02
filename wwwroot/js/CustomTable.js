@@ -1,7 +1,10 @@
 ﻿let editingTable = false;
 
-function CustomTable(tableSelector, bulkUpdateUrlGetter, updateCallback, edit, drag){
+function CustomTable(tableSelector, bulkUpdateUrlGetter, updateCallback, onChangedCallback, edit, drag){
     const table = $(tableSelector);
+    
+    if(!onChangedCallback)
+        onChangedCallback = () => {};
 
     if(edit){
         table.on('click', '.editable', function () {
@@ -62,7 +65,7 @@ function CustomTable(tableSelector, bulkUpdateUrlGetter, updateCallback, edit, d
             },
 
             update: function () {
-                updateOrder(tableSelector);
+                updateOrder(tableSelector, () => onChangedCallback(true));
             }
         });
     }
@@ -137,9 +140,11 @@ function CustomTable(tableSelector, bulkUpdateUrlGetter, updateCallback, edit, d
 
         updateRowWarning(cell.closest('tr'));
         editingTable = false;
+        
+        onChangedCallback($(`${tableSelector} tbody tr.table-warning`).length > 0);
     }
 
-    function updateOrder(tableSelector) {
+    function updateOrder(tableSelector, callback) {
         const tableRows = $(`${tableSelector} tbody tr`);
         const count = tableRows.length;
 
@@ -150,6 +155,6 @@ function CustomTable(tableSelector, bulkUpdateUrlGetter, updateCallback, edit, d
                 .children(".orderTd").text(count - index);
         });
 
-        saveBtn.removeClass("btn-secondary").addClass("btn-primary");
+        callback();
     }
 }

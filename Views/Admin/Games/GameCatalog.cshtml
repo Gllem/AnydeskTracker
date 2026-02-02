@@ -80,7 +80,12 @@
             await loadGames();
         }
 
-        CustomTable("#gamesTable", () => "/api/admin/games/bulk-update", loadGames, true, false);
+        CustomTable(
+            "#gamesTable", 
+            () => "/api/admin/games/bulk-update", 
+            loadGames,
+            null,
+            true, false);
         loadGames();
     </script>
 }
