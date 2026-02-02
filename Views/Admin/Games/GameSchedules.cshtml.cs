@@ -2,7 +2,7 @@
 
 namespace AnydeskTracker.Views.Admin;
 
-public class Games : PageModel
+public class GameSchedules : PageModel
 {
 	public void OnGet()
 	{

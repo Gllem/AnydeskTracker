@@ -24,10 +24,16 @@ public class AdminController(ApplicationDbContext context, PcService pcService) 
 		return View("Computers");
 	}
 	
-	[HttpGet("Games")]
-	public async Task<IActionResult> Games()
+	[HttpGet("GameCatalog")]
+	public async Task<IActionResult> GameCatalog()
 	{
-		return View("Games");
+		return View("Games/GameCatalog");
+	}
+	
+	[HttpGet("GameSchedules")]
+	public async Task<IActionResult> GameSchedules()
+	{
+		return View("Games/GameSchedules");
 	}
 
 	[HttpGet("Users")]

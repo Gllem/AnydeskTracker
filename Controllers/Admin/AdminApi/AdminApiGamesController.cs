@@ -1,4 +1,6 @@
 ﻿using AnydeskTracker.Data;
+using AnydeskTracker.DTOs;
+using AnydeskTracker.Extensions;
 using AnydeskTracker.Models;
 using AnydeskTracker.Models.GameRefactor;
 using Microsoft.AspNetCore.Authorization;
@@ -31,6 +33,53 @@ public class AdminApiGamesController(ApplicationDbContext dbContext) : Controlle
 				})
 			}).ToListAsync();
 		return Ok(games);
+	}
+	
+	[HttpPost]
+	public async Task<IActionResult> AddGame([FromBody] Game? game)
+	{
+		if (game == null)
+			return BadRequest();
+
+		game.Url = game.Url.NormalizeUrl();
+		
+		var existingGame = await dbContext.GameCatalog.FirstOrDefaultAsync(x => x.Url == game.Url);
+
+		if (existingGame != null)
+			return Conflict();
+			
+		dbContext.GameCatalog.Add(game);
+			
+		await dbContext.SaveChangesAsync();
+		return Ok(game);
+	}
+	
+	[HttpDelete("{gameId}")]
+	public async Task<IActionResult> DeleteGame(int gameId)
+	{
+		var existing = await dbContext.GameCatalog.FindAsync(gameId);
+		if (existing == null) return NotFound();
+
+		dbContext.GameCatalog.Remove(existing);
+		await dbContext.SaveChangesAsync();
+		return NoContent();
+	}
+	
+	[HttpPut("bulk-update")]
+	public async Task<IActionResult> BulkUpdateGames([FromBody] GameBulkUpdateDto[] updateDtos)
+	{
+		foreach (var updateDto in updateDtos)
+		{
+			var existing = await dbContext.GameCatalog.FindAsync(updateDto.Id);
+			if (existing == null)
+				return NotFound();
+
+			existing.Name = updateDto.Name;
+			existing.Url = updateDto.Url;
+		}
+
+		await dbContext.SaveChangesAsync();
+		return Ok();
 	}
 
 	[HttpPost("{gameId}/{weekDay}/assign")]
