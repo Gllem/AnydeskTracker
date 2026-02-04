@@ -5,28 +5,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services
 {
-	public class PcService
+	public class PcService(ApplicationDbContext dbContext, AgentCommandsService agentCommandsService)
 	{
-		private readonly ApplicationDbContext _dbContext;
-		
-		public PcService(ApplicationDbContext dbContext)
-		{
-			_dbContext = dbContext;
-		}
-		
 		public async Task<List<PcDto>> GetAllPcs()
 		{
-			return await _dbContext.Pcs.Include(x => x.OverridenBotGames).OrderBy(x => x.SortOrder).Select(x => new PcDto(x)).ToListAsync();
+			return await dbContext.Pcs.Include(x => x.OverridenBotGames).OrderBy(x => x.SortOrder).Select(x => new PcDto(x)).ToListAsync();
 		}
 
 		public async Task<List<NonSensitivePcDto>> GetAllPcsNonSensitive()
 		{
-			return await _dbContext.Pcs.Include(x => x.OverridenBotGames).OrderBy(x => x.SortOrder).Select(x => new NonSensitivePcDto(x)).ToListAsync();
+			return await dbContext.Pcs.Include(x => x.OverridenBotGames).OrderBy(x => x.SortOrder).Select(x => new NonSensitivePcDto(x)).ToListAsync();
 		}
 
-		public async Task<PcModel?> GetPc(int id)
+		public async Task ChangePcStatus(PcModel pcModel, PcStatus pcStatus)
 		{
-			return await _dbContext.Pcs.FindAsync(id);
+			pcModel.Status = pcStatus;
+			pcModel.LastStatusChange = DateTime.UtcNow;
+
+			await agentCommandsService.SendCommandToAgent(pcModel.BotId, "CheckOccupation");
 		}
 	}
 }

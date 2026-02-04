@@ -5,7 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services
 {
-    public class UserWorkService(UserActionService actionService, TelegramService telegramService, ApplicationDbContext context)
+    public class UserWorkService(
+        UserActionService actionService,
+        TelegramService telegramService,
+        PcService pcService,
+        ApplicationDbContext context)
     {
         public async Task<WorkSessionModel?> GetActiveSessionAsync(string userId)
         {
@@ -52,8 +56,8 @@ namespace AnydeskTracker.Services
             if (computer == null || computer.Status != PcStatus.Free || !computer.AgentReady)
                 return null; 
 
-            computer.Status = PcStatus.Busy;
-            computer.LastStatusChange = DateTime.UtcNow;
+            
+            await pcService.ChangePcStatus(computer, PcStatus.Busy);
 
             var usage = new PcUsage
             {
@@ -119,7 +123,7 @@ namespace AnydeskTracker.Services
             if (activeUsage == null)
                 return false;
 
-            FreeUpPc(activeUsage);
+            await FreeUpPc(activeUsage);
             await context.SaveChangesAsync();
             await actionService.LogAsync(session, ActionType.PcRelease, $"{activeUsage.Pc.DisplayId}");
             return true;
@@ -137,7 +141,7 @@ namespace AnydeskTracker.Services
             
             if (activeUsage != null)
             {
-                FreeUpPc(activeUsage);
+                await FreeUpPc(activeUsage);
                 await actionService.LogAsync(session, ActionType.PcRelease, $"{activeUsage.Pc.DisplayId}");
             }
             
@@ -212,13 +216,12 @@ namespace AnydeskTracker.Services
             await context.SaveChangesAsync();
         }
 
-        private void FreeUpPc(PcUsage pcUsage)
+        private async Task FreeUpPc(PcUsage pcUsage)
         {
             pcUsage.IsActive = false;
             pcUsage.EndTime = DateTime.UtcNow;
 
-            pcUsage.Pc.Status = PcStatus.CoolingDown;
-            pcUsage.Pc.LastStatusChange = DateTime.UtcNow;
+            await pcService.ChangePcStatus(pcUsage.Pc, PcStatus.CoolingDown);
         }
     }
 }

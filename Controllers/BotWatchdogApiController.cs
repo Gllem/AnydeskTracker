@@ -81,6 +81,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		});
 	}
 
+#region GetGames
 	[HttpGet("botGames/{botId}")]
 	public async Task<IActionResult> GetBotGames(string botId)
 	{
@@ -139,5 +140,34 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		}
 
 		return Encoding.UTF8.GetBytes(sb.ToString());
+	}
+#endregion
+
+	[HttpGet("botSchedule/{botId}")]
+	public async Task<IActionResult> GetBotSchedule(string botId)
+	{
+		var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x.BotId == botId);
+
+		if (pc == null)
+			return NotFound();
+
+		return Ok(new
+		{
+			pc.PcBotSchedule.Enabled,
+			pc.PcBotSchedule.StartTod,
+			pc.PcBotSchedule.IntervalMinutes,
+			pc.PcBotSchedule.EndTod
+		});
+	}
+
+	[HttpGet("botOccupation/{botId}")]
+	public async Task<IActionResult> GetBotOccupation(string botId)
+	{
+		var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x.BotId == botId);
+
+		if (pc == null)
+			return NotFound();
+
+		return Ok(pc.Status == PcStatus.Busy);
 	}
 }

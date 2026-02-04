@@ -37,13 +37,15 @@ namespace AnydeskTracker.Models
 
 		public DateTime LastStatusChange { get; set; } = DateTime.UtcNow;
 
-		public bool AhkError { get; set; }
+		public bool AgentReady { get; set; } = true;
 		
-		public ICollection<BotGameAssignmentOverride> OverridenBotGames { get; set; } = new List<BotGameAssignmentOverride>();
-
 		public int SortOrder { get; set; }
 
-		public bool AgentReady { get; set; } = true;
+		public bool AhkError { get; set; }
+
+		public ICollection<BotGameAssignmentOverride> OverridenBotGames { get; set; } = new List<BotGameAssignmentOverride>();
+
+		public PcBotSchedule PcBotSchedule { get; set; } = new PcBotSchedule();
 
 		public string DisplayId => 
 			!string.IsNullOrEmpty(BotId) ? BotId : 

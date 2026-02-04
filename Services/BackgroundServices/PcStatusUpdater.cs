@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services
 {
-    public class PcStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundService
+    public class PcStatusUpdater(IServiceScopeFactory scopeFactory, PcService pcService) : BackgroundService
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -47,14 +47,14 @@ namespace AnydeskTracker.Services
             }
         }
 
-        private static async Task HandlePcStatus(PcModel? pc, ApplicationDbContext db, DateTime now, CancellationToken stoppingToken)
+        private async Task HandlePcStatus(PcModel? pc, ApplicationDbContext db, DateTime now, CancellationToken stoppingToken)
         {
             if(pc == null)
                 return;
                         
             if (pc.Status == PcStatus.CoolingDown && pc.LastStatusChange.Add(TimeSettingsService.PcCooldown) <= now)
             {
-                ChangePcStatus(pc, PcStatus.Free);
+                await pcService.ChangePcStatus(pc, PcStatus.Free);
             }
 
             if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(TimeSettingsService.PcUsageTime + TimeSettingsService.PcForceFreeUpTime) <= now)
@@ -64,7 +64,8 @@ namespace AnydeskTracker.Services
 
                 if(pcUsage == null || pcUsage.TotalActiveTime > TimeSettingsService.PcUsageTime + TimeSettingsService.PcForceFreeUpTime)
                 {
-                    ChangePcStatus(pc, PcStatus.CoolingDown);
+                    await pcService.ChangePcStatus(pc, PcStatus.CoolingDown);
+                    
                     FreeUpPcUsage(pcUsage);
                 }
             }
@@ -77,12 +78,6 @@ namespace AnydeskTracker.Services
                             
             usage.IsActive = false;
             usage.EndTime = DateTime.UtcNow;
-        }
-
-        private static void ChangePcStatus(PcModel pc, PcStatus status)
-        {
-            pc.Status = status;
-            pc.LastStatusChange = DateTime.UtcNow;
         }
     }
 }
