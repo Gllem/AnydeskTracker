@@ -91,8 +91,7 @@ public class AdminApiPcsController(ApplicationDbContext dbContext, PcService pcS
 		if (pc.Status == PcStatus.Free)
 			return BadRequest();
 			
-		pcService.FreeUpPc(pc);
-		
+		await pcService.ChangePcStatus(pc, PcStatus.Free);
 		var usage = await dbContext.PcUsages.FirstOrDefaultAsync(x => x.IsActive && x.PcId == id);
 
 		if (usage == null)
