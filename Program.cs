@@ -1,9 +1,11 @@
 using System.Net;
+using AnydeskTracker.Controllers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
 using AnydeskTracker.Models;
 using AnydeskTracker.Services;
+using AnydeskTracker.Services.MetrikaServices;
 using DotNetEnv;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
@@ -47,6 +49,7 @@ builder.Services.AddScoped<ParserService>();
 builder.Services.AddScoped<AgentActionsService>();
 builder.Services.AddScoped<AgentCommandsService>();
 builder.Services.AddScoped<AgentGamesUpdater>();
+builder.Services.AddScoped<YandexMetrikaService>();
 builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClientService.Initializer()
 {
     ApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")

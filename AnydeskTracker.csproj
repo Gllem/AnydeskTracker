@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <Folder Include="app_data\" />
-    <Folder Include="Services\GetMetrikaService\" />
   </ItemGroup>
 
   <ItemGroup>
