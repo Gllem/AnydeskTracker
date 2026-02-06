@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services
 {
-    public class PcStatusUpdater(IServiceScopeFactory scopeFactory, PcService pcService) : BackgroundService
+    public class PcStatusUpdater(IServiceScopeFactory scopeFactory) : BackgroundService
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -30,13 +30,14 @@ namespace AnydeskTracker.Services
             {
                 using var scope = scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var pcService = scope.ServiceProvider.GetRequiredService<PcService>();
 
                 var now = DateTime.UtcNow;
                 var computers = await db.Pcs.ToListAsync(stoppingToken);
 
                 foreach (var pc in computers)
                 {
-                    await HandlePcStatus(pc, db, now, stoppingToken);
+                    await HandlePcStatus(pc, pcService, db, now, stoppingToken);
                 }
 
                 await db.SaveChangesAsync(stoppingToken);
@@ -47,7 +48,7 @@ namespace AnydeskTracker.Services
             }
         }
 
-        private async Task HandlePcStatus(PcModel? pc, ApplicationDbContext db, DateTime now, CancellationToken stoppingToken)
+        private async Task HandlePcStatus(PcModel? pc, PcService pcService, ApplicationDbContext db, DateTime now, CancellationToken stoppingToken)
         {
             if(pc == null)
                 return;

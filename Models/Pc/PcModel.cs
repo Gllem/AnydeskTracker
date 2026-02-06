@@ -15,6 +15,16 @@ namespace AnydeskTracker.Models
 		[Display(Name = "Сломан")]
 		Broken = 3
 	}
+
+	public enum BotScheduleStatus
+	{
+		[Display(Name = "Работает")]
+		Working,
+		[Display(Name = "Остановлен")]
+		Disabled,
+		[Display(Name = "Ожидает")]
+		Waiting,
+	}
 	
 	public class PcModel
 	{
@@ -46,6 +56,11 @@ namespace AnydeskTracker.Models
 		public ICollection<BotGameAssignmentOverride> OverridenBotGames { get; set; } = new List<BotGameAssignmentOverride>();
 
 		public PcBotSchedule PcBotSchedule { get; set; } = new PcBotSchedule();
+
+		public PcBotSchedule? LastActiveSchedule { get; set; }
+		public DateTime? NextLaunchTime { get; set; }
+		public BotScheduleStatus? LastStatus { get; set; }
+		public DateTime? LastLaunchTime { get; set; }
 
 		public string DisplayId => 
 			!string.IsNullOrEmpty(BotId) ? BotId : 

@@ -1,5 +1,6 @@
 ﻿using AnydeskTracker.Extensions;
 using AnydeskTracker.Models;
+using AnydeskTracker.Views.Admin;
 
 namespace AnydeskTracker.DTOs;
 
@@ -22,4 +23,13 @@ public class PcDto(PcModel model)
 	public string DisplayId => model.DisplayId;
 	public bool HasOverridenGames => model.OverridenBotGames.Count != 0;
 	public bool AgentReady => model.AgentReady;
+
+	public PcBotSchedule PcBotSchedule { get; set; } = model.PcBotSchedule;
+	public PcBotSchedule? LastBotSchedule { get; set; } = model.LastActiveSchedule;
+	public DateTime? LastLaunchTime { get; set; } = model.LastLaunchTime;
+	public BotScheduleStatus? LastStatus { get; set; } = model.LastStatus;
+	public string LastStatusText => LastStatus?.GetDisplayName() ?? "-";
+
+
+	public DateTime? NextLaunchTime { get; set; } = model.NextLaunchTime;
 }

@@ -24,6 +24,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             pcModel.Property(x => x.AgentReady).HasDefaultValue(true);
             pcModel.OwnsOne(x => x.PcBotSchedule);
+            pcModel.OwnsOne(x => x.LastActiveSchedule);
         });
     }
 

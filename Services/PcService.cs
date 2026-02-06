@@ -22,6 +22,8 @@ namespace AnydeskTracker.Services
 			pcModel.Status = pcStatus;
 			pcModel.LastStatusChange = DateTime.UtcNow;
 
+			await dbContext.SaveChangesAsync();
+
 			await agentCommandsService.SendCommandToAgent(pcModel.BotId, "CheckOccupation");
 		}
 	}
