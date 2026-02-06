@@ -35,7 +35,8 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService) : Cont
         if (report?.Data?.Points == null || !report.Data.Points.Any())
             return result;
 
-        var meta = report.Data.MeasuresMeta ?? new Dictionary<string, YandexMeasureMeta>();
+        var measuresMeta = report.Data.MeasuresMeta ?? new Dictionary<string, YandexMeasureMeta>();
+        var dimensionsMeta = report.Data.DimensionsMeta ?? new Dictionary<string, YandexDimensionMeta>();
 
         // 1. Собираем ключи колонок (порядок dimensions сохраняется как в API)
         foreach (var point in report.Data.Points)
@@ -53,14 +54,13 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService) : Cont
             }
         }
 
-        // ⭐ ВАЖНО:
-        // НЕ сортируем dimensions — только measures
+     
         var dimensionKeys = result.ColumnKeys
-            .Where(k => !meta.ContainsKey(k));
+            .Where(k => !measuresMeta.ContainsKey(k));
 
         var measureKeys = result.ColumnKeys
-            .Where(k => meta.ContainsKey(k))
-            .OrderBy(k => meta[k].Index);
+            .Where(k => measuresMeta.ContainsKey(k))
+            .OrderBy(k => measuresMeta[k].Index);
 
         result.ColumnKeys = dimensionKeys
             .Concat(measureKeys)
@@ -69,8 +69,10 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService) : Cont
         // 3. Заголовки
         foreach (var key in result.ColumnKeys)
         {
-            if (meta.TryGetValue(key, out var m))
+            if (measuresMeta.TryGetValue(key, out var m))
                 result.ColumnTitles.Add(m.Title);
+            else if (dimensionsMeta.TryGetValue(key, out var d))
+                result.ColumnTitles.Add(d.Title);
             else
                 result.ColumnTitles.Add(key);
         }
