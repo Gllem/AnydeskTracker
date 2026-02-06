@@ -8,7 +8,13 @@
 @model AnydeskTracker.DTOs.YandexApiResponse
 
 <div class="container py-3">
-
+    <label class="form-label">Период</label> <!-- TODO: ВЫнести в отдельный блок-->
+    <select class="form-select period-select" id="period-select">
+        @foreach (var period in node.Period)
+        {
+            <option value="@period.Key">@period.Value</option>
+        }
+    </select>
     <!-- 🔽 Блок с дропдаунами (DimensionFields) -->
     <div class="card mb-3">
         <div class="card-header fw-bold">
@@ -46,13 +52,7 @@
                         <div class="text-muted">Нет dimension fields</div>
                     }
 
-                    <label class="form-label">Период</label> <!-- TODO: ВЫнести в отдельный блок-->
-                    <select class="form-select period-select" id="period-select">
-                        @foreach (var period in node.Period)
-                        {
-                            <option value="@period.Key">@period.Value</option>
-                        }
-                    </select>
+
                 </div>
 
             </div>
@@ -97,11 +97,37 @@
         </div>
     </div>
 
-    <!-- 🔘 Кнопка для примера -->
     <div class="mt-3">
         <button id="buildRequest" class="btn btn-primary">
             Построить запрос
         </button>
+    </div>
+    <style>
+        #resultTable th,
+        #resultTable td {
+            white-space: nowrap;
+        }
+
+        #resultTable td:last-child,
+        #resultTable th:last-child {
+            max-width: 350px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
+
+        #resultTable th:not(:last-child),
+        #resultTable td:not(:last-child) {
+            width: 120px;
+            text-align: right;
+        }
+    </style>
+    <div class="table-responsive">
+        <table class="table table-bordered table/compiler table-striped" id="resultTable">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
     </div>
 
 </div>
@@ -122,8 +148,8 @@
                 $(".metric-checkbox:checked").each(function () {
                     fields.push($(this).val());
                 });
+
                 const period = $("#period-select").val();
-                console.log(period)
 
                 const response = await fetch("/Admin/Metrika/Build", {
                     method: "POST",
@@ -141,8 +167,38 @@
                     alert("Ошибка построения отчета");
                     return;
                 }
+
                 const data = await response.json();
-                console.log(data);
+
+                const table = $("#resultTable");
+                const thead = table.find("thead");
+                const tbody = table.find("tbody");
+
+
+                thead.empty();
+                tbody.empty();
+
+                // Заголовки
+                let headRow = "<tr>";
+                data.columnTitles.forEach(title => {
+                    headRow += `<th>${title}</th>`;
+                });
+                headRow += "</tr>";
+                thead.append(headRow);
+
+// Строки
+                data.rows.forEach((row, index) => {
+                    let tr = index === 0
+                        ? "<tr class='table-success fw-bold'>"
+                        : "<tr>";
+
+                    data.columnKeys.forEach(key => {
+                        tr += `<td>${row[key] ?? ""}</td>`;
+                    });
+
+                    tr += "</tr>";
+                    tbody.append(tr);
+                });
             });
 
         });

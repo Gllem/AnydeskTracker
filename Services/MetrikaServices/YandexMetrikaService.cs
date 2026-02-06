@@ -30,7 +30,7 @@ public class YandexMetrikaService(IHttpClientFactory httpClientFactory)
         });
     }
 
-    public async Task<string> BuildReportAsync(Dictionary<string, string> requestDimensions,
+    public async Task<YandexReportResponse?> BuildReportAsync(Dictionary<string, string> requestDimensions,
         List<string> requestFields, string requestPeriod)
     {
         var builder = new UriBuilder("https://partner.yandex.ru/api/statistics2/get");
@@ -61,6 +61,15 @@ public class YandexMetrikaService(IHttpClientFactory httpClientFactory)
         var response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<YandexReportResponse>(json);
     }
+    
+   
+}
+public class TableResult
+{
+    public List<string> ColumnKeys { get; set; } = new();
+    public List<string> ColumnTitles { get; set; } = new();
+    public List<Dictionary<string, string>> Rows { get; set; } = new();
 }

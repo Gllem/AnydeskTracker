@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace AnydeskTracker.DTOs;
@@ -56,4 +57,44 @@ public class BuildRequestDto
     public Dictionary<string, string> Dimensions { get; set; }
     public List<string> Fields { get; set; }
     public string Period { get;  set; }
+}
+
+
+public class YandexReportResponse
+{
+    [JsonPropertyName("data")]
+    public YandexReportData Data { get; set; }
+}
+
+public class YandexReportData
+{
+    [JsonPropertyName("points")]
+    public List<YandexPoint> Points { get; set; }
+
+    [JsonPropertyName("measures")]
+    public Dictionary<string, YandexMeasureMeta> MeasuresMeta { get; set; }
+
+    [JsonPropertyName("totals")]
+    public Dictionary<string, List<Dictionary<string, JsonElement>>> Totals { get; set; }
+}
+
+public class YandexMeasureMeta
+{
+    [JsonPropertyName("title")]
+    public string Title { get; set; }
+
+    [JsonPropertyName("index")]
+    public int Index { get; set; }
+
+    [JsonPropertyName("unit")]
+    public string Unit { get; set; }
+}
+
+public class YandexPoint
+{
+    [JsonPropertyName("dimensions")]
+    public Dictionary<string, JsonElement> Dimensions { get; set; }
+
+    [JsonPropertyName("measures")]
+    public List<Dictionary<string, JsonElement>> Measures { get; set; }
 }
