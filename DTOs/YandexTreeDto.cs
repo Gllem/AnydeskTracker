@@ -17,6 +17,7 @@ public class YandexTreeNode
 {
     [JsonPropertyName("dimension_fields")] public List<DimensionField> DimensionFields { get; set; }
     [JsonPropertyName("fields")] public List<Field> Fields { get; set; }
+    [JsonPropertyName("entity_fields")] public List<EntityField> EntityFields { get; set; }
 
     public Dictionary<string, string> Period = new Dictionary<string, string>()
     {
@@ -95,4 +96,14 @@ public class YandexPoint
     [JsonPropertyName("dimensions")] public Dictionary<string, JsonElement> Dimensions { get; set; }
 
     [JsonPropertyName("measures")] public List<Dictionary<string, JsonElement>> Measures { get; set; }
+}
+
+public class EntityField
+{
+    [JsonPropertyName("category")] public int Category { get; set; }
+    [JsonPropertyName("category_name")] public string CategoryName { get; set; }
+    [JsonPropertyName("id")] public string Id { get; set; }
+    [JsonPropertyName("label")] public string Label { get; set; }
+    [JsonPropertyName("type")] public string Type { get; set; }
+    [JsonPropertyName("index")] public int Index { get; set; }
 }
