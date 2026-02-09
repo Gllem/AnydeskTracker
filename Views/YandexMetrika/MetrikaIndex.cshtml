@@ -8,13 +8,23 @@
 @model AnydeskTracker.DTOs.YandexApiResponse
 
 <div class="container py-3">
-    <label class="form-label">Период</label> <!-- TODO: ВЫнести в отдельный блок-->
-    <select class="form-select period-select" id="period-select">
-        @foreach (var period in node.Period)
+    <div class="btn-group mb-3" role="group" aria-label="Period select">
+        @foreach (var item in node.Period)
         {
-            <option value="@period.Key">@period.Value</option>
+            <input type="radio"
+                   class="btn-check"
+                   name="period"
+                   id="period_@item.Key"
+                   value="@item.Key"
+                   autocomplete="off"
+                   @(item.Key == "today" ? "checked" : "")/>
+
+            <label class="btn btn-outline-secondary" for="period_@item.Key"
+                   title="@item.Value">
+                @item.Value
+            </label>
         }
-    </select>
+    </div>
     <!-- 🔽 Блок с дропдаунами (DimensionFields) -->
     <div class="card mb-3">
         <div class="card-header fw-bold">
@@ -23,36 +33,59 @@
         <div class="card-body">
             <div class="row g-3">
 
-                <div class="col-md-4">
+                <div class="col-md-12">
                     @if (node?.DimensionFields != null)
                     {
-                        foreach (var dim in node.DimensionFields)
+                        @foreach (var dim in node.DimensionFields)
                         {
-                            <label class="form-label">@dim.Title</label>
+                            <div class="row align-items-center mb-2">
+                                <div class="col-12 col-md-1.5">
+                                    <div class="form-label fw-semibold mb-0">@dim.Title</div>
+                                </div>
 
-                            @if (dim.Values != null && dim.Values.Any())
-                            {
-                                <select class="form-select dimension-select"
-                                        data-dimension-id="@dim.Id">
-                                    <option value="">Не выбрано</option>
-                                    @foreach (var v in dim.Values)
-                                    {
-                                        <option value="@v[0]">@v[1]</option>
-                                    }
-                                </select>
-                            }
-                            else
-                            {
-                                <input class="form-control" placeholder="Нет вариантов" disabled/>
-                            }
+                                <!-- Правая колонка: кнопки -->
+                                <div class="col-12 col-md-10">
+                                    <div class="btn-group flex-wrap" role="group" aria-label="@dim.Title">
+
+                                        <input type="radio"
+                                               class="btn-check dimension-select"
+                                               name="dimension_@dim.Id"
+                                               id="dim_@dim.Id"
+                                               value=""
+                                               autocomplete="off"
+                                               checked />
+
+                                        <label class="btn btn-outline-secondary btn-sm"
+                                               for="dim_@dim.Id">
+                                            Ничего
+                                        </label>
+                                        
+                                        @foreach (var v in dim.Values)
+                                        {
+                                            var valueKey = v[0];
+                                            var valueTitle = v[1];
+
+                                            <input type="radio"
+                                                   class="btn-check dimension-select"
+                                                   name="dimension_@dim.Id"
+                                                   id="dim_@dim.Id@valueKey"
+                                                   value="@valueKey"
+                                                   autocomplete="off"/>
+
+                                            <label class="btn btn-outline-secondary btn-sm"
+                                                   for="dim_@dim.Id@valueKey">
+                                                @valueTitle
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         }
                     }
                     else
                     {
                         <div class="text-muted">Нет dimension fields</div>
                     }
-
-
                 </div>
 
             </div>
@@ -140,8 +173,11 @@
             $("#buildRequest").on("click", async function () {
 
                 const dimensions = {};
-                $(".dimension-select").each(function () {
-                    dimensions[$(this).data("dimension-id")] = $(this).val();
+
+                $('input.dimension-select:checked').each(function () {
+                    const name = $(this).attr('name');
+                    const dimId = name.replace('dimension_', '');
+                    dimensions[dimId] = $(this).val();
                 });
 
                 const fields = [];
@@ -149,7 +185,7 @@
                     fields.push($(this).val());
                 });
 
-                const period = $("#period-select").val();
+                const period = $('input[name="period"]:checked').val();
 
                 const response = await fetch("/Admin/Metrika/Build", {
                     method: "POST",
