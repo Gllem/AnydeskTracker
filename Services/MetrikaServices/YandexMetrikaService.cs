@@ -30,27 +30,23 @@ public class YandexMetrikaService(IHttpClientFactory httpClientFactory)
         });
     }
 
-    public async Task<YandexReportResponse?> BuildReportAsync(Dictionary<string, string> requestDimensions,
-        List<string> requestFields, string requestPeriod)
+    public async Task<YandexReportResponse?> BuildReportAsync(BuildRequestDto requestDto)
     {
         var builder = new UriBuilder("https://partner.yandex.ru/api/statistics2/get");
         var query = HttpUtility.ParseQueryString(builder.Query);
 
         query["lang"] = "ru";
-        query["period"] = requestPeriod;
-        Console.WriteLine($"Period {requestPeriod}");
-        query["entity_field"] = "page_caption";
-
-        foreach (var dimension in requestDimensions)
-        {
+        query["period"] = requestDto.Period;
+        
+        foreach (var dimension in requestDto.Dimensions)
             if (!string.IsNullOrEmpty(dimension.Value))
                 query.Add("dimension_field", $"{dimension.Key}|{dimension.Value}");
-        }
 
-        foreach (var fieldValue in requestFields)
-        {
+        foreach (var fieldValue in requestDto.Fields) 
             query.Add("field", fieldValue);
-        }
+        
+        foreach (var entityField in requestDto.EntityFields) 
+            query.Add("entity_field", entityField);
 
         builder.Query = query.ToString();
 

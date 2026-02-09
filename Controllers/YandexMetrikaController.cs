@@ -20,8 +20,7 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService) : Cont
     public async Task<IActionResult> Build([FromBody] BuildRequestDto request)
     {
         var result = await metrikaService.BuildReportAsync(
-            request.Dimensions,
-            request.Fields, request.Period);
+            request);
 
         var table = BuildTable(result);
 

@@ -42,8 +42,7 @@
                                 <div class="col-12 col-md-1.5">
                                     <div class="form-label fw-semibold mb-0">@dim.Title</div>
                                 </div>
-
-                                <!-- Правая колонка: кнопки -->
+                                
                                 <div class="col-12 col-md-10">
                                     <div class="btn-group flex-wrap" role="group" aria-label="@dim.Title">
 
@@ -91,11 +90,50 @@
             </div>
         </div>
     </div>
+    
 
-    <!-- ☑️ Блок с чекбоксами (Fields) -->
     <div class="card">
         <div class="card-header fw-bold">
-            Поля метрик
+            Группировки
+        </div>
+        <div class="card-body">
+
+            <div class="row g-2">
+
+                @if (node?.EntityFields != null)
+                {
+                    foreach (var field in node.EntityFields)
+                    {
+                        <div class="col-md-4 col-lg-3">
+                            <div class="form-check">
+                                <input class="form-check-input entity_fields-checkbox"
+                                       type="checkbox"
+                                       value="@field.Id"
+                                       id="field_@field.Id"
+                                       data-category="@field.CategoryName"/>
+
+                                <label class="form-check-label" for="field_@field.Id">
+                                    @field.Label
+                                </label>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted">Нет доступных полей</div>
+                }
+
+            </div>
+
+        </div>
+    </div>
+    
+    
+    
+    <div class="card">
+        <div class="card-header fw-bold">
+            Метрики
         </div>
         <div class="card-body">
 
@@ -184,6 +222,11 @@
                 $(".metric-checkbox:checked").each(function () {
                     fields.push($(this).val());
                 });
+                
+                const entity_fields = [];
+                $(".entity_fields-checkbox:checked").each(function () {
+                    entity_fields.push($(this).val());
+                });
 
                 const period = $('input[name="period"]:checked').val();
 
@@ -195,7 +238,8 @@
                     body: JSON.stringify({
                         dimensions: dimensions,
                         fields: fields,
-                        period: period
+                        period: period,
+                        entityFields : entity_fields
                     })
                 });
 

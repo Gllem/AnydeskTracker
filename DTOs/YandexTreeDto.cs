@@ -58,6 +58,7 @@ public class BuildRequestDto
     public Dictionary<string, string> Dimensions { get; set; }
     public List<string> Fields { get; set; }
     public string Period { get; set; }
+    public List<string> EntityFields { get; set; }
 }
 
 public class YandexReportResponse
