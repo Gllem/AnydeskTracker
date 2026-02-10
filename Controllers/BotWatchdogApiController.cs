@@ -133,13 +133,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 
 	private byte[] GetBotGamesFile(List<Game> botGames)
 	{
-		var sb = new StringBuilder();
-		foreach (var game in botGames)
-		{
-			sb.AppendLine(game.Url);
-		}
-
-		return Encoding.UTF8.GetBytes(sb.ToString());
+		return Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, botGames.Select(x => x.Url)));
 	}
 #endregion
 
