@@ -64,6 +64,7 @@ public class BuildRequestDto
 public class YandexReportResponse
 {
     [JsonPropertyName("data")] public YandexReportData Data { get; set; }
+    public string AccountName;
 }
 
 public class YandexReportData
