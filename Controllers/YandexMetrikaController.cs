@@ -31,16 +31,29 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService) : Cont
     {
         var result = new TableResult();
         const string accountKey = "account";
+
+        var firstReport = reports.First(r => r.Data.Points.Count > 0);
+        var measuresMeta = firstReport.Data.MeasuresMeta;
+        var dimensionsMeta = firstReport.Data.DimensionsMeta;
+
         foreach (var report in reports)
         {
-            if (report?.Data?.Points == null || !report.Data.Points.Any()) continue;
-            var measuresMeta = report.Data.MeasuresMeta;
-            var dimensionsMeta = report.Data.DimensionsMeta;
+            if (report.Data.Points.Count != 0 == false) continue;
+
+
+            if (result.ColumnKeys.Contains(accountKey) == false)
+            {
+                result.ColumnKeys.Add(accountKey);
+                result.ColumnTitles.Add("Аккаунт");
+            }
+
+
             foreach (var point in report.Data.Points)
             {
                 foreach (var dim in point.Dimensions.Keys)
                     if (!result.ColumnKeys.Contains(dim))
                         result.ColumnKeys.Add(dim);
+
                 var measures = point.Measures.FirstOrDefault();
                 if (measures != null)
                 {
@@ -49,45 +62,49 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService) : Cont
                             result.ColumnKeys.Add(m);
                 }
             }
+        }
 
-            if (!result.ColumnKeys.Contains(accountKey)) result.ColumnKeys.Insert(0, accountKey);
-            var dimensionKeys = result.ColumnKeys.Where(k => !measuresMeta.ContainsKey(k));
-            var measureKeys = result.ColumnKeys.Where(k => measuresMeta.ContainsKey(k))
-                .OrderBy(k => measuresMeta[k].Index);
-            result.ColumnKeys =
-                dimensionKeys.Concat(measureKeys)
-                    .ToList(); // 3. Заголовки
-            foreach (var key in result.ColumnKeys)
-            {
-                if (key == accountKey) result.ColumnTitles.Add("Аккаунт");
-                else if (measuresMeta.TryGetValue(key, out var m)) result.ColumnTitles.Add(m.Title);
-                else if (dimensionsMeta.TryGetValue(key, out var d)) result.ColumnTitles.Add(d.Title);
-                else result.ColumnTitles.Add(key);
-            } // 4. Totals первой строкой
+        var dimensionKeys = result.ColumnKeys.Where(k => !measuresMeta.ContainsKey(k));
+        var measureKeys = result.ColumnKeys
+            .Where(k => measuresMeta.ContainsKey(k))
+            .OrderBy(k => measuresMeta[k].Index);
 
-            if (report.Data.Totals?.Any() == true)
+        result.ColumnKeys = dimensionKeys.Concat(measureKeys).ToList();
+
+        foreach (var key in result.ColumnKeys)
+        {
+            if (key.Contains(accountKey)) continue;
+            if (measuresMeta.TryGetValue(key, out var m)) result.ColumnTitles.Add(m.Title);
+            else if (dimensionsMeta.TryGetValue(key, out var d)) result.ColumnTitles.Add(d.Title);
+            else result.ColumnTitles.Add(key);
+        }
+
+        var totalRow = new Dictionary<string, string>();
+        foreach (var key in result.ColumnKeys) totalRow[key] = "";
+        totalRow[accountKey] = "ИТОГО";
+
+        foreach (var report in reports)
+        {
+            if (report.Data.Totals.Count != 0)
             {
                 var totalsEntry = report.Data.Totals.First().Value.FirstOrDefault();
                 if (totalsEntry != null)
                 {
-                    var totalRow = new Dictionary<string, string>();
-                    foreach (var key in result.ColumnKeys) totalRow[key] = "";
                     foreach (var m in totalsEntry)
                     {
-                        if (string.IsNullOrEmpty(totalRow[m.Key])) totalRow[m.Key] = m.Value.ToString();
+                        if (string.IsNullOrEmpty(totalRow[m.Key]))
+                            totalRow[m.Key] = m.Value.ToString();
                         else if (float.TryParse(totalRow[m.Key], out var value) &&
                                  m.Value.TryGetSingle(out float additionalValue))
                             totalRow[m.Key] = (value + additionalValue).ToString();
                     }
-
-                    totalRow[accountKey] = report.AccountName;
-                    var firstDimensionKey =
-                        result.ColumnKeys.FirstOrDefault(k => k != accountKey && !measuresMeta.ContainsKey(k));
-                    if (firstDimensionKey != null) totalRow[firstDimensionKey] = "ИТОГО";
-                    result.Rows.Add(totalRow);
                 }
-            } // 5. Обычные строки
-
+            }
+        }
+        result.Rows.Add(totalRow);
+        
+        foreach (var report in reports)
+        {
             foreach (var point in report.Data.Points)
             {
                 var row = new Dictionary<string, string>();
