@@ -1,3 +1,4 @@
+using System.Globalization;
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Services.MetrikaServices;
 using Microsoft.AspNetCore.Authorization;
@@ -94,9 +95,10 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService) : Cont
                     {
                         if (string.IsNullOrEmpty(totalRow[m.Key]))
                             totalRow[m.Key] = m.Value.ToString();
-                        else if (float.TryParse(totalRow[m.Key], out var value) &&
-                                 m.Value.TryGetSingle(out float additionalValue))
-                            totalRow[m.Key] = (value + additionalValue).ToString();
+                        else if (
+                            double.TryParse(totalRow[m.Key], NumberStyles.Any, CultureInfo.InvariantCulture, out var value) &&
+                            m.Value.TryGetDouble(out double additionalValue))
+                            totalRow[m.Key] = (value + additionalValue).ToString("0.##",CultureInfo.InvariantCulture);
                     }
                 }
             }
