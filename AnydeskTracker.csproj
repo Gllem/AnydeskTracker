@@ -25,4 +25,17 @@
     <AdditionalFiles Include="Views\Work\StartWork.cshtml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="app_data\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\YandexMetrika\MetrikaIndex.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\YandexMetrika\MetrikaIndex.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\YandexMetrika\MetrikaIndex.cshtml" />
+  </ItemGroup>
+
 </Project>

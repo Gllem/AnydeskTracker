@@ -1,0 +1,311 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Админка метрика";
+    var node = Model?.Data?.Tree?.FirstOrDefault();
+}
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model AnydeskTracker.DTOs.YandexApiResponse
+
+<div class="container py-3">
+    <div class="btn-group mb-3" role="group" aria-label="Period select">
+        @foreach (var item in node.Period)
+        {
+            <input type="radio"
+                   class="btn-check"
+                   name="period"
+                   id="period_@item.Key"
+                   value="@item.Key"
+                   autocomplete="off"
+                   @(item.Key == "today" ? "checked" : "")/>
+
+            <label class="btn btn-outline-primary" for="period_@item.Key"
+                   title="@item.Value">
+                @item.Value
+            </label>
+        }
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header fw-bold">
+            Параметры разреза
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div class="col-md-12">
+
+                    <div class="row align-items-center mb-2">
+                        <div class="col-12 col-md-1.5">
+                            <div class="form-label fw-semibold mb-0">Аккаунты</div>
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <div class="btn-group flex-wrap" role="group" aria-label="Account group">
+
+                                @foreach (var account in node.Accounts)
+                                {
+                                    <input type="checkbox" class="btn-check account-select" name="account_@account.Key"
+                                           id="acc_@account.Key" value="@account.Key" autocomplete="off"/>
+
+                                    <label class="btn btn-outline-primary btn-sm"
+                                           for="acc_@account.Key">@account.Value</label>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    @if (node?.DimensionFields != null)
+                    {
+                        @foreach (var dim in node.DimensionFields)
+                        {
+                            <div class="row align-items-center mb-2">
+                                <div class="col-12 col-md-1.5">
+                                    <div class="form-label fw-semibold mb-0">@dim.Title</div>
+                                </div>
+
+                                <div class="col-12 col-md-10">
+                                    <div class="btn-group flex-wrap" role="group" aria-label="@dim.Title">
+
+                                        <input type="radio"
+                                               class="btn-check dimension-select"
+                                               name="dimension_@dim.Id"
+                                               id="dim_@dim.Id"
+                                               value=""
+                                               autocomplete="off"
+                                               checked/>
+
+                                        <label class="btn btn-outline-secondary btn-sm"
+                                               for="dim_@dim.Id">
+                                            Ничего
+                                        </label>
+
+                                        @foreach (var v in dim.Values)
+                                        {
+                                            var valueKey = v[0];
+                                            var valueTitle = v[1];
+
+                                            <input type="radio"
+                                                   class="btn-check dimension-select"
+                                                   name="dimension_@dim.Id"
+                                                   id="dim_@dim.Id@valueKey"
+                                                   value="@valueKey"
+                                                   autocomplete="off"/>
+
+                                            <label class="btn btn-outline-primary btn-sm"
+                                                   for="dim_@dim.Id@valueKey">
+                                                @valueTitle
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-muted">Нет dimension fields</div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card">
+        <div class="card-header fw-bold">
+            Группировки
+        </div>
+        <div class="card-body">
+
+            <div class="row g-2">
+
+                @if (node?.EntityFields != null)
+                {
+                    foreach (var field in node.EntityFields)
+                    {
+                        <div class="col-md-4 col-lg-3">
+                            <div class="form-check">
+                                <input class="form-check-input entity_fields-checkbox"
+                                       type="checkbox"
+                                       value="@field.Id"
+                                       id="field_@field.Id"
+                                       data-category="@field.CategoryName"/>
+
+                                <label class="form-check-label" for="field_@field.Id">
+                                    @field.Label
+                                </label>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted">Нет доступных полей</div>
+                }
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header fw-bold">
+            Метрики
+        </div>
+        <div class="card-body">
+
+            <div class="row g-2">
+
+                @if (node?.Fields != null)
+                {
+                    foreach (var field in node.Fields)
+                    {
+                        <div class="col-md-4 col-lg-3">
+                            <div class="form-check">
+                                <input class="form-check-input metric-checkbox"
+                                       type="checkbox"
+                                       value="@field.Id"
+                                       id="field_@field.Id"
+                                       data-category="@field.CategoryName"/>
+
+                                <label class="form-check-label" for="field_@field.Id">
+                                    @field.Title
+                                </label>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted">Нет доступных полей</div>
+                }
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <button id="buildRequest" class="btn btn-primary">
+            Построить запрос
+        </button>
+    </div>
+    <style>
+        #resultTable th,
+        #resultTable td {
+            white-space: nowrap;
+        }
+
+        #resultTable td:last-child,
+        #resultTable th:last-child {
+            max-width: 350px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
+
+        #resultTable th:not(:last-child),
+        #resultTable td:not(:last-child) {
+            width: 120px;
+            text-align: left;
+        }
+    </style>
+    <div class="table-responsive">
+        <table class="table table-bordered table/compiler table-striped" id="resultTable">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script>
+        $(function () {
+
+            $("#buildRequest").on("click", async function () {
+
+                const dimensions = {};
+                $('input.dimension-select:checked').each(function () {
+                    const name = $(this).attr('name');
+                    const dimId = name.replace('dimension_', '');
+                    dimensions[dimId] = $(this).val();
+                });
+
+                const fields = [];
+                $(".metric-checkbox:checked").each(function () {
+                    fields.push($(this).val());
+                });
+
+                const entity_fields = [];
+                $(".entity_fields-checkbox:checked").each(function () {
+                    entity_fields.push($(this).val());
+                });
+
+                const period = $('input[name="period"]:checked').val();
+
+                const accounts = [];
+                $("input.account-select:checked").each(function () {
+                    accounts.push($(this).val());
+                });
+
+                const response = await fetch("/Admin/Metrika/Build", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        dimensions: dimensions,
+                        fields: fields,
+                        period: period,
+                        entityFields: entity_fields,
+                        accounts: accounts
+                    })
+                });
+
+                if (!response.ok) {
+                    alert("Ошибка построения отчета. Выберете минимум 1 пункт из группы \"Метрики\"");
+                    return;
+                }
+
+                const data = await response.json();
+
+                const table = $("#resultTable");
+                const thead = table.find("thead");
+                const tbody = table.find("tbody");
+
+
+                thead.empty();
+                tbody.empty();
+
+                // Заголовки
+                let headRow = "<tr>";
+                data.columnTitles.forEach(title => {
+                    headRow += `<th>${title}</th>`;
+                });
+                headRow += "</tr>";
+                thead.append(headRow);
+
+// Строки
+                data.rows.forEach((row, index) => {
+                    let tr = index === 0
+                        ? "<tr class='table-primary fw-bold'>"
+                        : "<tr>";
+
+                    data.columnKeys.forEach(key => {
+                        tr += `<td>${row[key] ?? ""}</td>`;
+                    });
+
+                    tr += "</tr>";
+                    tbody.append(tr);
+                });
+            });
+
+        });
+    </script>
+}
