@@ -8,11 +8,6 @@ public class YandexMetrikaService(IHttpClientFactory httpClientFactory)
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("YandexClient");
 
-    private string[] _apiKeysName =
-    [
-        "YANDEX_API_BIRD_MILK", "YANDEX_API_CARROT_HOOD", "YANDEX_API_LOBSTER_GAMES", "YANDEX_API_RASKOSHA"
-    ];
-
     public async Task<YandexApiResponse?> GetTreeAsync()
     {
         var builder = new UriBuilder("https://partner.yandex.ru/api/statistics2/tree");
@@ -38,7 +33,7 @@ public class YandexMetrikaService(IHttpClientFactory httpClientFactory)
     public async Task<List<YandexReportResponse>?> BuildReportAsync(BuildRequestDto requestDto)
     {
         var responses = new List<YandexReportResponse>();
-        foreach (var keyName in _apiKeysName)
+        foreach (var keyName in requestDto.Accounts)
         {
             var accountName = keyName.Replace("YANDEX_API_", "");
             var builder = new UriBuilder("https://partner.yandex.ru/api/statistics2/get");

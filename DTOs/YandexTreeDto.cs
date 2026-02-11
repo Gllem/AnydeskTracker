@@ -31,6 +31,14 @@ public class YandexTreeNode
         { "365days", "365 дней" },
         { "thisyear", "Текущий год" },
     };
+    public Dictionary<string, string> Accounts = new Dictionary<string, string>()
+    {
+        { "YANDEX_API_BIRD_MILK", "Bird milk" },
+        { "YANDEX_API_CARROT_HOOD", "Carrot hood" },
+        { "YANDEX_API_LOBSTER_GAMES", "Lobster games" },
+        { "YANDEX_API_RASKOSHA", "Raskosha" },
+    };
+    
 }
 
 public class DimensionField
@@ -59,6 +67,8 @@ public class BuildRequestDto
     public List<string> Fields { get; set; }
     public string Period { get; set; }
     public List<string> EntityFields { get; set; }
+    public List<string> Accounts { get; set; }
+    
 }
 
 public class YandexReportResponse

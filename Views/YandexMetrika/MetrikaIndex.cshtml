@@ -25,7 +25,7 @@
             </label>
         }
     </div>
-    
+
     <div class="card mb-3">
         <div class="card-header fw-bold">
             Параметры разреза
@@ -34,6 +34,28 @@
             <div class="row g-3">
 
                 <div class="col-md-12">
+
+                    <div class="row align-items-center mb-2">
+                        <div class="col-12 col-md-1.5">
+                            <div class="form-label fw-semibold mb-0">Аккаунты</div>
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <div class="btn-group flex-wrap" role="group" aria-label="Account group">
+
+                                @foreach (var account in node.Accounts)
+                                {
+                                    <input type="checkbox" class="btn-check account-select" name="account_@account.Key"
+                                           id="acc_@account.Key" value="@account.Key" autocomplete="off"/>
+
+                                    <label class="btn btn-outline-primary btn-sm"
+                                           for="acc_@account.Key">@account.Value</label>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+
+
                     @if (node?.DimensionFields != null)
                     {
                         @foreach (var dim in node.DimensionFields)
@@ -42,7 +64,7 @@
                                 <div class="col-12 col-md-1.5">
                                     <div class="form-label fw-semibold mb-0">@dim.Title</div>
                                 </div>
-                                
+
                                 <div class="col-12 col-md-10">
                                     <div class="btn-group flex-wrap" role="group" aria-label="@dim.Title">
 
@@ -52,13 +74,13 @@
                                                id="dim_@dim.Id"
                                                value=""
                                                autocomplete="off"
-                                               checked />
+                                               checked/>
 
-                                        <label class="btn btn-outline-primary btn-sm"
+                                        <label class="btn btn-outline-secondary btn-sm"
                                                for="dim_@dim.Id">
                                             Ничего
                                         </label>
-                                        
+
                                         @foreach (var v in dim.Values)
                                         {
                                             var valueKey = v[0];
@@ -90,7 +112,7 @@
             </div>
         </div>
     </div>
-    
+
 
     <div class="card">
         <div class="card-header fw-bold">
@@ -128,7 +150,7 @@
 
         </div>
     </div>
-    
+
     <div class="card">
         <div class="card-header fw-bold">
             Метрики
@@ -209,7 +231,6 @@
             $("#buildRequest").on("click", async function () {
 
                 const dimensions = {};
-
                 $('input.dimension-select:checked').each(function () {
                     const name = $(this).attr('name');
                     const dimId = name.replace('dimension_', '');
@@ -220,13 +241,18 @@
                 $(".metric-checkbox:checked").each(function () {
                     fields.push($(this).val());
                 });
-                
+
                 const entity_fields = [];
                 $(".entity_fields-checkbox:checked").each(function () {
                     entity_fields.push($(this).val());
                 });
 
                 const period = $('input[name="period"]:checked').val();
+
+                const accounts = [];
+                $("input.account-select:checked").each(function () {
+                    accounts.push($(this).val());
+                });
 
                 const response = await fetch("/Admin/Metrika/Build", {
                     method: "POST",
@@ -237,7 +263,8 @@
                         dimensions: dimensions,
                         fields: fields,
                         period: period,
-                        entityFields : entity_fields
+                        entityFields: entity_fields,
+                        accounts: accounts
                     })
                 });
 
