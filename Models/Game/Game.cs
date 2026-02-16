@@ -6,6 +6,8 @@ public class Game
 {
 	[Key]
 	public int Id { get; set; }
+
+	public string? YandexMetrikaId { get; set; } = null;
 	[Required]
 	public string Url { get; set; } = null!;
 	[Required]

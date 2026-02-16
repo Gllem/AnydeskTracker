@@ -26,6 +26,7 @@
             <tr>
                 <th>Название</th>
                 <th>URL</th>
+                <th>Id игры в рся</th>
                 <th></th>
             </tr>
             </thead>
@@ -48,6 +49,7 @@
                 <tr data-id="${p.id}" data-order="${p.sortOrder}">
                     <td class="editable" data-field="name">${p.name}</td>
                     <td class="editable" data-field="url">${p.url}</td>
+                    <td class="editable" data-field="metrikaId">${p.yandexMetrikaId}</td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
                     </td>
