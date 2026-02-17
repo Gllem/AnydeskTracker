@@ -1,15 +1,62 @@
 using System.Globalization;
+using System.Runtime.Intrinsics.Arm;
+using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
 using AnydeskTracker.Services.MetrikaServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Controllers;
 
 [Authorize(Roles = "Admin")]
 [Route("Admin/Metrika")]
-public class YandexMetrikaController(YandexMetrikaService metrikaService) : Controller
+public class YandexMetrikaController(YandexMetrikaService metrikaService, ApplicationDbContext dbContext) : Controller
 {
+    public static Dictionary<string, string> Accounts => new Dictionary<string, string>()
+    {
+        { "YANDEX_API_BIRD_MILK", "Bird milk" },
+        { "YANDEX_API_CARROT_HOOD", "Carrot hood" },
+        { "YANDEX_API_LOBSTER_GAMES", "Lobster games" },
+        { "YANDEX_API_RASKOSHA", "Raskosha" },
+    };
+
+    [HttpGet("checkGameMetrika/{gameMetrikaId}")]
+    public async Task<IActionResult> CheckGameMetrika(string gameMetrikaId) //TODO: В отдельный котроллепр
+    {
+        var requestDto = new BuildRequestDto();
+        var game = dbContext.GameCatalog.FirstOrDefault(x => x.YandexMetrikaId == gameMetrikaId);
+        if (game == null) return NotFound();
+
+        var accountName = game.AccountName;
+        if (string.IsNullOrWhiteSpace(accountName)) return BadRequest();
+
+        //TODO:Filters
+        requestDto.Accounts.Add(Accounts.FirstOrDefault(x => x.Value == accountName).Key);
+        requestDto.Period = "today";
+        requestDto.EntityFields.Add("page_id");
+        requestDto.Fields.Add("partner_wo_nds");
+
+        var result = await metrikaService.BuildReportAsync(requestDto);
+        if (result == null)
+            return BadRequest();
+
+        var reward = result[0].Data.Points
+            .FirstOrDefault(x => x.Dimensions.Values.Any(a => a.GetString() == gameMetrikaId))
+            ?.Measures.FirstOrDefault(d => d.ContainsKey("partner_wo_nds"))
+            ?.GetValueOrDefault("partner_wo_nds")
+            .GetDecimal();
+
+        var previousReward = game.LastReward;
+        if (reward == null) return StatusCode(500);
+        
+        game.LastReward = reward.Value;
+        await dbContext.SaveChangesAsync();
+
+
+        return Ok(reward - previousReward > 100);
+    }
+
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -96,15 +143,17 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService) : Cont
                         if (string.IsNullOrEmpty(totalRow[m.Key]))
                             totalRow[m.Key] = m.Value.ToString();
                         else if (
-                            double.TryParse(totalRow[m.Key], NumberStyles.Any, CultureInfo.InvariantCulture, out var value) &&
+                            double.TryParse(totalRow[m.Key], NumberStyles.Any, CultureInfo.InvariantCulture,
+                                out var value) &&
                             m.Value.TryGetDouble(out double additionalValue))
-                            totalRow[m.Key] = (value + additionalValue).ToString("0.##",CultureInfo.InvariantCulture);
+                            totalRow[m.Key] = (value + additionalValue).ToString("0.##", CultureInfo.InvariantCulture);
                     }
                 }
             }
         }
+
         result.Rows.Add(totalRow);
-        
+
         foreach (var report in reports)
         {
             foreach (var point in report.Data.Points)

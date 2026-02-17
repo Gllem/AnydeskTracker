@@ -13,131 +13,152 @@ namespace AnydeskTracker.Controllers;
 [ApiController]
 public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramService telegramService) : ControllerBase
 {
-	[HttpPost]
-	public async Task<IActionResult> WatchdogWebhook([FromBody] BotWatchdogStatusDto statusDto)
-	{
-		var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x != null && x.BotId == statusDto.BotId);
+    [HttpPost]
+    public async Task<IActionResult> WatchdogWebhook([FromBody] BotWatchdogStatusDto statusDto)
+    {
+        var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x != null && x.BotId == statusDto.BotId);
 
-		if (pc == null)
-			return NotFound();
+        if (pc == null)
+            return NotFound();
 
-		if (pc.Status is PcStatus.Busy or PcStatus.CoolingDown)
-			return BadRequest("PC is busy");
-		
-		Dictionary<string, string> statuses = statusDto.StatusChecks.ToDictionary(
-					x => x.Key,
-					x => x.Value ? "" : statusDto.ErrorDescriptions[x.Key]);
-		
-		var botAction = new PcBotAction
-		{
-			PcId = pc.Id,
-			Error = statusDto.Error,
-			ProcessesStatus = statuses["Processes"],
-			SchedulerStatus = statuses["Scheduler"],
-			DiskStatus = statuses["Disk"],
-			UserStatus = statuses["User"],
-			RamStatus = statuses["RAM"],
-			Timestamp = DateTime.UtcNow
-		};
+        if (pc.Status is PcStatus.Busy or PcStatus.CoolingDown)
+            return BadRequest("PC is busy");
 
-		dbContext.BotActions.Add(botAction);
+        Dictionary<string, string> statuses = statusDto.StatusChecks.ToDictionary(
+            x => x.Key,
+            x => x.Value ? "" : statusDto.ErrorDescriptions[x.Key]);
 
-		await dbContext.SaveChangesAsync();
+        var botAction = new PcBotAction
+        {
+            PcId = pc.Id,
+            Error = statusDto.Error,
+            ProcessesStatus = statuses["Processes"],
+            SchedulerStatus = statuses["Scheduler"],
+            DiskStatus = statuses["Disk"],
+            UserStatus = statuses["User"],
+            RamStatus = statuses["RAM"],
+            Timestamp = DateTime.UtcNow
+        };
 
-		if (botAction.Error)
-		{
-			await telegramService.SendMessageToAdmin(
-				$"\u26a0\ufe0f Ошибка бота\n" +
-				$"Бот: {pc.BotId}\n" +
-				$"AnyDesk ID: {pc.AnyDeskId}\n\n" +
-				$"Статус: \n" +
-				botAction.TelegramNotificationBotStatus
-			);
-		}
+        dbContext.BotActions.Add(botAction);
 
-		return Ok();
-	}
+        await dbContext.SaveChangesAsync();
 
-	[HttpGet("dolphinStatus/{botId}")]
-	public async Task<IActionResult> DolphinBotIdCheck(string botId)
-	{
-		var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x.BotId == botId);
+        if (botAction.Error)
+        {
+            await telegramService.SendMessageToAdmin(
+                $"\u26a0\ufe0f Ошибка бота\n" +
+                $"Бот: {pc.BotId}\n" +
+                $"AnyDesk ID: {pc.AnyDeskId}\n\n" +
+                $"Статус: \n" +
+                botAction.TelegramNotificationBotStatus
+            );
+        }
 
-		if (pc == null)
-			return NotFound();
+        return Ok();
+    }
 
-		dbContext.DolphinActions.Add(new PcBotDolphinAction
-		{
-			PcId = pc.Id,
-			Timestamp = DateTime.UtcNow
-		});
-		
-		await dbContext.SaveChangesAsync();
+    [HttpGet("dolphinStatus/{botId}")]
+    public async Task<IActionResult> DolphinBotIdCheck(string botId)
+    {
+        var pc = await dbContext.Pcs.FirstOrDefaultAsync(x => x.BotId == botId);
 
-		return Ok(new
-		{
-			pc.AnyDeskId,
-			pc.BotId
-		});
-	}
+        if (pc == null)
+            return NotFound();
 
-	[HttpGet("botGames/{botId}")]
-	public async Task<IActionResult> GetBotGames(string botId)
-	{
-		var pc = await dbContext.Pcs.Include(x => x.OverridenBotGames).FirstOrDefaultAsync(x => x.BotId == botId);
+        dbContext.DolphinActions.Add(new PcBotDolphinAction
+        {
+            PcId = pc.Id,
+            Timestamp = DateTime.UtcNow
+        });
 
-		if (pc == null)
-			return NotFound();
+        await dbContext.SaveChangesAsync();
 
-		return await GetGames(pc);
-	}
-	
-	[HttpGet("botGamesId/{pcId}")]
-	public async Task<IActionResult> GetBotGames(int pcId)
-	{
-		var pc = await dbContext.Pcs.Include(x => x.OverridenBotGames).FirstOrDefaultAsync(x => x.Id == pcId);
+        return Ok(new
+        {
+            pc.AnyDeskId,
+            pc.BotId
+        });
+    }
 
-		if (pc == null)
-			return NotFound();
+    [HttpGet("botGames/{botId}")]
+    public async Task<IActionResult> GetBotGames(string botId)
+    {
+        var pc = await dbContext.Pcs.Include(x => x.OverridenBotGames).FirstOrDefaultAsync(x => x.BotId == botId);
 
-		return await GetGames(pc);
-	}
-	
-	[HttpGet("botGamesId/")]
-	public async Task<IActionResult> GetBotGames()
-	{
-		return await GetGames(null);
-	}
+        if (pc == null)
+            return NotFound();
 
-	private async Task<IActionResult> GetGames(PcModel? pc)
-	{
-		IQueryable<Game> query;
-		
-		if (pc != null && pc.OverridenBotGames.Count != 0)
-			query = dbContext.BotGameAssignmentsOverride
-				.Where(x => x.PcId == pc.Id)
-				.OrderBy(x => x.Order)
-				.Select(x => x.Game);
-		else
-			query = dbContext.BotGameAssignmentsGlobal.OrderBy(x => x.Order).Select(x => x.Game);
-	
-		var games = await query.ToListAsync();
-		
-		return File(
-			GetBotGamesFile(games),
-			"text/plain",
-			$"{pc?.DisplayId ?? "Games"}.txt"
-		);
-	}
+        return await GetGames(pc);
+    }
 
-	private byte[] GetBotGamesFile(List<Game> botGames)
-	{
-		var sb = new StringBuilder();
-		foreach (var game in botGames)
-		{
-			sb.AppendLine(game.Url);
-		}
+    [HttpGet("botGamesId/{pcId}")]
+    public async Task<IActionResult> GetBotGames(int pcId)
+    {
+        var pc = await dbContext.Pcs.Include(x => x.OverridenBotGames).FirstOrDefaultAsync(x => x.Id == pcId);
 
-		return Encoding.UTF8.GetBytes(sb.ToString());
-	}
+        if (pc == null)
+            return NotFound();
+
+        return await GetGames(pc);
+    }
+
+    [HttpGet("botGamesId/")]
+    public async Task<IActionResult> GetBotGames()
+    {
+        return await GetGames(null);
+    }
+
+    private async Task<IActionResult> GetGames(PcModel? pc)
+    {
+        IQueryable<Game> query;
+
+        if (pc != null && pc.OverridenBotGames.Count != 0)
+            query = dbContext.BotGameAssignmentsOverride
+                .Where(x => x.PcId == pc.Id)
+                .OrderBy(x => x.Order)
+                .Select(x => x.Game);
+        else
+            query = dbContext.BotGameAssignmentsGlobal.OrderBy(x => x.Order).Select(x => x.Game);
+
+        var games = await query.ToListAsync();
+
+        return File(
+            GetBotGamesFile(games),
+            "text/plain",
+            $"{pc?.DisplayId ?? "Games"}.txt"
+        );
+    }
+
+    private byte[] GetBotGamesFile(List<Game> botGames)
+    {
+        var sb = new StringBuilder();
+        foreach (var game in botGames)
+        {
+            sb.AppendLine(game.Url);
+        }
+
+        return Encoding.UTF8.GetBytes(sb.ToString());
+    }
+
+    [HttpGet("userGames/{botId}")]
+    public async Task<IActionResult> GetUserGames(string botId)
+    {
+        var dayOfWeek = DateTime.UtcNow.ToLocalTime().DayOfWeek;
+        var pcUsage = await dbContext.PcUsages.Include(pcUsage => pcUsage.WorkSession)
+            .FirstOrDefaultAsync(x => x.IsActive && x.Pc.BotId == botId);
+        if (pcUsage == null) return NotFound();
+
+        var gameSchedules = await dbContext.GameSchedules.Include(gameSchedule => gameSchedule.UserLinks)
+            .Include(gameSchedule => gameSchedule.Game)
+            .Where(x => x.DayOfWeek == dayOfWeek).ToListAsync();
+
+        return Ok(gameSchedules
+            .Where(x => x.UserLinks.Any(y => y.UserId == pcUsage.WorkSession.UserId))
+            .Select(x => new
+            {
+                GameName = x.Game.Name,
+                GameId = x.Game.YandexMetrikaId
+            }));
+    }
 }

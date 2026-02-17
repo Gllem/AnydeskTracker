@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AnydeskTracker.Controllers;
 
 namespace AnydeskTracker.DTOs;
 
@@ -31,14 +32,9 @@ public class YandexTreeNode
         { "365days", "365 дней" },
         { "thisyear", "Текущий год" },
     };
-    public Dictionary<string, string> Accounts = new Dictionary<string, string>()
-    {
-        { "YANDEX_API_BIRD_MILK", "Bird milk" },
-        { "YANDEX_API_CARROT_HOOD", "Carrot hood" },
-        { "YANDEX_API_LOBSTER_GAMES", "Lobster games" },
-        { "YANDEX_API_RASKOSHA", "Raskosha" },
-    };
-    
+
+    public Dictionary<string, string> Accounts => YandexMetrikaController.Accounts;
+
 }
 
 public class DimensionField

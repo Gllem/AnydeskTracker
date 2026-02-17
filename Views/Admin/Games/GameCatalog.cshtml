@@ -1,4 +1,5 @@
-﻿@{
+﻿@using AnydeskTracker.Controllers
+@{
     Layout = "_Layout";
     ViewData["Title"] = "Каталог";
 }
@@ -14,7 +15,7 @@
             <input id="gameName" type="text" placeholder="Название" class="form-control mb-2" required/>
             <button class="btn btn-success">Добавить игру</button>
         </form>
-        
+
         <a class="btn btn-success" asp-action="GameSchedules">Расписания игр</a>
     </div>
 
@@ -27,6 +28,7 @@
                 <th>Название</th>
                 <th>URL</th>
                 <th>Id игры в рся</th>
+                <th>Аккаунт</th>
                 <th></th>
             </tr>
             </thead>
@@ -37,24 +39,50 @@
 
 @section Scripts
 {
+    <script type="text/template" id="optionsTemplate">
+        <option value="">-</option>
+        
+        @foreach (var x in YandexMetrikaController.Accounts.Values)
+        {
+            <option value="@x">@x</option>
+        }
+    
+    </script>
+
     <script>
+        const optionsHtml = document.getElementById("optionsTemplate").innerHTML;
+
         async function loadGames() {
             const res = await fetch('/api/admin/games');
             const data = await res.json();
             const tbody = document.querySelector('#gamesTable tbody');
-
 
             tbody.innerHTML = data.map(p => {
                 return `
                 <tr data-id="${p.id}" data-order="${p.sortOrder}">
                     <td class="editable" data-field="name">${p.name}</td>
                     <td class="editable" data-field="url">${p.url}</td>
-                    <td class="editable" data-field="metrikaId">${p.yandexMetrikaId}</td>
+                    <td class="editable" data-field="yandexMetrikaId">${p.yandexMetrikaId ?? ""}</td>
+                    <td class="">
+                        <select class="form-select row-select" data-original="${p.accountName}" data-field="accountName">
+                          ${optionsHtml}
+                        </select>
+                    </td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-danger" onclick="deleteGame(${p.id})">Удалить</button>
                     </td>
                 </tr>
-            `}).join('');
+            `
+            }).join('');
+            
+            $("#gamesTable")
+                .find("select.row-select[data-original]")
+                .each(function () {
+                    const $select = $(this);
+                    const originalValue = $select.data("original");
+
+                    $select.val(String(originalValue));
+                });
         }
 
         document.getElementById('addForm').addEventListener('submit', async (e) => {
@@ -63,31 +91,32 @@
             const name = document.getElementById('gameName').value;
             const res = await fetch('/api/admin/games', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url, name })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url, name})
             });
             e.target.reset();
 
             if (res.status === 409)
                 alert("Не удалось добавить игру т.к. игра с таким URL уже существует")
-            
-            else if(!res.ok)
+
+            else if (!res.ok)
                 alert("Ошибка при добавлении игры")
 
             await loadGames();
         });
 
         async function deleteGame(id) {
-            await fetch(`/api/admin/games/${id}`, { method: 'DELETE' });
+            await fetch(`/api/admin/games/${id}`, {method: 'DELETE'});
             await loadGames();
         }
 
         CustomTable(
-            "#gamesTable", 
-            () => "/api/admin/games/bulk-update", 
+            "#gamesTable",
+            () => "/api/admin/games/bulk-update",
             loadGames,
             null,
             true, false);
         loadGames();
+
     </script>
 }

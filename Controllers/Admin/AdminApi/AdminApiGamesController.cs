@@ -28,6 +28,7 @@ public class AdminApiGamesController(ApplicationDbContext dbContext) : Controlle
 				g.Name,
 				g.Url,
 				g.YandexMetrikaId,
+				g.AccountName,
 				Schedules = g.UserSchedules.Select(s => new {
 					Users = s.UserLinks.Select(u => new {u.User.Id, u.User.UserName}),
 					WeekDay = (int)s.DayOfWeek
@@ -77,6 +78,8 @@ public class AdminApiGamesController(ApplicationDbContext dbContext) : Controlle
 
 			existing.Name = updateDto.Name;
 			existing.Url = updateDto.Url.NormalizeUrl();
+			existing.YandexMetrikaId = updateDto.YandexMetrikaId;
+			existing.AccountName = updateDto.AccountName;
 		}
 
 		await dbContext.SaveChangesAsync();

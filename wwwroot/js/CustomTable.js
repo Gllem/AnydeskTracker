@@ -27,13 +27,27 @@ function CustomTable(tableSelector, bulkUpdateUrlGetter, updateCallback, onChang
             const checkBox = $(this);
             const newVal = checkBox.is(':checked') ? '1' : '0';
             const oldVal = String(checkBox.data('original'));
-
+            
             if (newVal !== oldVal) {
                 checkBox.closest('tr').addClass('table-warning');
                 checkBox.data('changed', true);
             } else {
                 checkBox.data('changed', false);
                 updateRowWarning(checkBox.closest('tr'));
+            }
+        });
+
+        table.on('change', '.row-select', function () {
+            const select = $(this);
+            const newVal = select.val();
+            const oldVal = String(select.data('original'));
+
+            if (newVal !== oldVal) {
+                select.closest('tr').addClass('table-warning');
+                select.data('changed', true);
+            } else {
+                select.data('changed', false);
+                updateRowWarning(select.closest('tr'));
             }
         });
 
@@ -88,6 +102,11 @@ function CustomTable(tableSelector, bulkUpdateUrlGetter, updateCallback, onChang
             row.find('.row-check').each(function () {
                 const checkbox = $(this);
                 item[checkbox.data('field')] = checkbox.is(':checked');
+            });
+            
+            row.find('.row-select').each(function () {
+                const select = $(this);
+                item[select.data('field')] = select.val();
             });
 
             changes.push(item);
