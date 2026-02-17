@@ -89,9 +89,8 @@ namespace AnydeskTracker.Services
                 return false;
             
             var pc = usage.Pc;
-            
-            pc.Status = PcStatus.Broken;
-            pc.LastStatusChange = DateTime.UtcNow;
+
+            await pcService.ChangePcStatus(pc, PcStatus.Broken);
             
             usage.IsActive = false;
             usage.EndTime = DateTime.UtcNow;
