@@ -12,7 +12,8 @@ public class Game
 	public string Url { get; set; } = null!;
 	[Required]
 	public string Name { get; set; } = null!;
-	public decimal LastReward { get; set; }
+
+	public decimal LastReward { get; set; } = 0;
 	
 	public ICollection<GameSchedule> UserSchedules { get; set; } = new List<GameSchedule>();
 	public BotGameAssignmentGlobal? GlobalOrder { get; set; }

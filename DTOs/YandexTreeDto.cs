@@ -34,7 +34,6 @@ public class YandexTreeNode
     };
 
     public Dictionary<string, string> Accounts => YandexMetrikaController.Accounts;
-
 }
 
 public class DimensionField
@@ -59,12 +58,11 @@ public class Field
 
 public class BuildRequestDto
 {
-    public Dictionary<string, string> Dimensions { get; set; }
-    public List<string> Fields { get; set; }
+    public Dictionary<string, string> Dimensions { get; set; } = new();
+    public List<string> Fields { get; set; } = new();
     public string Period { get; set; }
-    public List<string> EntityFields { get; set; }
-    public List<string> Accounts { get; set; }
-    
+    public List<string> EntityFields { get; set; } = new();
+    public List<string> Accounts { get; set; } = new();
 }
 
 public class YandexReportResponse

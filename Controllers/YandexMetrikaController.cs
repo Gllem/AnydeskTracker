@@ -21,42 +21,6 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService, Applic
         { "YANDEX_API_RASKOSHA", "Raskosha" },
     };
 
-    [HttpGet("checkGameMetrika/{gameMetrikaId}")]
-    public async Task<IActionResult> CheckGameMetrika(string gameMetrikaId) //TODO: В отдельный котроллепр
-    {
-        var requestDto = new BuildRequestDto();
-        var game = dbContext.GameCatalog.FirstOrDefault(x => x.YandexMetrikaId == gameMetrikaId);
-        if (game == null) return NotFound();
-
-        var accountName = game.AccountName;
-        if (string.IsNullOrWhiteSpace(accountName)) return BadRequest();
-
-        //TODO:Filters
-        requestDto.Accounts.Add(Accounts.FirstOrDefault(x => x.Value == accountName).Key);
-        requestDto.Period = "today";
-        requestDto.EntityFields.Add("page_id");
-        requestDto.Fields.Add("partner_wo_nds");
-
-        var result = await metrikaService.BuildReportAsync(requestDto);
-        if (result == null)
-            return BadRequest();
-
-        var reward = result[0].Data.Points
-            .FirstOrDefault(x => x.Dimensions.Values.Any(a => a.GetString() == gameMetrikaId))
-            ?.Measures.FirstOrDefault(d => d.ContainsKey("partner_wo_nds"))
-            ?.GetValueOrDefault("partner_wo_nds")
-            .GetDecimal();
-
-        var previousReward = game.LastReward;
-        if (reward == null) return StatusCode(500);
-        
-        game.LastReward = reward.Value;
-        await dbContext.SaveChangesAsync();
-
-
-        return Ok(reward - previousReward > 100);
-    }
-
     [HttpGet]
     public async Task<IActionResult> Index()
     {
