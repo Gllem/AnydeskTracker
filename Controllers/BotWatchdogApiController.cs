@@ -154,26 +154,6 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 		});
 	}
 
-    [HttpGet("userGames/{botId}")]
-    public async Task<IActionResult> GetUserGames(string botId)
-    {
-        var dayOfWeek = DateTime.UtcNow.ToLocalTime().DayOfWeek;
-        var pcUsage = await dbContext.PcUsages.Include(pcUsage => pcUsage.WorkSession)
-            .FirstOrDefaultAsync(x => x.IsActive && x.Pc.BotId == botId);
-        if (pcUsage == null) return NotFound();
-
-        var gameSchedules = await dbContext.GameSchedules.Include(gameSchedule => gameSchedule.UserLinks)
-            .Include(gameSchedule => gameSchedule.Game)
-            .Where(x => x.DayOfWeek == dayOfWeek).ToListAsync();
-
-        return Ok(gameSchedules
-            .Where(x => x.UserLinks.Any(y => y.UserId == pcUsage.WorkSession.UserId))
-            .Select(x => new
-            {
-                GameName = x.Game.Name,
-                GameId = x.Game.YandexMetrikaId
-            }));
-    }
 	[HttpGet("botOccupation/{botId}")]
 	public async Task<IActionResult> GetBotOccupation(string botId)
 	{
@@ -183,5 +163,26 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 			return NotFound();
 
 		return Ok(pc.Status == PcStatus.Busy);
+	}
+
+	[HttpGet("userGames/{botId}")]
+	public async Task<IActionResult> GetUserGames(string botId)
+	{
+		var dayOfWeek = DateTime.UtcNow.ToLocalTime().DayOfWeek;
+		var pcUsage = await dbContext.PcUsages.Include(pcUsage => pcUsage.WorkSession)
+			.FirstOrDefaultAsync(x => x.IsActive && x.Pc.BotId == botId);
+		if (pcUsage == null) return NotFound();
+
+		var gameSchedules = await dbContext.GameSchedules.Include(gameSchedule => gameSchedule.UserLinks)
+			.Include(gameSchedule => gameSchedule.Game)
+			.Where(x => x.DayOfWeek == dayOfWeek).ToListAsync();
+
+		return Ok(gameSchedules
+			.Where(x => x.UserLinks.Any(y => y.UserId == pcUsage.WorkSession.UserId))
+			.Select(x => new
+			{
+				GameName = x.Game.Name,
+				GameId = x.Game.YandexMetrikaId
+			}));
 	}
 }
