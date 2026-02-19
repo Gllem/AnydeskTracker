@@ -1,0 +1,121 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Расписание бота";
+}
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using AnydeskTracker.Extensions
+@model AnydeskTracker.DTOs.AdminBotScheduleDto
+
+<h3 class="text-center mb-5">
+    Автоматизация времени работы <b>@Model.PcDto.BotId</b>
+</h3>
+<div class="d-flex flex-row justify-content-center">
+    <form asp-controller="Admin" asp-action="PostBotSchedule" asp-route-pcModelId="@Model.PcDto.Id" id="scheduleForm" class="border border-1 border-secondary rounded-3 p-3 d-flex flex-column gap-3">
+        <div class="input-group flex-nowrap">
+            <span class="input-group-text flex-fill">
+                Включено
+            </span>
+            <div class="form-control text-center flex-grow-0" style="width: 5em">
+                <input id="scheduleEnabled" type="checkbox" class="form-check-input" asp-for="@Model.PcBotSchedule.Enabled">
+            </div>
+        </div>
+        <div class="input-group flex-nowrap">
+            <span class="input-group-text flex-fill">
+                Время автоматического запуска
+            </span>
+            <input id="scheduleStartTime" type="time" class="form-control text-center flex-grow-0" style="width: 5em" 
+                   asp-for="@Model.PcBotSchedule.StartTod" 
+                   step="60"
+                   asp-format="{0:hh\:mm}"
+                   required/>
+        </div>
+        <div class="input-group flex-nowrap">
+            <span class="input-group-text flex-fill">
+                Конец работы автозапуска
+            </span>
+            <input id="scheduleEndTime" type="time" class="form-control text-center flex-grow-0" style="width: 5em"
+                   asp-for="@Model.PcBotSchedule.EndTod"
+                   step="60"
+                   asp-format="{0:hh\:mm}"/>
+        </div>
+        <div class="input-group flex-nowrap">
+            <span class="input-group-text flex-fill">
+                Промежуток между перезапусками
+            </span>
+            <input id="scheduleInterval" type="number" class="form-control text-center flex-grow-0" style="width: 5em"
+                   asp-for="PcBotSchedule.IntervalMinutes"
+                   required/>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            Обновить данные
+        </button>
+        
+        <h5 class="text-center">
+            Статус
+        </h5>
+        
+        @if (Model.PcDto.LastBotSchedule == null)
+        {
+            <b class="text-center mb-3">Еще не получал статусов</b>
+        }
+        else
+        {
+            <div class="border border-1 border-secondary rounded-3 p-3">
+                <div class="input-group flex-nowrap">
+                    <span class="form-control flex-fill">
+                        Автозапуск
+                    </span>
+                    <span class="form-control text-center flex-grow-0" style="width: 12em">
+                        @(Model.PcDto.LastBotSchedule.Enabled ? "Включен" : "Выключен")
+                    </span>
+                </div>
+                <div class="input-group flex-nowrap">
+                    <span class="form-control flex-fill">
+                        Следующий запуск
+                    </span>
+                    <span class="form-control text-center flex-grow-0" style="width: 12em">
+                        @(Model.PcDto.NextLaunchTime?.ToString("dd.MM.yyyy, HH:mm:ss") ?? "-")
+                    </span>
+                </div>
+                <div class="input-group flex-nowrap">
+                    <span class="form-control flex-fill">
+                        Перезапуск каждые
+                    </span>
+                    <span class="form-control text-center flex-grow-0" style="width: 12em">
+                        @($"{Model.PcDto.LastBotSchedule.IntervalMinutes}мин.")
+                    </span>
+                </div>
+                <div class="input-group flex-nowrap">
+                    <span class="form-control flex-fill">
+                        Текущий статус
+                    </span>
+                    <span class="form-control text-center flex-grow-0" style="width: 12em">
+                        @(Model.PcDto.LastStatusText)
+                    </span>
+                </div>
+                <div class="input-group flex-nowrap">
+                    <span class="form-control flex-fill">
+                        Последний запуск
+                    </span>
+                    @if (Model.PcDto.LastLaunchTime == null)
+                    {
+                        <span class="form-control text-center flex-grow-0" style="width: 12em">
+                            -
+                        </span>
+                    }
+                    else
+                    {
+                        <span data-time="@Model.PcDto.LastLaunchTime.Value.ToUtc().ToString("o")" class="utc-time form-control text-center flex-grow-0" style="width: 12em"></span>
+                    }
+                </div>
+            </div>   
+        }
+    </form>
+</div>
+
+@section Scripts
+{
+    <script>
+        ConvertAllToLocalTime(document)
+    </script>
+}

@@ -10,7 +10,7 @@ namespace AnydeskTracker.Controllers;
 
 [Authorize(Roles = "Admin")]
 [Route("Admin")]
-public class AdminController(ApplicationDbContext context, PcService pcService) : Controller
+public class AdminController(ApplicationDbContext context, PcService pcService, AgentCommandsService agentCommandsService) : Controller
 {
 	[HttpGet]
 	public async Task<IActionResult> Index()
@@ -82,7 +82,38 @@ public class AdminController(ApplicationDbContext context, PcService pcService) 
 			lastDolphinCheck,
 			botLogDates.Order().Select(x => new AdminBotPageDto.BotLog(x, dolphinLogs.Count(y => y.Timestamp.Date == x))).ToArray()));
 	}
-	
+
+	[HttpGet("Bot/{pcModelId}/Schedule")]
+	public async Task<IActionResult> BotSchedule(int pcModelId)
+	{
+		var pc = await context.Pcs.FindAsync(pcModelId);
+
+		if (pc == null)
+			return NotFound();
+
+		return View("Bots/BotSchedule", new AdminBotScheduleDto
+		{
+			PcDto = new PcDto(pc),
+			PcBotSchedule = pc.PcBotSchedule,
+		});
+	}
+
+	[HttpPost("Bot/{pcModelId}/Schedule")]
+	public async Task<IActionResult> PostBotSchedule(int pcModelId, AdminBotScheduleDto scheduleDto)
+	{
+		var pc = await context.Pcs.FindAsync(pcModelId);
+
+		if (pc == null)
+			return NotFound();
+
+		pc.PcBotSchedule = scheduleDto.PcBotSchedule;
+
+		await context.SaveChangesAsync();
+		await agentCommandsService.SendCommandToAgent(pc.BotId, "UpdateSchedule");
+
+		return RedirectToAction(nameof(Views.Admin.BotSchedule), new{pcModelId});
+	}
+
 	[HttpGet("BotGames")]
 	public async Task<IActionResult> BotGames()
 	{

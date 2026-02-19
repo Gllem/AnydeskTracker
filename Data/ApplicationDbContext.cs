@@ -19,9 +19,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         BuildBotGameOrder(builder);
         
         BuildBlockedAgents(builder);
-        
-        builder.Entity<PcModel>().Property(x => x.AgentReady)
-            .HasDefaultValue(true);
+
+        builder.Entity<PcModel>(pcModel =>
+        {
+            pcModel.Property(x => x.AgentReady).HasDefaultValue(true);
+            pcModel.OwnsOne(x => x.PcBotSchedule);
+            pcModel.OwnsOne(x => x.LastActiveSchedule);
+        });
     }
 
     private static void BuildGameUserSchedule(ModelBuilder builder)

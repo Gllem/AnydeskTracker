@@ -30,13 +30,14 @@ namespace AnydeskTracker.Services
             {
                 using var scope = scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var pcService = scope.ServiceProvider.GetRequiredService<PcService>();
 
                 var now = DateTime.UtcNow;
                 var computers = await db.Pcs.ToListAsync(stoppingToken);
 
                 foreach (var pc in computers)
                 {
-                    await HandlePcStatus(pc, db, now, stoppingToken);
+                    await HandlePcStatus(pc, pcService, db, now, stoppingToken);
                 }
 
                 await db.SaveChangesAsync(stoppingToken);
@@ -47,14 +48,14 @@ namespace AnydeskTracker.Services
             }
         }
 
-        private static async Task HandlePcStatus(PcModel? pc, ApplicationDbContext db, DateTime now, CancellationToken stoppingToken)
+        private async Task HandlePcStatus(PcModel? pc, PcService pcService, ApplicationDbContext db, DateTime now, CancellationToken stoppingToken)
         {
             if(pc == null)
                 return;
                         
             if (pc.Status == PcStatus.CoolingDown && pc.LastStatusChange.Add(TimeSettingsService.PcCooldown) <= now)
             {
-                ChangePcStatus(pc, PcStatus.Free);
+                await pcService.ChangePcStatus(pc, PcStatus.Free);
             }
 
             if (pc.Status == PcStatus.Busy && pc.LastStatusChange.Add(TimeSettingsService.PcUsageTime + TimeSettingsService.PcForceFreeUpTime) <= now)
@@ -64,7 +65,8 @@ namespace AnydeskTracker.Services
 
                 if(pcUsage == null || pcUsage.TotalActiveTime > TimeSettingsService.PcUsageTime + TimeSettingsService.PcForceFreeUpTime)
                 {
-                    ChangePcStatus(pc, PcStatus.CoolingDown);
+                    await pcService.ChangePcStatus(pc, PcStatus.CoolingDown);
+                    
                     FreeUpPcUsage(pcUsage);
                 }
             }
@@ -77,12 +79,6 @@ namespace AnydeskTracker.Services
                             
             usage.IsActive = false;
             usage.EndTime = DateTime.UtcNow;
-        }
-
-        private static void ChangePcStatus(PcModel pc, PcStatus status)
-        {
-            pc.Status = status;
-            pc.LastStatusChange = DateTime.UtcNow;
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using AnydeskTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AnydeskTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260203150852_PcSchedules")]
+    partial class PcSchedules
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -150,22 +153,12 @@ namespace AnydeskTracker.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("AccountName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("LastReward")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Url")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("YandexMetrikaId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -293,16 +286,7 @@ namespace AnydeskTracker.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("LastLaunchTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LastStatus")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime>("LastStatusChange")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("NextLaunchTime")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
@@ -641,31 +625,6 @@ namespace AnydeskTracker.Data.Migrations
 
             modelBuilder.Entity("AnydeskTracker.Models.PcModel", b =>
                 {
-                    b.OwnsOne("AnydeskTracker.Models.PcBotSchedule", "LastActiveSchedule", b1 =>
-                        {
-                            b1.Property<int>("PcModelId")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<bool>("Enabled")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<TimeSpan?>("EndTod")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("IntervalMinutes")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<TimeSpan>("StartTod")
-                                .HasColumnType("TEXT");
-
-                            b1.HasKey("PcModelId");
-
-                            b1.ToTable("Pcs");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PcModelId");
-                        });
-
                     b.OwnsOne("AnydeskTracker.Models.PcBotSchedule", "PcBotSchedule", b1 =>
                         {
                             b1.Property<int>("PcModelId")
@@ -690,8 +649,6 @@ namespace AnydeskTracker.Data.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("PcModelId");
                         });
-
-                    b.Navigation("LastActiveSchedule");
 
                     b.Navigation("PcBotSchedule")
                         .IsRequired();

@@ -32,6 +32,9 @@ public class AgentHub(AgentActionsService actionsService) : Hub
 		    case "AhkOk":
 			    await actionsService.SetAhkErrorState(ev.AgentId, false);
 			    break;
+		    case "ScheduleStatus":
+			    await actionsService.LogLastScheduleStatus(ev.AgentId, ev.Message);
+			    break;
 		    default:
 			    return;
 	    }
