@@ -4,6 +4,8 @@
 </div>
 
 <script>
+    let cardAnims = {};
+    
     async function loadGames() {
         const res = await fetch("/Work/Games");
         if (!res.ok) return alert("Ошибка загрузки списка игр");
@@ -13,19 +15,39 @@
         container.innerHTML = "";
 
         data.forEach(game => {
-            const card = document.createElement("a");
-            card.className = "border p-3 rounded bg-light cursor-pointer text-truncate";
+            const card = document.createElement("div");
+            card.className = "btn btn-light border p-3 rounded cursor-pointer text-truncate text-start";
             card.style.width = "180px";
-            card.href = game.url;
-            card.target = "_blank";
-            card.rel = "noopener noreferrer";
 
             const gameName = game.name ? game.name : game.url;
-
-            card.innerHTML = `<strong>${gameName}</strong>`;
+            
+            const innerHtml = `<strong>${gameName}</strong>`;
+            
+            card.innerHTML = innerHtml;
             container.appendChild(card);
+            
+            card.addEventListener("click", async () => {
+                await CopyText(card,  gameName);
+                SuccessAnim(card, innerHtml);
+            })
         });
     }
     
+    async function CopyText(card, gameName){
+        await navigator.clipboard.writeText(gameName);
+    }
+    
+    function SuccessAnim(card, endText){
+        if (cardAnims[card] === true)
+            return;
+        cardAnims[card] = true;
+        card.innerHTML = "<strong>Скопировано!</strong>";
+        setTimeout(() => {
+            card.innerHTML = endText;
+            cardAnims[card] = false;
+        }, 750);
+    }
+    
     loadGames();
+
 </script>
