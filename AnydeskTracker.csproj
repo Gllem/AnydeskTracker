@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="app_data\" />
+    <Folder Include="app_data\updates\" />
   </ItemGroup>
 
   <ItemGroup>

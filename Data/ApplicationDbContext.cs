@@ -107,6 +107,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UserAction> UserActions { get; set; }
     public DbSet<PcBotAction> BotActions { get; set; }
     public DbSet<PcBotDolphinAction> DolphinActions { get; set; }
+
+    public DbSet<AppVersion> AppVersions { get; set; }
+
     public DbSet<BlockedAgentPhone> BlockedPhoneNumbers => Set<BlockedAgentPhone>();
     public DbSet<BlockedAgentEmail> BlockedEmails => Set<BlockedAgentEmail>();
 }

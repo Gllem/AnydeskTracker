@@ -185,4 +185,33 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 				GameId = x.Game.YandexMetrikaId
 			}));
 	}
+
+	[HttpGet("updates/latest")]
+	public async Task<IActionResult> GetLatestBotUpdateVersion()
+	{
+		AppVersion? appVersion = await dbContext.AppVersions.OrderByDescending(x => x.UploadedAt).FirstOrDefaultAsync();
+
+		if (appVersion == null)
+			return NotFound();
+
+		return Ok(new
+		{
+			appVersion.Version,
+			Url = Url.Action(nameof(Download), "BotWatchdogApi", new { version = appVersion.Version }, Request.Scheme)
+		});
+	}
+
+	[HttpGet("updates/download/{version}")]
+	public async Task<IActionResult> Download(string version)
+	{
+		var appVersion = await dbContext.AppVersions.FirstOrDefaultAsync(x => x.Version == version);
+		if (appVersion == null)
+			return NotFound();
+
+		if (!System.IO.File.Exists(appVersion.FilePath))
+			return StatusCode(500, "Version exists in DB, but file not found");
+
+		var bytes = await System.IO.File.ReadAllBytesAsync(appVersion.FilePath);
+		return File(bytes, "application/octet-stream", "app.exe");
+	}
 }

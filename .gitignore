@@ -483,5 +483,4 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-app_data/anydesk.db
-app_data/anydesk.db.back
+/app_data

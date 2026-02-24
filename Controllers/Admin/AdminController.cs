@@ -122,4 +122,10 @@ public class AdminController(ApplicationDbContext context, PcService pcService, 
 		
 		return View("Bots/BotGames", new AdminBotGamesDto(pcs.ToArray(), games.ToArray()));
 	}
+	
+	[HttpGet("BotUpdates")]
+	public async Task<IActionResult> BotUpdates()
+	{
+		return View("Bots/BotUpdate");
+	} 
 }
