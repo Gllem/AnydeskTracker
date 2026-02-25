@@ -4,6 +4,9 @@
 }
 
 <div class="container mt-4">
+    <div class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mb-4 w-50" onclick="UpdateAllBots()">Обновить всех ботов</button>
+    </div>
     <table class="table table-bordered" id="versionsTable">
         <thead>
         <tr>
@@ -82,6 +85,20 @@
                     </tr>
                 `
             }).join('');
+        }
+        
+        async function UpdateAllBots(){
+            const res = await fetch('/api/admin/agents/updateAll', {
+                method: 'GET'
+            });
+
+            if (res.ok)
+            {
+                alert("Успех")
+                return;
+            }
+
+            alert("Ошибка")
         }
         
         LoadAppVersions();

@@ -59,6 +59,13 @@ public class AdminApiAgentController(AgentCommandsService agentCommandsService) 
 		return StatusCode((int)code, payload);
 	}
 #endregion
+	
+	[HttpGet("updateAll")]
+	public async Task<IActionResult> UpdateAll()
+	{
+		var (code, payload) = await agentCommandsService.SendCommandToAll("CheckUpdate");
+		return StatusCode((int)code, payload);
+	}
 }
 
 public record Command(string CommandId, string Type);
