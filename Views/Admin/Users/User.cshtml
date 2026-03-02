@@ -12,10 +12,14 @@
             <input id="user_name" type="text" placeholder="Имя юзера" class="form-control" required />
             <button class="btn btn-success">Поменять</button>
         </form>
+        <div class="mb-3 d-flex gap-3">
+            <button id="actionsTypeBtn1" class="btn btn-primary flex-grow-1" onclick="setActionsType(false)">Смена</button>
+            <button id="actionsTypeBtn2" class="btn btn-outline-primary flex-grow-1" onclick="setActionsType(true)">Реестр работ</button>
+        </div>
         <div class="d-flex flex-column gap-3">
             @foreach (var workSession in Model.WorkSessions.Reverse())
             {
-                <button class="btn btn-outline-secondary" onclick="loadActionsButtonClick(@workSession.Id)">
+                <button class="btn btn-outline-secondary workSessionBtn" data-sessionid="@workSession.Id" onclick="loadActionsButtonClick(@workSession.Id)">
                     Смена от
                     <br>
                     <strong class="utc-time" data-time="@workSession.StartTime.ToUtc().ToString("o")"></strong>
@@ -23,7 +27,7 @@
             }
         </div>
     </div>
-    <div class="col-9 px-1">
+    <div class="col-9 px-1" id="userActionsPage">
         <table class="table table-bordered rounded-3" id="userActions">
             <thead>
             <tr>
@@ -35,21 +39,59 @@
             <tbody></tbody>
         </table>
     </div>
+    <div class="col-9 px-1 h-100 d-flex flex-column gap-3" id="userAgentActionsPage">
+        <div>
+            <h5>Браузеры</h5>
+            <div class="w-100 d-flex gap-1" id="browserCounters"></div>
+        </div>
+        <div>
+            <h5>Игры</h5>
+            <div class="w-100 d-flex gap-1" id="gameCounters"></div>
+        </div>
+        <div class="flex-grow-1 overflow-scroll">
+            <table class="table table-bordered rounded-3" id="userAgentActions">
+                <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>Действие</th>
+                    <th>Браузер</th>
+                    <th>Игра</th>
+                    <th>ПК</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>    
+        </div>
+    </div>
 </div>
 
 @section Scripts
 {
     <script>
+        const latestWorkSessionId = "@Model.WorkSessions.Last().Id";
         ConvertAllToLocalTime(document);
         document.getElementById('user_name').value = "@Model.UserName";
         
+        function setHashParam(paramId, param){
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            params.set(paramId, param)
+            location.hash = params.toString();
+        }
+        
         function loadActionsButtonClick(sessionId){
-            location.hash = sessionId;
+            setHashParam("workSession", sessionId);
+            
             loadActions(sessionId)
         }
         
         async function loadActions(sessionId)
         {
+            $(".workSessionBtn").each(function () {
+                const active = $(this).data("sessionid") == sessionId
+                $(this).toggleClass("btn-secondary", active).toggleClass("btn-outline-secondary", !active)
+            })
+            
             const res = await fetch(`/api/admin/users/@Model.UserId/${sessionId}/actions`);
             const data = await res.json();
             const tbody = document.querySelector('#userActions tbody');
@@ -62,10 +104,64 @@
             `).join('');
         }
         
+        async function loadAgentActions(sessionId){
+            const res = await fetch(`/api/admin/users/@Model.UserId/${sessionId}/agentActions`);
+            const data = await res.json();
+            const tbody = document.querySelector('#userAgentActions tbody');
+            tbody.innerHTML = data.agentActions.map(userAction => `
+                <tr>
+                    <td>${localTime(userAction.timestamp).toLocaleString()}</td>
+                    <td>${userAction.logTypeText}</td>
+                    <td>${userAction.browser}</td>
+                    <td>
+                        <a target="_blank" rel="noopener noreferrer" href="${userAction.gameUrl}">
+                            ${userAction.gameName}
+                        </a>
+                    </td>
+                    <td>${userAction.pc}</td>
+                </tr>
+            `).join('');
+            
+            loadCounters(document.querySelector("#browserCounters"), data.browsers);
+            loadCounters(document.querySelector("#gameCounters"), data.games);
+        }
+        
+        function loadCounters(countersContainer, data){
+            countersContainer.innerHTML = data.map(entry => `
+                <div class="d-inline-flex align-items-stretch border rounded overflow-hidden">
+                    <div class="px-3 py-1 fw-bold bg-light border-end">
+                        ${entry.name}
+                    </div>
+                    <div class="px-3 py-1 d-flex align-items-center">
+                        ${entry.count}
+                    </div>
+                </div>`).join('');
+        }
+        
+        function setActionsType(agent){
+            $("#actionsTypeBtn1").toggleClass("btn-primary", !agent).toggleClass("btn-outline-primary", agent)
+            $("#actionsTypeBtn2").toggleClass("btn-primary", agent).toggleClass("btn-outline-primary", !agent)
+            $("#userActionsPage").toggleClass("d-none", agent);
+            $("#userAgentActionsPage").toggleClass("d-none", !agent);
+
+            setHashParam("mode", agent ? "agent" : "");
+        }
+        
         function loadActionsFromHash(){
-            const id = location.hash.replace('#', '');
-            if (id)
-                loadActions(id);
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            
+            let workSession = params.get("workSession");
+            if (workSession === "")
+                workSession = latestWorkSessionId;
+            const mode = params.get("mode");
+            
+            if (workSession !== ""){
+                loadActions(workSession);
+                loadAgentActions(workSession);   
+            }
+            
+            setActionsType(mode === "agent")
         }
 
         document.getElementById('changeUserInfo').addEventListener('submit', async (e) => {
@@ -88,5 +184,6 @@
         
         window.addEventListener('load', loadActionsFromHash);
         window.addEventListener('hashchange', loadActionsFromHash);
+    
     </script>
 }

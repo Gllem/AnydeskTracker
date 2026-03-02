@@ -3,6 +3,7 @@ using System;
 using AnydeskTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AnydeskTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260302111232_AddUserAgentActionModel")]
+    partial class AddUserAgentActionModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -404,12 +407,6 @@ namespace AnydeskTracker.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("PcId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -421,8 +418,6 @@ namespace AnydeskTracker.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PcId");
 
                     b.HasIndex("UserId");
 
@@ -796,12 +791,6 @@ namespace AnydeskTracker.Data.Migrations
 
             modelBuilder.Entity("AnydeskTracker.Models.UserAgentAction", b =>
                 {
-                    b.HasOne("AnydeskTracker.Models.PcModel", "PcModel")
-                        .WithMany()
-                        .HasForeignKey("PcId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("AnydeskTracker.Models.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -813,8 +802,6 @@ namespace AnydeskTracker.Data.Migrations
                         .HasForeignKey("WorkSessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("PcModel");
 
                     b.Navigation("User");
 

@@ -26,5 +26,13 @@ namespace AnydeskTracker.Services
 
 			await agentCommandsService.SendCommandToAgent(pcModel.BotId, "CheckOccupation");
 		}
+
+		public async Task<PcUsage?> GetPcUsageFromBotId(string botId)
+		{
+			var pcUsage = await dbContext.PcUsages.Include(pcUsage => pcUsage.WorkSession)
+				.FirstOrDefaultAsync(x => x.IsActive && x.Pc.BotId == botId);
+
+			return pcUsage;
+		}
 	}
 }

@@ -105,6 +105,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<BotGameAssignmentOverride> BotGameAssignmentsOverride  { get; set; }
 
     public DbSet<UserAction> UserActions { get; set; }
+    public DbSet<UserAgentAction> UserAgentActions { get; set; }
     public DbSet<PcBotAction> BotActions { get; set; }
     public DbSet<PcBotDolphinAction> DolphinActions { get; set; }
 

@@ -1,8 +1,9 @@
 ﻿using AnydeskTracker.Models;
 using AnydeskTracker.Services;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
-public class AgentHub(AgentActionsService actionsService) : Hub
+public class AgentHub(AgentActionsService actionsService, UserActionService userActionService) : Hub
 {
 	public async Task Register(string agentId)
 	{
@@ -13,12 +14,6 @@ public class AgentHub(AgentActionsService actionsService) : Hub
 		await Groups.AddToGroupAsync(Context.ConnectionId, "agents:all");
 	}
 
-	public Task CommandResult(CommandResult res)
-	{
-		Console.WriteLine($"[{res.AgentId}] {res.CommandId} ok={res.Ok} msg={res.Message}");
-		AgentPresence.Touch(res.AgentId);
-		return Task.CompletedTask;
-	}
 	
 	public async Task AgentEvent(AgentEventDto ev)
     {
@@ -35,6 +30,9 @@ public class AgentHub(AgentActionsService actionsService) : Hub
 		    case "ScheduleStatus":
 			    await actionsService.LogLastScheduleStatus(ev.AgentId, ev.Message);
 			    break;
+		    case "UserLog":
+			    await userActionService.LogFromAgentAsync(ev.AgentId, JsonConvert.DeserializeObject<UserLog>(ev.Message));
+			    break;
 		    default:
 			    return;
 	    }
@@ -49,5 +47,5 @@ public class AgentHub(AgentActionsService actionsService) : Hub
 	}
 }
 
-public record CommandResult(string CommandId, string AgentId, bool Ok, string Message);
 public record AgentEventDto(string AgentId, string Type, string Message, DateTime TimeUtc);
+public record UserLog(UserLogType LogType, string? AdditionalParams);

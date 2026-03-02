@@ -11,7 +11,7 @@ namespace AnydeskTracker.Controllers;
 
 [Route("api/watchdog")]
 [ApiController]
-public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramService telegramService) : ControllerBase
+public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramService telegramService, PcService pcService) : ControllerBase
 {
 	[HttpPost]
 	public async Task<IActionResult> WatchdogWebhook([FromBody] BotWatchdogStatusDto statusDto)
@@ -169,8 +169,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 	public async Task<IActionResult> GetUserGames(string botId)
 	{
 		var dayOfWeek = DateTime.UtcNow.ToLocalTime().DayOfWeek;
-		var pcUsage = await dbContext.PcUsages.Include(pcUsage => pcUsage.WorkSession)
-			.FirstOrDefaultAsync(x => x.IsActive && x.Pc.BotId == botId);
+		var pcUsage = await pcService.GetPcUsageFromBotId(botId);
 		if (pcUsage == null) return NotFound();
 
 		var gameSchedules = await dbContext.GameSchedules.Include(gameSchedule => gameSchedule.UserLinks)
@@ -182,7 +181,7 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 			.Select(x => new
 			{
 				GameName = x.Game.Name,
-				GameId = x.Game.YandexMetrikaId
+				GameId = x.Game.Id
 			}));
 	}
 
