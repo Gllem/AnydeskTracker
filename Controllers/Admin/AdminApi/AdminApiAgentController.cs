@@ -60,6 +60,23 @@ public class AdminApiAgentController(AgentCommandsService agentCommandsService) 
 	}
 #endregion
 	
+#region RestartMain
+	[HttpGet("restartMain/{agentId}")]
+	public async Task<IActionResult> RestartMain(string agentId)
+	{
+		var (code, payload) = await agentCommandsService.SendCommandToAgent(agentId, "RestartMain");
+		return StatusCode((int)code, payload);
+	}
+
+
+	[HttpGet("restartMain")]
+	public async Task<IActionResult> RestartMain()
+	{
+		var (code, payload) = await agentCommandsService.SendCommandToAll("RestartMain");
+		return StatusCode((int)code, payload);
+	}
+#endregion
+	
 	[HttpGet("updateAll")]
 	public async Task<IActionResult> UpdateAll()
 	{

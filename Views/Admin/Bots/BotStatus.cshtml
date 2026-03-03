@@ -25,9 +25,12 @@
                         Статус
                     </span>
                 </div>
-                <div class="d-flex flex-row gap-3">
+                <div class="d-flex gap-3 flex-wrap">
                     <a class="btn btn-danger" onclick="killApps()">
                         Отключить процессы
+                    </a>
+                    <a class="btn btn-warning" onclick="restartMain()">
+                        Перезапустить
                     </a>
                     <a class="btn btn-success" onclick="StartBat()">
                         Запустить .bat
@@ -231,7 +234,16 @@
             
             AlertCommandStatus(res);
         }
-        
+
+        async function restartMain()
+        {
+            const res = await fetch('/api/admin/agents/restartMain/@Model.BotId', {
+                method: 'GET'
+            });
+
+            AlertCommandStatus(res);
+        }
+
         async function StartBat(){
             const res = await fetch('/api/admin/agents/startMain/@Model.BotId', {
                 method: 'GET'

@@ -14,6 +14,9 @@
     <a class="btn btn-danger" onclick="KillAppsAllBots()">
         Выключить процессы всех ботов 
     </a>
+    <a class="btn btn-warning" onclick="RestartMainAllBots()">
+        Перезапустить процессы всех ботов
+    </a>
     <a class="btn btn-primary" asp-action="BotUpdates">
         Обновление ботов
     </a>
@@ -90,7 +93,7 @@
     
     async function KillAppsAllBots()
     {
-        const res = await fetch('/api/admin/agents/killAppsAllBots', {
+        const res = await fetch('/api/admin/agents/killApps', {
             method: 'GET'
         });
         
@@ -100,6 +103,21 @@
             return;
         }
         
+        alert("Ошибка")
+    }
+    
+    async function RestartMainAllBots()
+    {
+        const res = await fetch('/api/admin/agents/restartMain', {
+            method: 'GET'
+        });
+
+        if (res.ok)
+        {
+            alert("Успех")
+            return;
+        }
+
         alert("Ошибка")
     }
 
