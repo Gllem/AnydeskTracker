@@ -14,7 +14,7 @@ namespace AnydeskTracker.Controllers
 	public class WorkController(
 		ApplicationDbContext context, 
 		UserWorkService workService, 
-		PcService pcService) : Controller
+		PcService pcService, AgentCommandsService agentCommandsService) : Controller
 	{
 		private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -170,6 +170,19 @@ namespace AnydeskTracker.Controllers
 
 			if (!success)
 				return StatusCode(StatusCodes.Status500InternalServerError);
+			
+			return Ok();
+		}
+		
+		[HttpPost("OpenSelectionOnPc")]
+		public async Task<IActionResult> OpenSelectionOnPc()
+		{
+			var pcUsage = await workService.GetActivePcUsage(UserId);
+
+			if (pcUsage == null)
+				return BadRequest();
+			
+			await agentCommandsService.SendCommandToAgent(pcUsage.Pc.BotId, "StartGameSelectWindow");
 			
 			return Ok();
 		}

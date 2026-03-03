@@ -25,6 +25,7 @@
                 <p><strong>Сессия начата: </strong> <utctime class="utc-time" data-time="@Model.PcDto.LastStatusChange.ToUtc().ToString("o")"></utctime>
                 <p></p>
                 <a class="btn btn-success w-100" href="anydesk:@Model.PcDto.AnyDeskId">Зайти через AnyDesk</a>
+                <button id="browserGameSelect" class="btn btn-primary w-100 mt-1">Выбрать браузер и игру на пк</button>
                 <button id="freeUpPc" class="btn btn-danger w-100 mt-1" style="display: none">Освободить пк</button>
                 <p></p>
                 <div id="pcFreeUpTimerDiv" style="display: none">
@@ -64,6 +65,12 @@
         let pcTimerInterval = null;
 
         let lastNotificationTime = null;
+        
+        document.getElementById("browserGameSelect").addEventListener("click", async () => {
+            const res = await fetch("/Work/OpenSelectionOnPc", {method: "POST"});
+            if (!res.ok)
+                alert("Ошибка при запуске выбора")
+        })
 
         document.getElementById("freeUpPc").addEventListener("click", async () => {
             const res = await fetch("/Work/FreeUpPc", {method: "POST"});
