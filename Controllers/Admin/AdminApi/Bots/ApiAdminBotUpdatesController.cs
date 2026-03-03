@@ -26,7 +26,9 @@ public class ApiAdminBotUpdatesController(ApplicationDbContext dbContext, IWebHo
 			Url = Url.Action(nameof(BotWatchdogApiController.Download), "BotWatchdogApi", new { version = x.Version }, Request.Scheme)
 		}));
 	}
-	
+
+	[RequestSizeLimit(250_000_000)]
+	[RequestFormLimits(MultipartBodyLengthLimit = 250_000_000)]
 	[HttpPost("upload")]
 	public async Task<IActionResult> Upload(IFormFile file)
 	{
