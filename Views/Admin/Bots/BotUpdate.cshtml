@@ -24,7 +24,12 @@
         </div>
         <button id="uploadButton" type="submit" class="btn btn-primary">Загрузить</button>
     </form>
-    <div id="uploadResult" class="mt-3 d-none"></div>
+    <div class="progress mt-3 d-none" id="progressWrapper">
+        <div id="uploadProgress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0">
+            0%
+        </div>
+    </div>
+    <div id="uploadResult" class="mt-3"></div>
 </div>
 
 @section Scripts
@@ -44,28 +49,62 @@
             const file = fileInput.files[0];
             formData.append('file', file, file.name);
 
-            uploadResult.toggleClass("d-none", true)
-
+            $('#progressWrapper').removeClass('d-none').removeClass('progress-bar-animated');
+            const progressBar = $('#uploadProgress');
+            progressBar
+                .removeClass('bg-success bg-danger')
+                .removeClass('progress-bar-animated')
+                .css('transition', 'none')
+                .css('width', '0%')
+                .text('0%');
+            progressBar[0].offsetHeight;
+            progressBar.css('transition', '').addClass('progress-bar-animated');
+            
             $.ajax({
                 url: '/api/admin/bots/updates/Upload',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
+                
+                xhr: function () {
+                    const xhr = new window.XMLHttpRequest();
+
+                    xhr.upload.addEventListener('progress', function (evt) {
+                        if (evt.lengthComputable) {
+                            const percent = Math.round((evt.loaded / evt.total) * 100);
+
+                            $('#uploadProgress')
+                                .css('width', percent + '%')
+                                .text(percent + '%');
+                        }
+                    });
+
+                    return xhr;
+                },
+                
                 success: function(response) {
-                    uploadResult.toggleClass("d-none", false)
-                    uploadResult.html(
-                        '<div class="alert alert-success">Файл загружен! Версия: ' + response.version + '</div>'
+                    $('#uploadProgress')
+                        .removeClass('progress-bar-animated')
+                        .addClass('bg-success');
+
+                    $('#uploadResult').html(
+                        '<div class="alert alert-success">Файл загружен</div>'
                     );
+                    
                     $('#fileInput').val('');
                     btn.toggleClass("d-none", false)
                     LoadAppVersions();
                 },
                 error: function(xhr) {
-                    uploadResult.toggleClass("d-none", false)
-                    uploadResult.html(
-                        `<div class="alert alert-danger">Ошибка при загрузке файла: ${xhr.responseText}</div>`
+                    $('#uploadProgress')
+                        .removeClass('progress-bar-animated')
+                        .addClass('bg-danger');
+
+                    $('#uploadResult').html(
+                        `<div class="alert alert-danger">Ошибка загрузки: ${xhr.responseText}</div>`
                     );
+                    
                     btn.toggleClass("d-none", false)
                 }
             });
