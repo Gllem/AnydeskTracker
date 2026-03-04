@@ -40,14 +40,15 @@ public class ApiAdminBotUpdatesController(ApplicationDbContext dbContext, IWebHo
 		if (updatesEnvVar == null)
 			return StatusCode(500, "Invalid Updates Path");
 		
-		var updatesPath = Path.Combine(webHostEnvironment.ContentRootPath, updatesEnvVar);
+		var updatesDirPath = Path.Combine(webHostEnvironment.ContentRootPath, updatesEnvVar);
+		var tempDirPath = Path.Combine(updatesDirPath, "temp");
+		
+		Directory.CreateDirectory(tempDirPath);
 
-		Directory.CreateDirectory(updatesPath);
-
-		var path = Path.Combine(updatesPath, "temp", file.FileName);
+		var tempFilePath = Path.Combine(tempDirPath, file.FileName);
 		using var sha256 = SHA256.Create();
 
-		await using (var fileStream = new FileStream(path, FileMode.Create))
+		await using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
 		await using (var cryptoStream = new CryptoStream(fileStream, sha256, CryptoStreamMode.Write))
 		{
 			await file.CopyToAsync(cryptoStream);
@@ -58,12 +59,12 @@ public class ApiAdminBotUpdatesController(ApplicationDbContext dbContext, IWebHo
 			.Replace("-", "")
 			.ToLowerInvariant();
 		
-		var finalPath = Path.Combine(updatesPath, $"{hash}.exe");
+		var finalPath = Path.Combine(updatesDirPath, $"{hash}.exe");
 		if (!System.IO.File.Exists(finalPath))
-			System.IO.File.Move(path, finalPath);
+			System.IO.File.Move(tempFilePath, finalPath);
 		else
 		{
-			System.IO.File.Delete(path);
+			System.IO.File.Delete(tempFilePath);
 			
 			return BadRequest("File already exists.");
 		}
