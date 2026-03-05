@@ -8,7 +8,9 @@ public enum UserLogType
 	[Display(Name = "Вызов окна")]
 	WindowOpen,
 	[Display(Name = "Открытие браузера")]
-	BrowserOpen
+	BrowserOpen,
+	[Display(Name = "Смена игры")]
+	GameSelectionUpdated
 }
 
 public class UserAgentAction

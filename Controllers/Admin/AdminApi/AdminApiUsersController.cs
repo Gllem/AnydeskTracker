@@ -137,7 +137,10 @@ public class AdminApiUsersController(ApplicationDbContext dbContext) : Controlle
 				Count = x.Count()
 			});
 
-		var gamesCount = agentActions.Where(x => x.LogType == UserLogType.BrowserOpen && x.GameId != -1)
+		var gamesCount = 
+			agentActions.Where(x => 
+					x.LogType is UserLogType.BrowserOpen or UserLogType.GameSelectionUpdated 
+					&& x.GameId != -1)
 			.GroupBy(x => x.GameId)
 			.Select(x => new
 			{
@@ -147,9 +150,9 @@ public class AdminApiUsersController(ApplicationDbContext dbContext) : Controlle
 		
 		return Ok(new
 		{
-			browsers = browsersCount,
+			browsers = browsersCount.OrderByDescending(x => x.Count),
 			
-			games = gamesCount,
+			games = gamesCount.OrderByDescending(x => x.Count),
 			
 			agentActions,
 		});
