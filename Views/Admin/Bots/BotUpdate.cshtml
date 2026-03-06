@@ -19,8 +19,9 @@
     </table>
     <h3>Загрузить новую версию</h3>
     <form id="uploadForm">
-        <div class="mb-3">
+        <div class="mb-3 d-flex flex-column gap-1">
             <input class="form-control" type="file" id="fileInput" accept=".exe" required>
+            <input class="form-control" type="text" id="versionInput" placeholder="Версия" required>
         </div>
         <button id="uploadButton" type="submit" class="btn btn-primary">Загрузить</button>
     </form>
@@ -35,8 +36,17 @@
 @section Scripts
 {
     <script>
+
         $('#uploadForm').on('submit', async function(e) {
             e.preventDefault();
+            
+            const version = $('#versionInput').val();
+            
+            if (!isValidVersion(version))
+            {
+                alert("Не правильный формат версии, правильный формат: X.X.X")
+                return;
+            }
             
             const btn = $('#uploadButton');
             const uploadResult = $('#uploadResult');
@@ -47,6 +57,7 @@
 
             const formData = new FormData();
             const file = fileInput.files[0];
+            formData.append('version', version);
             formData.append('file', file, file.name);
 
             $('#progressWrapper').removeClass('d-none').removeClass('progress-bar-animated');
@@ -110,6 +121,16 @@
             });
         });
         
+        $('#versionInput').on('change', function () {
+            const value = $(this).val();
+            
+            $(this).toggleClass('is-invalid', !isValidVersion(value))
+        })
+
+        function isValidVersion(version) {
+            return /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version);
+        }
+        
         async function LoadAppVersions(){
             const res = await fetch(`/api/admin/bots/updates/catalog`);
             const data = await res.json();
@@ -141,5 +162,6 @@
         }
         
         LoadAppVersions();
+    
     </script>
 }

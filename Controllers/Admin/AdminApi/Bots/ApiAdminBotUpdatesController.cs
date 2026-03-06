@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.IO.Compression;
+using System.Reflection;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using AnydeskTracker.Data;
 using AnydeskTracker.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -30,10 +32,12 @@ public class ApiAdminBotUpdatesController(ApplicationDbContext dbContext, IWebHo
 	[RequestSizeLimit(250_000_000)]
 	[RequestFormLimits(MultipartBodyLengthLimit = 250_000_000)]
 	[HttpPost("upload")]
-	public async Task<IActionResult> Upload(IFormFile file)
+	public async Task<IActionResult> Upload([FromForm]IFormFile file, [FromForm]string version)
 	{
 		if (!file.FileName.EndsWith(".exe"))
 			return BadRequest("Only .exe files are allowed.");
+		if (!IsValidVersion(version))
+			return BadRequest("Invalid version format");
 
 		var updatesEnvVar = Environment.GetEnvironmentVariable("APP_UPDATES_FOLDER");
 
@@ -68,20 +72,26 @@ public class ApiAdminBotUpdatesController(ApplicationDbContext dbContext, IWebHo
 			
 			return BadRequest("File already exists.");
 		}
-
-		var version = GetExeVersion(finalPath);
-
-		var appVersion = new AppVersion
+		try
 		{
-			Version = version,
-			FilePath = finalPath,
-			UploadedAt = DateTime.UtcNow
-		};
+			var appVersion = new AppVersion
+			{
+				Version = version,
+				FilePath = finalPath,
+				UploadedAt = DateTime.UtcNow
+			};
 
-		dbContext.AppVersions.Add(appVersion);
-		await dbContext.SaveChangesAsync();
+			dbContext.AppVersions.Add(appVersion);
+			await dbContext.SaveChangesAsync();
 
-		await ClearOldVersions();
+			await ClearOldVersions();
+		}
+		catch (Exception e)
+		{
+			System.IO.File.Delete(tempFilePath);
+			Console.WriteLine(e);
+			throw;
+		}
 
 		return Ok(new { version });
 	}
@@ -113,9 +123,8 @@ public class ApiAdminBotUpdatesController(ApplicationDbContext dbContext, IWebHo
 		await dbContext.SaveChangesAsync();
 	}
 	
-	private static string GetExeVersion(string filePath)
+	private static bool IsValidVersion(string version)
 	{
-		var info = FileVersionInfo.GetVersionInfo(filePath);
-		return info.ProductVersion!;
+		return Regex.IsMatch(version, @"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$");
 	}
 }
