@@ -56,6 +56,7 @@
                     <th>Действие</th>
                     <th>Браузер</th>
                     <th>Игра</th>
+                    <th>Результат проверки</th>
                     <th>ПК</th>
                 </tr>
                 </thead>
@@ -108,19 +109,33 @@
             const res = await fetch(`/api/admin/users/@Model.UserId/${sessionId}/agentActions`);
             const data = await res.json();
             const tbody = document.querySelector('#userAgentActions tbody');
-            tbody.innerHTML = data.agentActions.map(userAction => `
-                <tr>
-                    <td>${localTime(userAction.timestamp).toLocaleString()}</td>
-                    <td>${userAction.logTypeText}</td>
-                    <td>${userAction.browser}</td>
-                    <td>
-                        <a target="_blank" rel="noopener noreferrer" href="${userAction.gameUrl}">
-                            ${userAction.gameName}
-                        </a>
-                    </td>
-                    <td>${userAction.pc}</td>
-                </tr>
-            `).join('');
+            
+            if (data)
+            
+            tbody.innerHTML = data.agentActions.map(userAction => {
+                let revenueCheckColumn = '<td></td>'
+
+                if (userAction.logType == 3)
+                    revenueCheckColumn = 
+                        `<td class=${userAction.successfullCheck ? 'text-success' : 'text-danger'}>
+                            ${userAction.deltaRevenue}
+                        </td>`
+                
+                return `
+                    <tr>
+                        <td>${localTime(userAction.timestamp).toLocaleString()}</td>
+                        <td>${userAction.logTypeText}</td>
+                        <td>${userAction.browser}</td>
+                        <td>
+                            <a target="_blank" rel="noopener noreferrer" href="${userAction.gameUrl}">
+                                ${userAction.gameName}
+                            </a>
+                        </td>
+                        ${revenueCheckColumn}
+                        <td>${userAction.pc}</td>
+                    </tr>
+                `
+            }).join('');
             
             loadCounters(document.querySelector("#browserCounters"), data.browsers);
             loadCounters(document.querySelector("#gameCounters"), data.games);

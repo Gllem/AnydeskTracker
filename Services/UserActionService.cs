@@ -2,13 +2,15 @@
 using System.Threading.Tasks;
 using AnydeskTracker.Data;
 using AnydeskTracker.Models;
+using AnydeskTracker.Services.MetrikaServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace AnydeskTracker.Services
 {
-	public class UserActionService(ApplicationDbContext context, PcService pcService)
+	public class UserActionService(ApplicationDbContext context, PcService pcService, YandexMetrikaService yandexMetrikaService, MetrikaCollectorService metrikaCollectorService)
 	{
 		public async Task LogAsync(WorkSessionModel workSession, ActionType actionType, string? description = null)
 		{
@@ -45,8 +47,29 @@ namespace AnydeskTracker.Services
 			};
 
 			context.UserAgentActions.Add(action);
-
+			
 			await context.SaveChangesAsync();
+			
+			switch (userLog.LogType)
+			{
+				case UserLogType.BrowserOpen:
+					var parsedParams = 
+						JsonConvert.DeserializeAnonymousType(userLog.AdditionalParams ?? "", new {browser = ""});
+					
+					if(parsedParams == null)
+						break;
+
+					var browserModel = await context.BrowserRevenues.FirstOrDefaultAsync(x => x.Browser == parsedParams.browser);
+
+					if(browserModel == null)
+						break;
+					
+					await yandexMetrikaService.GetCurrentBrowserRevenue(browserModel.Browser);
+
+					metrikaCollectorService.StartCollectorJob(botId, pcUsage.WorkSession.UserId, browserModel.Id, true);
+					
+					break;
+			}
 		}
 	}
 }

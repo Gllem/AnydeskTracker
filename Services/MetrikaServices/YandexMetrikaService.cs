@@ -1,10 +1,15 @@
 using System.Text.Json;
 using System.Web;
+using AnydeskTracker.Controllers;
+using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
+using AnydeskTracker.Models.Game;
+using Hangfire;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services.MetrikaServices;
 
-public class YandexMetrikaService(IHttpClientFactory httpClientFactory)
+public class YandexMetrikaService(IHttpClientFactory httpClientFactory, ApplicationDbContext context)
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("YandexClient");
 
@@ -69,6 +74,38 @@ public class YandexMetrikaService(IHttpClientFactory httpClientFactory)
         }
 
         return responses;
+    }
+
+    public async Task GetCurrentBrowserRevenue(string browser)
+    {
+        var browserModel = context.BrowserRevenues.FirstOrDefault(x => x.Browser == browser);
+        
+        if(browserModel == null)
+            return;
+            
+        var requestDto = new BuildRequestDto();
+        
+        //TODO:Filters
+        requestDto.Accounts.AddRange(YandexMetrikaController.Accounts.Select(x => x.Key));
+        requestDto.Period = "today";
+        requestDto.EntityFields.Add("browser");
+        requestDto.Fields.Add("partner_wo_nds");
+        
+        var result = await BuildReportAsync(requestDto);
+        if (result == null)
+            return;
+
+        var reward = result.Sum(x => x.Data.Points
+            .FirstOrDefault(x => x.Dimensions["browser"].ToString() == browserModel.Browser)?.Measures
+            .FirstOrDefault(d => d.ContainsKey("partner_wo_nds"))?
+            .GetValueOrDefault("partner_wo_nds").GetDecimal() ?? 0);
+        
+        var previousReward = browserModel.LastRevenue;
+        
+        browserModel.DeltaRevenue = reward - previousReward;
+        browserModel.LastRevenue = reward;
+
+        await context.SaveChangesAsync();
     }
 }
 

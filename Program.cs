@@ -3,12 +3,15 @@ using AnydeskTracker.Controllers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AnydeskTracker.Data;
+using AnydeskTracker.Hangfire;
 using AnydeskTracker.Models;
 using AnydeskTracker.Services;
 using AnydeskTracker.Services.MetrikaServices;
 using DotNetEnv;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
+using Hangfire;
+using Hangfire.Storage.SQLite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +45,11 @@ builder.Services.AddHttpClient("Beget")
         };
     });
 
+builder.Services.AddHangfire(config =>
+    config.UseSQLiteStorage("app_data/hangfire.db"));
+
+builder.Services.AddHangfireServer();
+
 builder.Services.AddScoped<UserWorkService>();
 builder.Services.AddScoped<TelegramService>();
 builder.Services.AddScoped<PcService>();
@@ -50,6 +58,7 @@ builder.Services.AddScoped<AgentActionsService>();
 builder.Services.AddScoped<AgentCommandsService>();
 builder.Services.AddScoped<AgentGamesUpdater>();
 builder.Services.AddScoped<YandexMetrikaService>();
+builder.Services.AddScoped<MetrikaCollectorService>();
 builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClientService.Initializer()
 {
     ApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")
@@ -100,6 +109,14 @@ app.UseRouting();
 app.MapHub<AgentHub>("/hubs/agent");
 
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[]
+    {
+        new HangfireAuthorizationFilter()
+    }
+});
 
 app.MapRazorPages();
 app.MapControllerRoute(

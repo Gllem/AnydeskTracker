@@ -10,7 +10,9 @@ public enum UserLogType
 	[Display(Name = "Открытие браузера")]
 	BrowserOpen,
 	[Display(Name = "Смена игры")]
-	GameSelectionUpdated
+	GameSelectionUpdated,
+	[Display(Name = "Проверка дохода")]
+	RevenueCheck
 }
 
 public class UserAgentAction

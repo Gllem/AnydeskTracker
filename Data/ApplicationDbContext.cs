@@ -26,6 +26,19 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             pcModel.OwnsOne(x => x.PcBotSchedule);
             pcModel.OwnsOne(x => x.LastActiveSchedule);
         });
+        
+        builder.Entity<BrowserRevenueModel>().HasData(
+            new BrowserRevenueModel { Id = 1, Browser = "Chrome" },
+            new BrowserRevenueModel { Id = 2, Browser = "Edge" },
+            new BrowserRevenueModel { Id = 3, Browser = "Firefox" },
+            new BrowserRevenueModel { Id = 4, Browser = "Opera" },
+            new BrowserRevenueModel { Id = 6, Browser = "YandexBrowser" },
+            new BrowserRevenueModel { Id = 7, Browser = "DuckDuckGo" },
+            new BrowserRevenueModel { Id = 8, Browser = "Dolphin" },
+            new BrowserRevenueModel { Id = 9, Browser = "Octo" },
+            new BrowserRevenueModel { Id = 10, Browser = "Brave" },
+            new BrowserRevenueModel { Id = 11, Browser = "Atom" }
+        );
     }
 
     private static void BuildGameUserSchedule(ModelBuilder builder)
@@ -103,6 +116,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<GameSchedule> GameSchedules { get; set; }
     public DbSet<BotGameAssignmentGlobal> BotGameAssignmentsGlobal  { get; set; }
     public DbSet<BotGameAssignmentOverride> BotGameAssignmentsOverride  { get; set; }
+
+    public DbSet<BrowserRevenueModel> BrowserRevenues { get; set; }
 
     public DbSet<UserAction> UserActions { get; set; }
     public DbSet<UserAgentAction> UserAgentActions { get; set; }

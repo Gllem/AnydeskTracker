@@ -110,7 +110,9 @@ public class AdminApiUsersController(ApplicationDbContext dbContext) : Controlle
 				new
 				{
 					browser = "", 
-					gameId = -1
+					gameId = -1,
+					success = false,
+					deltaRevenue = 0m
 				});
 
 			var game = games.FirstOrDefault(g => g.Id == additionalParams?.gameId);
@@ -123,6 +125,8 @@ public class AdminApiUsersController(ApplicationDbContext dbContext) : Controlle
 				GameId = game?.Id ?? -1,
 				GameName = game?.Name ?? "",
 				GameUrl = game?.Url ?? "",
+				SuccessfullCheck = additionalParams?.success,
+				DeltaRevenue = additionalParams?.deltaRevenue,
 				Timestamp = x.Timestamp.ToUtc(),
 				Pc = x.PcModel.DisplayId
 			};

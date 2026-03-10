@@ -3,6 +3,7 @@ using System;
 using AnydeskTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AnydeskTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310152902_RemovedGameRevenueField")]
+    partial class RemovedGameRevenueField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -111,99 +114,6 @@ namespace AnydeskTracker.Data.Migrations
                     b.HasKey("Phone");
 
                     b.ToTable("BlockedAgentPhones", (string)null);
-                });
-
-            modelBuilder.Entity("AnydeskTracker.Models.BrowserRevenueModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Browser")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("DeltaRevenue")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("LastRevenue")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BrowserRevenues");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Browser = "Chrome",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Browser = "Edge",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Browser = "Firefox",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Browser = "Opera",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Browser = "YandexBrowser",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Browser = "DuckDuckGo",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Browser = "Dolphin",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Browser = "Octo",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Browser = "Brave",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Browser = "Atom",
-                            DeltaRevenue = 0m,
-                            LastRevenue = 0m
-                        });
                 });
 
             modelBuilder.Entity("AnydeskTracker.Models.Game.BotGameAssignmentGlobal", b =>
