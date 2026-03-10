@@ -11,8 +11,6 @@ public class MetrikaCollectorService(YandexMetrikaService yandexMetrikaService,
 	IBackgroundJobClient jobs,
 	AgentCommandsService agentCommandsService)
 {
-	private const decimal DeltaRewardThreshold = 100;
-
 	private static Dictionary<string, string> StartedJobIds = new Dictionary<string, string>();
 	
 	public void StartCollectorJob(string botId, string userId, int browserId, bool firstCheck)
@@ -39,7 +37,10 @@ public class MetrikaCollectorService(YandexMetrikaService yandexMetrikaService,
 
 		await yandexMetrikaService.GetCurrentBrowserRevenue(browserModel.Browser);
 
-		if (browserModel.DeltaRevenue > DeltaRewardThreshold)
+		var collectionSettings = await dbContext.MetrikaCollectionSettings.FirstAsync();
+		var rewardThreshold = collectionSettings.RevenueThreshold;
+		
+		if (browserModel.DeltaRevenue > rewardThreshold)
 		{
 			StartCollectorJob(botId, userId, browserId, false);
 			if (firstCheck)

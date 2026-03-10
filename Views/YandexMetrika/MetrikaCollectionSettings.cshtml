@@ -1,0 +1,85 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Настройки сбора метрики агентов";
+}
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model AnydeskTracker.Models.MetrikaCollectionSettings
+
+<div class="d-flex flex-column justify-content-center align-items-center gap-2" xmlns="http://www.w3.org/1999/html">
+    <form asp-controller="YandexMetrika" asp-action="PostMetrikaCollectionSettings" class="border border-1 border-secondary rounded-3 p-3 d-flex flex-column gap-3">
+        <h4 class="text-center">Настройки сбора метрики</h4>
+
+        <div class="input-group flex-nowrap">
+            <span class="input-group-text flex-fill">
+                Порог удачной проверки
+            </span>
+            <input id="revenueThreshold" type="number" class="form-control text-center flex-grow-0" style="width: 5em" asp-for="@Model.RevenueThreshold"/>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            Обновить данные
+        </button>
+    </form>
+
+    <div class="border border-1 border-secondary rounded-3 p-3 d-flex flex-column gap-3" style="min-width: 50%">
+        <h4>Доступные браузеры</h4>
+        <div class="d-flex flex-row gap-2 align-items-stretch">
+            <input id="browserName" class="input-group flex-shrink-1 px-3" type="text" placeholder="Название из метрики"/>
+            <button class="btn btn-primary flex-shrink-0" onclick="addBrowser()">Добавить браузер</button>
+        </div>
+        
+        <table class="table table-bordered rounded-3 mt-3 w-auto" style="min-width: 25%" id="browsers">
+            <thead>
+            <tr>
+                <th data-bs-toggle="tooltip" data-bs-title="Название должно быть таким же как и в метриках">Название</th>
+                <th style="width: 2em"></th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>    
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        
+        async function loadBrowsers(){
+            const res = await fetch(`/Admin/Metrika/CollectionSettings/Browsers`);
+            const data = await res.json();
+            const table = document.querySelector('#browsers tbody');
+
+            table.innerHTML = data.map(browser => {
+                return `
+                    <tr>
+                        <td>${browser.name}</td>
+                        <td class="text-center"><button class="btn btn-sm btn-danger" onclick="deleteBrowser(${browser.id})">Удалить</button></td>
+                    </tr>
+                `
+            }).join('');
+        }
+        
+        async function deleteBrowser(browserId){
+            await fetch(`/Admin/Metrika/CollectionSettings/Browsers/`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: browserId
+            });
+            await loadBrowsers();    
+        }
+
+        async function addBrowser(){
+            const browserName = document.getElementById('browserName').value;
+            await fetch(`/Admin/Metrika/CollectionSettings/Browsers/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(browserName)
+            });
+            await loadBrowsers();
+        }
+        
+        loadBrowsers()
+        
+    </script>
+}

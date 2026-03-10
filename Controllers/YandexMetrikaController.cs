@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Runtime.Intrinsics.Arm;
 using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
+using AnydeskTracker.Models;
 using AnydeskTracker.Services.MetrikaServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,64 @@ public class YandexMetrikaController(YandexMetrikaService metrikaService, Applic
     {
         var tree = await metrikaService.GetTreeAsync();
         return View("MetrikaIndex", tree);
+    }
+
+    [HttpGet("CollectionSettings")]
+    public async Task<IActionResult> MetrikaCollectionSettings()
+    {
+        var settings = await dbContext.MetrikaCollectionSettings.FirstAsync();
+        return View("MetrikaCollectionSettings", settings);
+    }
+
+    [HttpPost("CollectionSettings")]
+    public async Task<IActionResult> PostMetrikaCollectionSettings(MetrikaCollectionSettings newSettings)
+    {
+        var settings = await dbContext.MetrikaCollectionSettings.FirstAsync();
+        settings.RevenueThreshold = newSettings.RevenueThreshold;
+        await dbContext.SaveChangesAsync();
+        return RedirectToAction(nameof(MetrikaCollectionSettings));
+    }
+
+    [HttpGet("CollectionSettings/Browsers")]
+    public async Task<IActionResult> GetAvailableBrowsers()
+    {
+        var browsers = await dbContext.BrowserRevenues.ToListAsync();
+
+        return Ok(browsers.Select(x => new
+        {
+            x.Id,
+            Name = x.Browser,
+        }));
+    }
+
+    [HttpDelete("CollectionSettings/Browsers")]
+    public async Task<IActionResult> DeleteAvailableBrowser([FromBody] int browserId)
+    {
+        var browser = await dbContext.BrowserRevenues.FindAsync(browserId);
+
+        if (browser == null)
+            return NotFound();
+
+        dbContext.BrowserRevenues.Remove(browser);
+
+        await dbContext.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    [HttpPost("CollectionSettings/Browsers")]
+    public async Task<IActionResult> AddAvailableBrowser([FromBody] string browserName)
+    {
+        var browser = new BrowserRevenueModel
+        {
+            Browser = browserName
+        };
+
+        dbContext.BrowserRevenues.Add(browser);
+
+        await dbContext.SaveChangesAsync();
+        
+        return Ok();
     }
 
     [HttpPost("Build")]

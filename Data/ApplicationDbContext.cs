@@ -39,6 +39,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             new BrowserRevenueModel { Id = 10, Browser = "Brave" },
             new BrowserRevenueModel { Id = 11, Browser = "Atom" }
         );
+
+        builder.Entity<MetrikaCollectionSettings>().HasData(new MetrikaCollectionSettings {Id = 1, RevenueThreshold = 100});
     }
 
     private static void BuildGameUserSchedule(ModelBuilder builder)
@@ -118,6 +120,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<BotGameAssignmentOverride> BotGameAssignmentsOverride  { get; set; }
 
     public DbSet<BrowserRevenueModel> BrowserRevenues { get; set; }
+    public DbSet<MetrikaCollectionSettings> MetrikaCollectionSettings { get; set; }
 
     public DbSet<UserAction> UserActions { get; set; }
     public DbSet<UserAgentAction> UserAgentActions { get; set; }

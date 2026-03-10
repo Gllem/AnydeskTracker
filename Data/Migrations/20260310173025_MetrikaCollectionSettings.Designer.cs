@@ -3,6 +3,7 @@ using System;
 using AnydeskTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AnydeskTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310173025_MetrikaCollectionSettings")]
+    partial class MetrikaCollectionSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -306,8 +309,8 @@ namespace AnydeskTracker.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("RevenueThreshold")
-                        .HasColumnType("TEXT");
+                    b.Property<double>("RevenueThreshold")
+                        .HasColumnType("REAL");
 
                     b.HasKey("Id");
 
@@ -317,7 +320,7 @@ namespace AnydeskTracker.Data.Migrations
                         new
                         {
                             Id = 1,
-                            RevenueThreshold = 100m
+                            RevenueThreshold = 100.0
                         });
                 });
 
