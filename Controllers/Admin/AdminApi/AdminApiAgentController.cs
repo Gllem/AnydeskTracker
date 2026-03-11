@@ -85,4 +85,4 @@ public class AdminApiAgentController(AgentCommandsService agentCommandsService) 
 	}
 }
 
-public record Command(string CommandId, string Type);
+public record Command(string CommandId, string Type, string AdditionalParams);

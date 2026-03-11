@@ -23,7 +23,8 @@ namespace AnydeskTracker.Services
 			pcModel.LastStatusChange = DateTime.UtcNow;
 
 			await dbContext.SaveChangesAsync();
-
+			
+			await agentCommandsService.SendCommandToAgent(pcModel.BotId, "OccupationUpdate", pcModel.Status == PcStatus.Busy);
 			await agentCommandsService.SendCommandToAgent(pcModel.BotId, "CheckOccupation");
 		}
 

@@ -1,12 +1,13 @@
 ﻿using System.Net;
 using AnydeskTracker.Controllers;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
 namespace AnydeskTracker.Services;
 
 public class AgentCommandsService(IHubContext<AgentHub> hub)
 {
-	public async Task<(HttpStatusCode code, object payload)> SendCommandToAgent(string agentId, string command)
+	public async Task<(HttpStatusCode code, object payload)> SendCommandToAgent(string agentId, string command, object? additionalParams = null)
 	{
 		var agentState = AgentPresence.Get(agentId);
 		if (agentState is null)
@@ -14,14 +15,14 @@ public class AgentCommandsService(IHubContext<AgentHub> hub)
 		if (!agentState.Online)
 			return (HttpStatusCode.Conflict, "Agent offline");
 		
-		return await SendCommand($"machine:{agentId}", command);
+		return await SendCommand($"machine:{agentId}", command, additionalParams);
 	}
 
 	public async Task<(HttpStatusCode code, object payload)> SendCommandToAll(string command) => await SendCommand("agents:all", command);
 
-	public async Task<(HttpStatusCode code, object payload)> SendCommand(string group, string command)
+	public async Task<(HttpStatusCode code, object payload)> SendCommand(string group, string command, object? additionalParams = null)
 	{
-		var cmd = new Command("cmd-" + Guid.NewGuid().ToString("N"), command);
+		var cmd = GetCommand(command, additionalParams);
 
 		await hub.Clients.Group(group)
 			.SendAsync("Command", cmd);
@@ -33,9 +34,9 @@ public class AgentCommandsService(IHubContext<AgentHub> hub)
 		});
 	}
 
-	public async Task<(HttpStatusCode code, object payload)> SendCommand(string[] groups, string command)
+	public async Task<(HttpStatusCode code, object payload)> SendCommand(string[] groups, string command, object? additionalParams = null)
 	{
-		var cmd = new Command("cmd-" + Guid.NewGuid().ToString("N"), command);
+		var cmd = GetCommand(command, additionalParams);
 
 		await hub.Clients.Groups(groups)
 			.SendAsync("Command", cmd);
@@ -45,5 +46,11 @@ public class AgentCommandsService(IHubContext<AgentHub> hub)
 			sent = groups,
 			commandId = cmd.CommandId
 		});
+	}
+
+	private static Command GetCommand(string command, object? additionalParams)
+	{
+		string additionalParamsJson = additionalParams != null ? JsonConvert.SerializeObject(additionalParams) : "";
+		return new Command("cmd-" + Guid.NewGuid().ToString("N"), command, additionalParamsJson);
 	}
 }
