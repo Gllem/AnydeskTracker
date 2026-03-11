@@ -12,6 +12,7 @@ using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Hangfire;
 using Hangfire.Storage.SQLite;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +26,14 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     {
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequiredLength = 8;
+        options.Lockout.MaxFailedAccessAttempts = 3;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+        options.Lockout.AllowedForNewUsers = true;
+        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedEmail = false;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders().AddDefaultUI();
@@ -63,6 +70,18 @@ builder.Services.AddScoped<SheetsService>((x) => new SheetsService(new BaseClien
 {
     ApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")
 }));
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("login", config =>
+    {
+        config.PermitLimit = 10;
+        config.Window = TimeSpan.FromMinutes(15);
+        config.QueueLimit = 0;
+    });
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 builder.Services.AddHostedService<PcStatusUpdater>();
 builder.Services.AddHostedService<ActionCleanupService>();
@@ -118,7 +137,11 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
     }
 });
 
+app.UseRateLimiter();
+
+app.UseMiddleware<LoginRateLimiterMiddleware>();
 app.MapRazorPages();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
