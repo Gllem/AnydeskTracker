@@ -52,6 +52,9 @@ namespace AnydeskTracker.Services
 			
 			switch (userLog.LogType)
 			{
+				case UserLogType.WindowOpen:
+					metrikaCollectorService.StopCollectorJob(botId);
+					break;
 				case UserLogType.BrowserOpen:
 					var parsedParams = 
 						JsonConvert.DeserializeAnonymousType(userLog.AdditionalParams ?? "", new {browser = ""});

@@ -27,20 +27,36 @@ public class MetrikaCollectorService(YandexMetrikaService yandexMetrikaService,
 
 		StartedJobIds[botId] = jobId;
 	}
+
+	public void StopCollectorJob(string botId)
+	{
+		if (StartedJobIds.TryGetValue(botId, out string? prevJobId))
+		{
+			BackgroundJob.Delete(prevJobId);
+		}
+	}
 	
 	public async Task RefreshGameRevenueJob(string botId, string userId, int browserId, bool firstCheck)
 	{
 		var browserModel = await dbContext.BrowserRevenues.FindAsync(browserId);
+		var agentPresent = agentCommandsService.IsAgentOnline(botId);
         
 		if(browserModel == null)
 			return;
+
+		if (!agentPresent)
+		{
+			StartCollectorJob(botId, userId, browserId, firstCheck);
+			return;
+		}
 
 		await yandexMetrikaService.GetCurrentBrowserRevenue(browserModel.Browser);
 
 		var collectionSettings = await dbContext.MetrikaCollectionSettings.FirstAsync();
 		var rewardThreshold = collectionSettings.RevenueThreshold;
 		
-		if (browserModel.DeltaRevenue > rewardThreshold)
+		if(false)
+		// if (browserModel.DeltaRevenue > rewardThreshold)
 		{
 			StartCollectorJob(botId, userId, browserId, false);
 			if (firstCheck)

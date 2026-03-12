@@ -3,9 +3,6 @@ using System.Web;
 using AnydeskTracker.Controllers;
 using AnydeskTracker.Data;
 using AnydeskTracker.DTOs;
-using AnydeskTracker.Models.Game;
-using Hangfire;
-using Microsoft.EntityFrameworkCore;
 
 namespace AnydeskTracker.Services.MetrikaServices;
 

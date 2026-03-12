@@ -7,14 +7,20 @@ namespace AnydeskTracker.Services;
 
 public class AgentCommandsService(IHubContext<AgentHub> hub)
 {
-	public async Task<(HttpStatusCode code, object payload)> SendCommandToAgent(string agentId, string command, object? additionalParams = null)
+	public bool IsAgentOnline(string agentId)
 	{
 		var agentState = AgentPresence.Get(agentId);
 		if (agentState is null)
-			return (HttpStatusCode.NotFound, "Agent never connected");
+			return false;
 		if (!agentState.Online)
-			return (HttpStatusCode.Conflict, "Agent offline");
-		
+			return false;
+		return true;
+	}
+	
+	public async Task<(HttpStatusCode code, object payload)> SendCommandToAgent(string agentId, string command, object? additionalParams = null)
+	{
+		if (!IsAgentOnline(agentId))
+			return (HttpStatusCode.BadRequest, "Agent Offline!");
 		return await SendCommand($"machine:{agentId}", command, additionalParams);
 	}
 
