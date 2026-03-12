@@ -105,7 +105,7 @@ namespace AnydeskTracker.Areas.Identity.Pages.Account
                 var user = await userManager.FindByEmailAsync(Input.Email);
              
                 var result = await signInManager.PasswordSignInAsync(
-                    user?.UserName ?? Input.Email,  // ← передавай UserName, не Email
+                    user?.NormalizedUserName ?? Input.Email,
                     Input.Password,
                     Input.RememberMe,
                     lockoutOnFailure: true
