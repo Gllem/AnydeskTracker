@@ -17,14 +17,15 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 	public async Task<IActionResult> GetAllBots()
 	{
 		var pcs = await dbContext.Pcs.ToListAsync();
+		var botActions = await dbContext.BotActions.OrderByDescending(x => x.Timestamp).ToListAsync();
+		var dolphinChecks = await dbContext.DolphinActions.OrderByDescending(x => x.Timestamp).ToListAsync();
+		var todayDolphinChecks = dolphinChecks.Where(x => x.Timestamp.Date == DateTime.UtcNow.Date);
 		return Ok(pcs.Select(pc =>
 		{
-			var lastAction = dbContext.BotActions.Where(x => x.PcId == pc.Id).ToList().MaxBy(x => x.Timestamp);
+			var lastAction = botActions.FirstOrDefault(x => x.PcId == pc.Id);
 
-			var dolphinChecks = dbContext.DolphinActions.Where(x => x.PcId == pc.Id).ToList();
-				
-			var lastDolphinAction = dolphinChecks.MaxBy(x => x.Timestamp);
-			var dolphinChecksCount = dolphinChecks.Count(x => x.Timestamp.Date == DateTime.UtcNow.Date);
+			var lastDolphinAction = dolphinChecks.FirstOrDefault(x => x.PcId == pc.Id);
+			var dolphinChecksCount = dolphinChecks.Count(x => x.PcId == pc.Id);
 
 			List<string> errorStatuses = new List<string> { };
 				
@@ -51,7 +52,15 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 				status = "BUSY";
 			if (pc.Status == PcStatus.CoolingDown)
 				status = "COOLING";
-				
+			
+			var agentState = AgentPresence.Get(pc.BotId);
+
+			string agentStatus = 
+				agentState == null ? "not-found" : 
+				agentState.Online ?
+					"online" :
+					"offline";
+
 			return new
 			{
 				pc.BotId,
@@ -60,6 +69,7 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 				HasChecks = lastAction != null || errorStatuses.Count > 0,
 				ErrorStatuses = errorStatuses,
 				Status = status,
+				AgentStatus = agentStatus,
 				LastCheckTime = lastAction?.Timestamp.ToUtc(),
 				LastDolphinCheckTime = lastDolphinAction?.Timestamp.ToUtc(),
 				dolphinChecksCount

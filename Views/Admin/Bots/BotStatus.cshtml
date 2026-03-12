@@ -191,39 +191,37 @@
     <!-- Agent Status -->
     <script>
         async function loadAgentStatus(){
+            
+            if (!"@Model.BotId")
+            {
+                setStatusKnob("secondary", "Не указан BotId")
+                return;
+            }
+
             const res = await fetch(`/api/admin/agents/@Model.BotId`);
             const data = await res.json();
-
-            const knob = document.querySelector('#statusKnob');
-            const text = document.querySelector('#statusText');
             
             if (res.status === 404)
             {
-                knob.classList.toggle("bg-secondary", true)
-                knob.classList.toggle("bg-danger", false)
-                knob.classList.toggle("bg-success", false)
-                
-                text.innerHTML = "Не появлялся в сети"
-            
+                setStatusKnob("secondary", "Не появлялся в сети")
                 return;
             }
             
             if (data.online)
-            {
-                knob.classList.toggle("bg-secondary", false)
-                knob.classList.toggle("bg-danger", false)
-                knob.classList.toggle("bg-success", true)
-                
-                text.innerHTML = "Онлайн"
-            }
+                setStatusKnob("success", "Онлайн")
             else
-            {
-                knob.classList.toggle("bg-secondary", false)
-                knob.classList.toggle("bg-danger", true)
-                knob.classList.toggle("bg-success", false)
-
-                text.innerHTML = `Последний онлайн: ${localTime(data.lastSeenUtc).toLocaleString()}`
-            }
+                setStatusKnob("danger", `Последний онлайн: ${localTime(data.lastSeenUtc).toLocaleString()}`)
+        }
+        
+        function setStatusKnob(statusColor, statusText){
+            const knob = document.querySelector('#statusKnob');
+            const text = document.querySelector('#statusText');
+            
+            knob.classList.toggle("bg-secondary", statusColor === "secondary")
+            knob.classList.toggle("bg-danger", statusColor === "danger")
+            knob.classList.toggle("bg-success", statusColor === "success")
+            
+            text.innerHTML = statusText;
         }
         
         async function killApps()

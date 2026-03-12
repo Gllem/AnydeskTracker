@@ -78,9 +78,26 @@
             else
                 botStatus = "Еще не получал ни одного статуса"
             
+            let statusKnobColor;
+            switch (bot.agentStatus){
+                case "not-found":
+                    statusKnobColor = "bg-secondary"
+                    break;
+                case "online":
+                    statusKnobColor = "bg-success"
+                    break;
+                case "offline":
+                    statusKnobColor = "bg-error"
+                    break;
+            }
+            
             div.innerHTML = `
                 <strong>${botName}</strong>
-                <div class="border border-light border-1 rounded-3 text-center align-content-center" style="flex: 1">
+                <div class="border border-light border-1 rounded-3 text-center align-content-center position-relative" style="flex: 1">
+                    <span 
+                        id="statusKnob" 
+                        class="rounded-circle ${statusKnobColor} border border-light border-1 position-absolute" 
+                        style="width: 1em; height: 1em; right: .25em; top: .25em;"></span>
                     ${botStatus}
                 </div>
             `;
