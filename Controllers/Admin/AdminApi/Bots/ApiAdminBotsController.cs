@@ -25,7 +25,7 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 			var lastAction = botActions.FirstOrDefault(x => x.PcId == pc.Id);
 
 			var lastDolphinAction = dolphinChecks.FirstOrDefault(x => x.PcId == pc.Id);
-			var dolphinChecksCount = dolphinChecks.Count(x => x.PcId == pc.Id);
+			var dolphinChecksCount = todayDolphinChecks.Count(x => x.PcId == pc.Id);
 
 			List<string> errorStatuses = new List<string> { };
 				
