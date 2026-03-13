@@ -20,8 +20,6 @@ public class PcBotAction
 	[Required]
 	public string ProcessesStatus { get; set; } = string.Empty;
 	[Required]
-	public string SchedulerStatus { get; set; } = string.Empty;
-	[Required]
 	public string DiskStatus { get; set; } = string.Empty;
 	[Required]
 	public string UserStatus { get; set; } = string.Empty;
@@ -33,7 +31,6 @@ public class PcBotAction
 	[JsonIgnore] 
 	public string TelegramNotificationBotStatus =>
 		$"Выключенные процессы: {ProcessesStatus}\n" +
-		$"Выключенные задачи планировщика: {SchedulerStatus}\n" +
 		$"Диск: {(string.IsNullOrEmpty(DiskStatus) ? "OK" : DiskStatus)}\n" +
 		$"Пользователь: {(string.IsNullOrEmpty(UserStatus) ? "OK" : UserStatus)}\n" +
 		$"Память: {(string.IsNullOrEmpty(RamStatus) ? "OK" : RamStatus)}";

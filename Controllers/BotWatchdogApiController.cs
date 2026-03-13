@@ -33,7 +33,6 @@ public class BotWatchdogApiController(ApplicationDbContext dbContext, TelegramSe
 			PcId = pc.Id,
 			Error = statusDto.Error,
 			ProcessesStatus = statuses["Processes"],
-			SchedulerStatus = statuses["Scheduler"],
 			DiskStatus = statuses["Disk"],
 			UserStatus = statuses["User"],
 			RamStatus = statuses["RAM"],

@@ -8,7 +8,6 @@ namespace AnydeskTracker.Services.MetrikaServices;
 
 public class MetrikaCollectorService(YandexMetrikaService yandexMetrikaService,
 	ApplicationDbContext dbContext,
-	IBackgroundJobClient jobs,
 	AgentCommandsService agentCommandsService)
 {
 	private static Dictionary<string, string> StartedJobIds = new Dictionary<string, string>();
@@ -22,7 +21,7 @@ public class MetrikaCollectorService(YandexMetrikaService yandexMetrikaService,
 		
 		var jobId = BackgroundJob.Schedule<MetrikaCollectorService>(
 			x => x.RefreshGameRevenueJob(botId, userId, browserId, firstCheck),
-			TimeSpan.FromSeconds(5)
+			TimeSpan.FromMinutes(10)
 		);
 
 		StartedJobIds[botId] = jobId;

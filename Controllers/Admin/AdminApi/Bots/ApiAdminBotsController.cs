@@ -33,8 +33,6 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 			{
 				if(!string.IsNullOrEmpty(lastAction.ProcessesStatus))
 					errorStatuses.Add("PRC");
-				if(!string.IsNullOrEmpty(lastAction.SchedulerStatus))
-					errorStatuses.Add("SC");
 				if(!string.IsNullOrEmpty(lastAction.DiskStatus))
 					errorStatuses.Add("DSK");
 				if(!string.IsNullOrEmpty(lastAction.RamStatus))
@@ -123,7 +121,6 @@ public class ApiAdminBotsController(ApplicationDbContext dbContext) : Controller
 				Statuses = new Dictionary<string, string>
 				{
 					{"Выключенные процессы", x.ProcessesStatus},
-					{"Выключенные задачи", x.SchedulerStatus},
 					{"Диск", x.DiskStatus},
 					{"Пользователь", x.UserStatus},
 					{"Память", x.RamStatus}
